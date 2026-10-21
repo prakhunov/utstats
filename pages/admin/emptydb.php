@@ -30,24 +30,24 @@ IF ($results['sure'] == "Yes" and $results['really'] == "Yes") {
       Emptying All Tables except uts_ip2country, uts_weaponstats and uts_charttypes
     </td>';
 
-    mysql_query("TRUNCATE uts_chartdata;") or die(mysql_error());
-    mysql_query("TRUNCATE uts_events;") or die(mysql_error());
-    mysql_query("TRUNCATE uts_games;") or die(mysql_error());
-    mysql_query("TRUNCATE uts_gamestype;") or die(mysql_error());
-    mysql_query("TRUNCATE uts_killsmatrix;") or die(mysql_error());
-    mysql_query("TRUNCATE uts_match;") or die(mysql_error());
-    mysql_query("TRUNCATE uts_pinfo;") or die(mysql_error());
-    mysql_query("TRUNCATE uts_player;") or die(mysql_error());
-    mysql_query("TRUNCATE uts_rank;") or die(mysql_error());
-    mysql_query("DELETE FROM uts_weapons WHERE id > 19") or die(mysql_error());
-    mysql_query("ALTER TABLE uts_weapons AUTO_INCREMENT=20") or die(mysql_error());
-    mysql_query("TRUNCATE uts_weaponstats;") or die(mysql_error());
+    db_exec("TRUNCATE uts_chartdata;");
+    db_exec("TRUNCATE uts_events;");
+    db_exec("TRUNCATE uts_games;");
+    db_exec("TRUNCATE uts_gamestype;");
+    db_exec("TRUNCATE uts_killsmatrix;");
+    db_exec("TRUNCATE uts_match;");
+    db_exec("TRUNCATE uts_pinfo;");
+    db_exec("TRUNCATE uts_player;");
+    db_exec("TRUNCATE uts_rank;");
+    db_exec("DELETE FROM uts_weapons WHERE id > 19");
+    db_exec("ALTER TABLE uts_weapons AUTO_INCREMENT=20");
+    db_exec("TRUNCATE uts_weaponstats;");
 
     echo '<td class="grey" align="left" width="300">Done</td>
   </tr>
   <tr>
     <td class="smheading" align="center" colspan="2">
-      Database Emptied - <a href="./admin.php?key='.$_REQUEST[key].'">Go Back To Admin Page</a>
+      Database Emptied - <a href="./admin.php?key='.$_REQUEST['key'].'">Go Back To Admin Page</a>
     </td>
   </tr></table>';
 } else {
@@ -60,7 +60,7 @@ IF ($results['sure'] == "Yes" and $results['really'] == "Yes") {
     <td class="grey" align="left" width="300">Answer Was No</td>
   </tr>
   <tr>
-    <td class="smheading" align="center" colspan="2">Database Not Emptied - <a href="./admin.php?key='.$_REQUEST[key].'">Go Back To Admin Page</a></td>
+    <td class="smheading" align="center" colspan="2">Database Not Emptied - <a href="./admin.php?key='.$_REQUEST['key'].'">Go Back To Admin Page</a></td>
   </tr></table>';
 }
 
