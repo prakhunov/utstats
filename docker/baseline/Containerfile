@@ -1,0 +1,4 @@
+# LOCAL VERIFICATION ONLY: the original PHP 5.5 runtime, used to capture reference
+# HTML for diffing against the PHP 8.5 port. Vulnerable by design; never expose or deploy.
+FROM docker.io/library/php:5.5-apache
+RUN docker-php-ext-install mysql

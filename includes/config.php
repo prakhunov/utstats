@@ -1,29 +1,34 @@
 <?php
 
-include ("mysql.php");
+// Secrets come from the container environment (see .env.example); never hardcode them here.
+function utstats_env(string $name, ?string $default = null): string {
+	$value = getenv($name);
+	if ($value === false || $value === '') {
+		if ($default !== null) return $default;
+		throw new RuntimeException("Missing required environment variable $name");
+	}
+	return $value;
+}
 
 // Database connection details
-$dbname = "CHANGE_ME";
-//$hostname = "CHANGE_ME";
-$hostname = "CHANGE_ME";
-$uname = "CHANGE_ME";
-$upass = "CHANGE_ME";
+$dbname = utstats_env('UTSTATS_DB_NAME');
+$hostname = utstats_env('UTSTATS_DB_HOST', 'db');
+$dbport = (int) utstats_env('UTSTATS_DB_PORT', '3306');
+$uname = utstats_env('UTSTATS_DB_USER');
+$upass = utstats_env('UTSTATS_DB_PASS');
 
-$ut_servers = array (
-  // array(host, port, ftp_user, ftp_password, remote_log_dir),
-  array("ftp.example.com",21,"CHANGE_ME","CHANGE_ME","/Logs")
-);
-  
+// UT servers the importer pulls logs from, as a JSON array of
+// {"host","port","user","password","dir"} objects (dir MUST NOT end with a /).
+$ut_servers = json_decode(utstats_env('UTSTATS_FTP_SERVERS', '[]'), true, 4, JSON_THROW_ON_ERROR);
 
-
-// The key needed to run the import script
-$import_adminkey = "CHANGE_ME";
+// The key needed to run the import script / admin pages
+$import_adminkey = utstats_env('UTSTATS_ADMIN_KEY');
 
 // When runnning from the command-line (cron jobs):
 // The absolute path to UTStats's home directory.
 // Only needed if you're starting the importer from another directory
 // Leave emtpy if unsure
-$import_homedir = '/var/www/html/utstats/';
+$import_homedir = '/var/www/html/';
 
 // Use the MySQL temporary tables feature?
 // Available since MySQL 3.23 - requires CREATE TEMPORARY TABLE privilege since 4.0.2
@@ -152,37 +157,16 @@ $pic_enable = true;
 // FTP Connection Details
 $ftp_use = true;			      	// Whether to auto get the log files
 $ftp_interval = 1;			    	// How often in minutes to allow stats update
-$ftp_type = 'sockets';				// Which FTP module do you want to use?
-											// sockets - (recommended)
-											//           Use PHP's socket extension to connect to the FTP server
-											//           will fallback to 'pure' if no sockets available
-											// pure    - Use fsockopen() to connnect to the FTP server
-											//           should work with any php version
-											// php     - Use PHP's FTP extension (must be compiled in)
-											//           Debugging will not be available with this module and
-											//           error handling may not be as good as with the other modules
 
 $ftp_debug = false;					// Debugging output that may help you to resolve ftp problems
 
-$count_servers = sizeof($ut_servers);
-if($count_servers > 0) {
-  for ($row = 0; $row < $count_servers; $row++) {
-    if (sizeof($ut_servers[$row]) >= 5) {
-    $ftp_hostname[$row] = $ut_servers[$row][0];                             // FTP server location here
-    $ftp_port[$row] = $ut_servers[$row][1];                         // FTP Port - do not remove this even if you do not use ftp
-                                                                                        // Do not add '' around the port either
-    $ftp_uname[$row] = $ut_servers[$row][2];                           // FTP Username
-    $ftp_upass[$row] = $ut_servers[$row][3];                               // FTP Password
-    $ftp_dir[$row][] = $ut_servers[$row][4];                  // Directory of the log files - MUST NOT end with a /
-    $ftp_passive[$row]= true;                 // Use passive transfer mode for this connection?
-    $ftp_delete[$row] = true;
-    } else {
-      echo "<b>ERROR: Invalid number of FTP params configured for at least one server!<br/></b>";
-    }
-  }
-} else {
-  echo "<b>ERROR: No UT servers configured!<br/></b>";
-}
+$ftp_hostname = array_column($ut_servers, 'host');
+$ftp_port = array_map('intval', array_column($ut_servers, 'port'));
+$ftp_uname = array_column($ut_servers, 'user');
+$ftp_upass = array_column($ut_servers, 'password');
+$ftp_dir = array_map(fn ($server) => [$server['dir']], $ut_servers);
+$ftp_passive = array_fill(0, count($ut_servers), true);
+$ftp_delete = array_fill(0, count($ut_servers), true);
 
 $renderer_folder = "renderings";
 $renderer_width = 350;

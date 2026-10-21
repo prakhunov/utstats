@@ -1,0 +1,64 @@
+# Local stack: `just up`, then http://localhost:8080
+# `just baseline-up` additionally serves the original PHP 5.5 code on http://localhost:8055
+# against the same database (local verification only; never deploy it).
+name: utstats
+
+services:
+  db:
+    image: docker.io/library/mariadb:12.3
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${UTSTATS_DB_NAME}
+      MARIADB_USER: ${UTSTATS_DB_USER}
+      MARIADB_PASSWORD: ${UTSTATS_DB_PASS}
+    command: ["--character-set-server=utf8mb3", "--collation-server=utf8mb3_general_ci", "--max-allowed-packet=256M"]
+    volumes:
+      - db:/var/lib/mysql
+    ports:
+      - "127.0.0.1:3307:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      retries: 30
+
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Containerfile
+    env_file: .env
+    volumes:
+      - .:/var/www/html:ro,z
+      # Writable runtime state over the read-only source mount
+      - ./.verify/data/logs:/var/www/html/logs:z
+      - ./.verify/data/renderings:/var/www/html/renderings:z
+    depends_on:
+      db:
+        condition: service_healthy
+
+  caddy:
+    image: docker.io/library/caddy:2
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro,z
+      - .:/var/www/html:ro,z
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      - php
+
+  baseline:
+    profiles: ["baseline"]
+    build:
+      context: docker/baseline
+      dockerfile: Containerfile
+    env_file: .env
+    volumes:
+      - ./.verify/baseline:/var/www/html:z
+    ports:
+      - "127.0.0.1:8055:80"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db:
+  data:

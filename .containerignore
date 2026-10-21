@@ -1,0 +1,12 @@
+.git
+.env
+.envrc
+.direnv
+.verify
+vendor
+logs
+renderings
+flake.nix
+flake.lock
+docker/baseline
+*.mmdb

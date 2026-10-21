@@ -1,10 +1,15 @@
-logs
-pgaming_1_commandxle_replaced.sql
-pgaming_1.sql
+# Secrets for the containers (template: .env.example)
+.env
 
-# Secrets: real config lives only on the host; template is includes/config.php.example
-includes/config.php
-
-# Runtime output (renderer charts, GeoIP database)
+# Runtime state (mounted as volumes in containers)
+logs/
 renderings/
 GeoIP.dat
+*.mmdb
+logs/ftptimestamp.txt
+
+# Composer
+vendor/
+
+# Local verification artifacts
+.verify/

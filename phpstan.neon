@@ -1,0 +1,15 @@
+# Legacy include-based app: pages share globals, so start at level 0
+# (unknown functions/classes, wrong argument counts, undefined constants).
+parameters:
+    level: 0
+    phpVersion: 80500
+    paths:
+        - .
+    excludePaths:
+        - vendor
+        - assets
+        - logs
+        - .verify
+    fileExtensions:
+        - php
+        - inc

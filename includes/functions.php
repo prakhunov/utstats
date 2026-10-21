@@ -1,53 +1,20 @@
 <?php
-// Connect to database
-$dbh = mysql_connect($hostname, $uname, $upass);
-mysql_query("set names 'utf8'",$dbh);
-mysql_select_db($dbname, $dbh);
+require_once(__DIR__ . '/db.php');
 
-// Error reporting
-// error_reporting(E_ALL & ~E_NOTICE);
-// error_reporting(-1); // Turn on all errors
-error_reporting(0); // Turn off all errors
-@ini_set('track_errors', '1');
+// Errors are logged (php.ini sends them to stderr), never shown to visitors.
+set_exception_handler(function (Throwable $e): never {
+	error_log((string) $e);
+	if (!headers_sent()) http_response_code(500);
+	echo PHP_SAPI === 'cli' ? "Internal error: {$e->getMessage()}\n" : '<p>Internal error.</p>';
+	exit(1);
+});
 
 // Image Rotation Code
-$charimages[] = "char1.jpg";
-$charimages[] = "char2.jpg";
-$charimages[] = "char3.jpg";
-$charimages[] = "char4.jpg";
-$charimages[] = "char5.jpg";
-$charimages[] = "char6.jpg";
-$charimages[] = "char7.jpg";
-$charimages[] = "char8.jpg";
-$charimages[] = "char9.jpg";
-$charimages[] = "char10.jpg";
-$charimages[] = "char11.jpg";
-$charimages[] = "char12.jpg";
-$charimages[] = "char13.jpg";
-$charimages[] = "char14.jpg";
-
-srand(microtime() * 1000);
-$charimg = $charimages[rand(0, count($charimages)-1)];
+$charimages = array_map(fn (int $n) => "char$n.jpg", range(1, 14));
+$charimg = $charimages[random_int(0, count($charimages) - 1)];
 
 // Two letter codes and their corresponding country names
 require_once(dirname(__FILE__) .'/countries.php');
-
-// Addslashes if magic_quotes are off
-function my_addslashes($data) {
-  if (!get_magic_quotes_gpc()) {
-    $data = addslashes($data);
-  }
-  return $data;
-}
-
-function my_stripslashes($data) {
-  if (!get_magic_quotes_gpc()) {
-    $data = $data;
-  } else {
-    $data = stripslashes($data);
-  }
-  return $data;
-}
 
 function my_fgets($fp, $length = -1, $compression = 'none') {
   static $use_fgets = NULL;

@@ -1,17 +1,8 @@
 <?php 
 
-//require_once('config.php');
+DeBugMessage("Execute: includes/ftp.php");
 
-DeBugMessage("Execute: includes/ftp.php\nUse ftp_type: $ftp_type");
-
-if ($ftp_type == 'php') {
-	require(dirname(__FILE__) . '/ftp_class_native.php');
-
-} else {
-
-	require(dirname(__FILE__) . '/ftp_class.php');
-
-}
+require(dirname(__FILE__) . '/ftp_class_native.php');
 
 
 
@@ -39,11 +30,6 @@ function ftp_error($message) {
 
 		if($desc) $tmp=' ('.$desc.')'; else $tmp='';
 
-		if (strpos($msg, 'socket set') === 0) {
-
-			$tmp .= "\nTry disabling the usage of sockets (set \$ftp_type = 'pure'; in config.php)";
-
-		}
 
 		tablerow('Error details:', $fctname.': '.$msg.$tmp, true);
 
@@ -333,38 +319,17 @@ function ftpupdate()
 	
 
 	if (!$g_ftp_error) {
-
-		$file = fopen('includes/ftptimestamp.php', 'wb+', 1);
-
-		fwrite($file, time());
-
-		fclose($file);
-
+		file_put_contents(FTP_TIMESTAMP_FILE, (string) time());
 	}
 
 }
 
 
 
+// Runtime state: lives in logs/ (a writable volume), never in the code tree.
+const FTP_TIMESTAMP_FILE = 'logs/ftptimestamp.txt';
 
-
-$fname = 'includes/ftptimestamp.php';
-
-$timestamp = 0;
-
-
-
-if(file_exists($fname))
-
-{
-
-	$file = fopen($fname, 'rb');
-
-	$timestamp = trim(my_fgets($file));
-
-	fclose($file);
-
-}
+$timestamp = is_file(FTP_TIMESTAMP_FILE) ? (int) trim(file_get_contents(FTP_TIMESTAMP_FILE)) : 0;
 
 
 
@@ -374,7 +339,7 @@ if(!$timestamp || (time() - $timestamp) > $ftp_interval*60) {
 
 		if ($html) echo '<p class="pages">';
 
-		echo "Last FTP update more than $ftp_interval minutes ago, starting update ($ftp_type): \n";
+		echo "Last FTP update more than $ftp_interval minutes ago, starting update: \n";
 
 		if ($html) echo '</p>';
 
