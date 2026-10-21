@@ -1,25 +1,31 @@
 <?php
-function row($name = NULL, $amount = 0, $multiplier = 0, $extra_multiplier = true) {
-	static $i = 0;
-	if (empty($name)) {
-		echo '<tr><td colspan="4" height="3"></td></tr>';
-		$i = 0;
-		return(0);
-	}
-	$i++;
-	$class = ($i%2) ? 'grey' : 'grey2';
-	if ($extra_multiplier) $multiplier *= 600;
-	$points = $amount * $multiplier;
-	
-	$d_points = get_dp($points);
-	if (((int) $points) % 1 == 0) $d_points = ceil($points); 
-	echo '<tr>';
-	echo '<td>'. htmlentities($name) .'</td>';
-	echo '<td align="center">'. $amount .'</td>';
-	echo '<td align="center">'. $multiplier .'</td>';
-	echo '<td align="right">'. $d_points .'</td>';
-	echo '</tr>';
-	return($points);
+
+function row($name = null, $amount = 0, $multiplier = 0, $extra_multiplier = true)
+{
+    static $i = 0;
+    if (empty($name)) {
+        echo '<tr><td colspan="4" height="3"></td></tr>';
+        $i = 0;
+        return(0);
+    }
+    $i++;
+    $class = ($i % 2) ? 'grey' : 'grey2';
+    if ($extra_multiplier) {
+        $multiplier *= 600;
+    }
+    $points = $amount * $multiplier;
+
+    $d_points = get_dp($points);
+    if (((int) $points) % 1 == 0) {
+        $d_points = ceil($points);
+    }
+    echo '<tr>';
+    echo '<td>'. htmlentities($name) .'</td>';
+    echo '<td align="center">'. $amount .'</td>';
+    echo '<td align="center">'. $multiplier .'</td>';
+    echo '<td align="right">'. $d_points .'</td>';
+    echo '</tr>';
+    return($points);
 }
 
 $pid = isset($pid) ? $pid : ($_GET['pid'] ?? '');
@@ -30,28 +36,28 @@ $gid = preg_replace('/\D/', '', (string) $gid);
 
 $r_info = db_row("SELECT name, country, banned FROM uts_pinfo WHERE id = ?", [$pid]);
 if (!$r_info) {
-	echo "Player not found";
-	include("includes/footer.php");
-	exit;
+    echo "Player not found";
+    include("includes/footer.php");
+    exit;
 }
 
 if ($r_info['banned'] == 'Y') {
-	if (isset($is_admin) and $is_admin) {
-		echo "Warning: Banned player - Admin override<br>";
-	} else {
-		echo "Sorry, this player has been banned!";
-		include("includes/footer.php");
-		exit;
-	}
+    if (isset($is_admin) and $is_admin) {
+        echo "Warning: Banned player - Admin override<br>";
+    } else {
+        echo "Sorry, this player has been banned!";
+        include("includes/footer.php");
+        exit;
+    }
 }
 
 $playername = $r_info['name'];
 
 $r_game = db_row("SELECT name, gamename FROM uts_games WHERE id = ?", [$gid]);
 if (!$r_game) {
-	echo "Game ($gid) not found.";
-	include("includes/footer.php");
-	exit;
+    echo "Game ($gid) not found.";
+    include("includes/footer.php");
+    exit;
 }
 $real_gamename = $r_game['gamename'];
 
@@ -86,62 +92,61 @@ echo '
 	</tr>';
 
 if ($real_gamename == "Bunny Track") {
-	$sql_btmaprank = "SELECT e.col2 AS no, COUNT(e.col2) AS count FROM uts_events AS e, uts_player AS p WHERE p.pid = ? AND p.gid = ? AND p.playerid = e.playerid AND e.matchid = p.matchid AND e.col2 > 0 AND e.col2 <= 5 GROUP BY e.col2";
-	$q_btmaprank = db_query($sql_btmaprank, [$pid, $gid]);
-	$mapranks = array();
-	$t_points = 0;
-	while($r_btmaprank = $q_btmaprank->fetch(PDO::FETCH_ASSOC)) {
-		$mapranks[$r_btmaprank['no']] = $r_btmaprank['count'];
-	}
+    $sql_btmaprank = "SELECT e.col2 AS no, COUNT(e.col2) AS count FROM uts_events AS e, uts_player AS p WHERE p.pid = ? AND p.gid = ? AND p.playerid = e.playerid AND e.matchid = p.matchid AND e.col2 > 0 AND e.col2 <= 5 GROUP BY e.col2";
+    $q_btmaprank = db_query($sql_btmaprank, [$pid, $gid]);
+    $mapranks = [];
+    $t_points = 0;
+    while ($r_btmaprank = $q_btmaprank->fetch(PDO::FETCH_ASSOC)) {
+        $mapranks[$r_btmaprank['no']] = $r_btmaprank['count'];
+    }
 
-	$t_points += row('First place', (!empty($mapranks[1]) ? $mapranks[1] : 0), 10);
-	$t_points += row('Second place', (!empty($mapranks[2]) ? $mapranks[2] : 0), 8);
-	$t_points += row('Third place', (!empty($mapranks[3]) ? $mapranks[3] : 0), 6);
-	$t_points += row('Fourth place', (!empty($mapranks[4]) ? $mapranks[4] : 0), 4);
-	$t_points += row('Fifth place', (!empty($mapranks[5]) ? $mapranks[5] : 0), 2);
-}
-else {
-	$t_points = 0;
-	$t_points += row('Frags', $r_cnt['frags'], 0.5);
-	$t_points += row('Deaths', $r_cnt['deaths'], -0.25);
-	$t_points += row('Suicides', $r_cnt['suicides'], -0.25 );
-	$t_points += row('Teamkills', $r_cnt['teamkills'], -2);
-echo '<tr><td colspan=4 class="weapspacer"></td></tr>';
-	$t_points += row('Flag Takes', $r_cnt['flag_taken'], 1);
-	$t_points += row('Flag Pickups', $r_cnt['flag_pickedup'], 1);
-	$t_points += row('Flag Returns', $r_cnt['flag_return'], 1);
-	$t_points += row('Flag Captures', $r_cnt['flag_capture'], 10);
-	$t_points += row('Flag Covers', $r_cnt['flag_cover'], 3);
-	$t_points += row('Flag Seals', $r_cnt['flag_seal'], 2);
-	$t_points += row('Flag Assists', $r_cnt['flag_assist'], 5);
-	$t_points += row('Flag Kills', $r_cnt['flag_kill'], 2);
-echo '<tr><td colspan=4 class="weapspacer"></td></tr>';
-	$t_points += row('Controlpoint Captures', $r_cnt['dom_cp'], 10);
-	if (strpos($real_gamename, 'Assault') !== false) {
-		$t_points += row('Assault Objectives', $r_cnt['ass_obj'], 10);
-	} else {
-		$t_points += row('Assault Objectives', 0, 10);
-	}
-	if (strpos($real_gamename, 'JailBreak') !== false) {
-		$t_points += row('Team Releases', $r_cnt['ass_obj'], 1.5);
-	} else {
-		$t_points += row('Team Releases', 0, 1.5);
-	} 
-echo '<tr><td colspan=4 class="weapspacer"></td></tr>';
-	$t_points += row('Double Kills', $r_cnt['spree_double'], 1);
-	$t_points += row('Multi Kills', $r_cnt['spree_multi'], 1);
-	$t_points += row('Ultra Kills', $r_cnt['spree_ultra'], 1);
-	$t_points += row('Monster Kills', $r_cnt['spree_monster'], 2);
-echo '<tr><td colspan=4 class="weapspacer"></td></tr>';
-	$t_points += row('Killing Sprees', $r_cnt['spree_kill'], 1);
-	$t_points += row('Rampages', $r_cnt['spree_rampage'], 1);
-	$t_points += row('Dominatings', $r_cnt['spree_dom'], 1.5);
-	$t_points += row('Unstoppables', $r_cnt['spree_uns'], 2);
-	$t_points += row('Godlikes', $r_cnt['spree_god'], 3);
+    $t_points += row('First place', (!empty($mapranks[1]) ? $mapranks[1] : 0), 10);
+    $t_points += row('Second place', (!empty($mapranks[2]) ? $mapranks[2] : 0), 8);
+    $t_points += row('Third place', (!empty($mapranks[3]) ? $mapranks[3] : 0), 6);
+    $t_points += row('Fourth place', (!empty($mapranks[4]) ? $mapranks[4] : 0), 4);
+    $t_points += row('Fifth place', (!empty($mapranks[5]) ? $mapranks[5] : 0), 2);
+} else {
+    $t_points = 0;
+    $t_points += row('Frags', $r_cnt['frags'], 0.5);
+    $t_points += row('Deaths', $r_cnt['deaths'], -0.25);
+    $t_points += row('Suicides', $r_cnt['suicides'], -0.25);
+    $t_points += row('Teamkills', $r_cnt['teamkills'], -2);
+    echo '<tr><td colspan=4 class="weapspacer"></td></tr>';
+    $t_points += row('Flag Takes', $r_cnt['flag_taken'], 1);
+    $t_points += row('Flag Pickups', $r_cnt['flag_pickedup'], 1);
+    $t_points += row('Flag Returns', $r_cnt['flag_return'], 1);
+    $t_points += row('Flag Captures', $r_cnt['flag_capture'], 10);
+    $t_points += row('Flag Covers', $r_cnt['flag_cover'], 3);
+    $t_points += row('Flag Seals', $r_cnt['flag_seal'], 2);
+    $t_points += row('Flag Assists', $r_cnt['flag_assist'], 5);
+    $t_points += row('Flag Kills', $r_cnt['flag_kill'], 2);
+    echo '<tr><td colspan=4 class="weapspacer"></td></tr>';
+    $t_points += row('Controlpoint Captures', $r_cnt['dom_cp'], 10);
+    if (strpos($real_gamename, 'Assault') !== false) {
+        $t_points += row('Assault Objectives', $r_cnt['ass_obj'], 10);
+    } else {
+        $t_points += row('Assault Objectives', 0, 10);
+    }
+    if (strpos($real_gamename, 'JailBreak') !== false) {
+        $t_points += row('Team Releases', $r_cnt['ass_obj'], 1.5);
+    } else {
+        $t_points += row('Team Releases', 0, 1.5);
+    }
+    echo '<tr><td colspan=4 class="weapspacer"></td></tr>';
+    $t_points += row('Double Kills', $r_cnt['spree_double'], 1);
+    $t_points += row('Multi Kills', $r_cnt['spree_multi'], 1);
+    $t_points += row('Ultra Kills', $r_cnt['spree_ultra'], 1);
+    $t_points += row('Monster Kills', $r_cnt['spree_monster'], 2);
+    echo '<tr><td colspan=4 class="weapspacer"></td></tr>';
+    $t_points += row('Killing Sprees', $r_cnt['spree_kill'], 1);
+    $t_points += row('Rampages', $r_cnt['spree_rampage'], 1);
+    $t_points += row('Dominatings', $r_cnt['spree_dom'], 1.5);
+    $t_points += row('Unstoppables', $r_cnt['spree_uns'], 2);
+    $t_points += row('Godlikes', $r_cnt['spree_god'], 3);
 };
-	
+
 echo '<tr><td colspan=4 class="weapspacer"></td></tr>';
-	
+
 echo '<tr>	<td class="smheading">Total</td>
 				<td  class="smheading" align="center"></td>
 				<td  class="smheading" align="center"></td>
@@ -155,25 +160,25 @@ echo '<tr>	<td>Divided by game minutes</td>
 				<td  align="center"></td>
 				<td  align="right">'. get_dp($t_points) .'</td>
 		</tr>';
-		
-IF ($gametime < 10) {
-	$t_points += row('Penalty for playing < 10 minutes', get_dp($t_points), 0, false);
+
+if ($gametime < 10) {
+    $t_points += row('Penalty for playing < 10 minutes', get_dp($t_points), 0, false);
 }
 
-IF ($gametime >= 10 && $gametime < 50) {
-	$t_points += row('Penalty for playing < 50 minutes', get_dp($t_points), -0.75, false);
+if ($gametime >= 10 && $gametime < 50) {
+    $t_points += row('Penalty for playing < 50 minutes', get_dp($t_points), -0.75, false);
 }
 
-IF ($gametime >= 50 && $gametime < 100) {
-	$t_points += row('Penalty for playing < 100 minutes', get_dp($t_points), -0.5, false);
+if ($gametime >= 50 && $gametime < 100) {
+    $t_points += row('Penalty for playing < 100 minutes', get_dp($t_points), -0.5, false);
 }
 
-IF ($gametime >= 100 && $gametime < 200) {
-	$t_points += row('Penalty for playing < 200 minutes', get_dp($t_points), -0.3, false);
+if ($gametime >= 100 && $gametime < 200) {
+    $t_points += row('Penalty for playing < 200 minutes', get_dp($t_points), -0.3, false);
 }
 
-IF ($gametime >= 200 && $gametime < 300) {
-	$t_points += row('Penalty for playing < 300 minutes', get_dp($t_points), -0.15, false);
+if ($gametime >= 200 && $gametime < 300) {
+    $t_points += row('Penalty for playing < 300 minutes', get_dp($t_points), -0.15, false);
 }
 echo '<tr><td colspan=4 class="weapspacer"></td></tr>';
 echo '<tr>	<td class="totals"><strong>Ranking points</strong></td>
@@ -182,4 +187,3 @@ echo '<tr>	<td class="totals"><strong>Ranking points</strong></td>
 				<td class="totals" align="right"><strong>'. get_dp($t_points) .'</strong></td>
 		</tr>';
 echo '</tbody></table>';
-?>

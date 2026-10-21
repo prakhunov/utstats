@@ -1,14 +1,18 @@
 <?php
-if (empty($import_adminkey) or isset($_REQUEST['import_adminkey']) or $import_adminkey != $adminkey) die('bla');
+
+if (empty($import_adminkey) or isset($_REQUEST['import_adminkey']) or $import_adminkey != $adminkey) {
+    die('bla');
+}
 
 // mysql_query() returned false on error; PDO throws instead.
-function check_exec($query) {
-	try {
-		db_exec($query);
-		return true;
-	} catch (PDOException $e) {
-		return false;
-	}
+function check_exec($query)
+{
+    try {
+        db_exec($query);
+        return true;
+    } catch (PDOException $e) {
+        return false;
+    }
 }
 
 echo '
@@ -26,69 +30,58 @@ echo '
 	</tr>';
 
 // directories
-foreach (array("logs", "logs/ac", "logs/backup", "logs/utdc", "logs/ace") as $dir)
-{
-	echo '
+foreach (["logs", "logs/ac", "logs/backup", "logs/utdc", "logs/ace"] as $dir) {
+    echo '
 	<tr>
 		<td class="smheading" align="left" width="350">', $dir, '</td>';
-	if (!file_exists($dir)) {
-		if (mkdir($dir, 0777)) {
-		      echo '
+    if (!file_exists($dir)) {
+        if (mkdir($dir, 0777)) {
+            echo '
 			    <td class="warn" align="left" width="200">Created</td></tr>';
-		}
-		else {
-		      echo '
+        } else {
+            echo '
 			    <td class="warn" align="left" width="200">Not found!</td></tr>';
-		}
-	}
-	else if (!is_dir($dir)) {
-		echo '
+        }
+    } elseif (!is_dir($dir)) {
+        echo '
 		      <td class="warn" align="left" width="200">Not a directory!</td></tr>';
-	}
-	else if (!is_writable($dir)) {
-		if (@chmod($dir, 0777)) {
-			echo '
+    } elseif (!is_writable($dir)) {
+        if (@chmod($dir, 0777)) {
+            echo '
 			      <td class="grey" align="left" width="200">SET</td></tr>';
-		}
-		else {
-			echo '
+        } else {
+            echo '
 			      <td class="warn" align="left" width="200">Incorrect access rights: ' , substr(sprintf('%o', fileperms($dir)), -4) , '</td></tr>';
-		}
-	}
-	else {
-		echo '
+        }
+    } else {
+        echo '
 		      <td class="grey" align="left" width="200">OK</td></tr>';
-	}
+    }
 }
 
 // files:
-foreach (array("logs/ftptimestamp.txt") as $file)
-{
-	echo '
+foreach (["logs/ftptimestamp.txt"] as $file) {
+    echo '
 	<tr>
 		<td class="smheading" align="left" width="350">', $file, '</td>';
-	if (!file_exists($file)) {
-		echo '
+    if (!file_exists($file)) {
+        echo '
 		      <td class="warn" align="left" width="200">Not found!</td></tr>';
-	}
-	else if (!is_file($file)) {
-		echo '
+    } elseif (!is_file($file)) {
+        echo '
 		      <td class="warn" align="left" width="200">Not a file!</td></tr>';
-	}
-	else if (!is_writable($file)) {
-		if (@chmod($file, 0777)) {
-			echo '
+    } elseif (!is_writable($file)) {
+        if (@chmod($file, 0777)) {
+            echo '
 			      <td class="grey" align="left" width="200">SET</td></tr>';
-		}
-		else {
-			echo '
+        } else {
+            echo '
 			      <td class="warn" align="left" width="200">Incorrect access rights: ' , substr(sprintf('%o', fileperms($file)), -4) , '</td></tr>';
-		}
-	}
-	else {
-		echo '
+        }
+    } else {
+        echo '
 		      <td class="grey" align="left" width="200">OK</td></tr>';
-	}
+    }
 }
 
 echo '
@@ -338,28 +331,26 @@ CREATE TABLE `uts_charttypes` (
 ";
 
 foreach ($create_table as $table => $query) {
-	echo '
+    echo '
 	<tr>
 		<td class="smheading" align="left" width="350">', $table, '</td>';
-	if (db_count("SHOW TABLES LIKE ?", [$table]) == 1) {
-		// database exists, check columns
-		echo '
+    if (db_count("SHOW TABLES LIKE ?", [$table]) == 1) {
+        // database exists, check columns
+        echo '
 		      <td class="grey" align="left" width="200">OK</td></tr>';
-	}
-	else {
-		if (check_exec($query)) {
-			echo '
+    } else {
+        if (check_exec($query)) {
+            echo '
 		      <td class="grey" align="left" width="200">Created</td></tr>';
-		}
-		else {
-			echo '
+        } else {
+            echo '
 		      <td class="warn" align="left" width="200">Not found!</td></tr>';
-		}
-	}
+        }
+    }
 }
 echo '
 	</tbody></table><br>';
-	
+
 // check graph types - have to use id since no other unique key except composite ones.
 $create_charttype['90'] = "INSERT INTO `uts_charttypes` VALUES (90, 'Frags Team', 'teamScore', 'team', 'title: {\ntext: ''Battle for #1''\n},\ncredits: {\nenabled: false\n},			\nlegend: {\nenabled: false\n},			\nxAxis: {\ntitle: '''',\nmin: 0\n},		   \nyAxis: {\ntitle: '''',\nmin: 0\n},\nplotOptions : {\n	line : {\n		stickyTracking : false\n	}\n}', 'line', 1);";
 $create_charttype['20'] = "INSERT INTO `uts_charttypes` VALUES (20, 'Domination', 'teamScore', 'team', 'title: {\ntext: ''Score''\n},\ncredits: {\nenabled: false\n},			\nlegend: {\nenabled: false\n},			\nxAxis: {\ntitle: '''',\nmin: 0\n},		   \nyAxis: {\ntitle: '''',\nmin: 0\n},\nplotOptions : {\n	line : {\n		stickyTracking : false\n	}\n}', 'line', 1);";
@@ -384,31 +375,28 @@ echo '
 		<td class="smheading" align="center" height="25" width="550" colspan="2">Checking all graphs types are in database</td>
 	</tr>';
 if (db_count("SHOW TABLES LIKE 'uts_charttypes'") != 1) {
-	// database exists, check columns
-	echo '
+    // database exists, check columns
+    echo '
 	      <td class="warn" align="left" width="550" colspan = "2">Table uts_charttypes does not exist!</td></tr>';
-}
-else {
-	foreach ($create_charttype as $charttype => $query) {
-		echo '
+} else {
+    foreach ($create_charttype as $charttype => $query) {
+        echo '
 		<tr>
 			<td class="smheading" align="left" width="350">', $charttype, '</td>';
-		if (db_count("SELECT id FROM uts_charttypes WHERE id = ? LIMIT 0,1", [$charttype]) == 1) {
-			// database exists, check columns
-			echo '
+        if (db_count("SELECT id FROM uts_charttypes WHERE id = ? LIMIT 0,1", [$charttype]) == 1) {
+            // database exists, check columns
+            echo '
 			      <td class="grey" align="left" width="200">OK</td></tr>';
-		}
-		else {
-			if (check_exec($query)) {
-				echo '
+        } else {
+            if (check_exec($query)) {
+                echo '
 			      <td class="grey" align="left" width="200">Added</td></tr>';
-			}
-			else {
-				echo '
+            } else {
+                echo '
 			      <td class="warn" align="left" width="200">Not found!</td></tr>';
-			}
-		}
-	}
+            }
+        }
+    }
 }
 echo '
 	</tbody></table><br>';
@@ -437,31 +425,28 @@ echo '
 		<td class="smheading" align="center" height="25" width="550" colspan="2">Checking supported weapons</td>
 	</tr>';
 if (db_count("SHOW TABLES LIKE 'uts_weapons'") != 1) {
-	// database exists, check columns
-	echo '
+    // database exists, check columns
+    echo '
 	      <td class="warn" align="left" width="550" colspan = "2">Table uts_weapons does not exist!</td></tr>';
-}
-else {
-	foreach ($create_weapon as $weapon => $query) {
-		echo '
+} else {
+    foreach ($create_weapon as $weapon => $query) {
+        echo '
 		<tr>
 			<td class="smheading" align="left" width="350">', $weapon, '</td>';
-		if (db_count("SELECT id FROM uts_weapons WHERE name = ? LIMIT 0,1", [$weapon]) == 1) {
-			// database exists, check columns
-			echo '
+        if (db_count("SELECT id FROM uts_weapons WHERE name = ? LIMIT 0,1", [$weapon]) == 1) {
+            // database exists, check columns
+            echo '
 			      <td class="grey" align="left" width="200">OK</td></tr>';
-		}
-		else {
-			if (check_exec($query)) {
-				echo '
+        } else {
+            if (check_exec($query)) {
+                echo '
 			      <td class="grey" align="left" width="200">Added</td></tr>';
-			}
-			else {
-				echo '
+            } else {
+                echo '
 			      <td class="warn" align="left" width="200">Not found!</td></tr>';
-			}
-		}
-	}
+            }
+        }
+    }
 }
 echo '
 	</tbody></table><br>';
@@ -472,31 +457,28 @@ echo '
 		<td class="smheading" align="center" height="25" width="550" colspan="2">Checking data</td>
 	</tr>';
 
-	echo '
+echo '
 	<tr>
 		<td class="smheading" align="left" width="350">Fix BT cap times</td>';
 
-	try {
-		$affected = db_exec("UPDATE uts_events SET col3 = ROUND(CEILING((col3-1)*100/1.1) / 100, 2), col1 = 'btcap' WHERE col1 = 'cap'");
-	} catch (PDOException $e) {
-		$affected = -1;
-	}
+try {
+    $affected = db_exec("UPDATE uts_events SET col3 = ROUND(CEILING((col3-1)*100/1.1) / 100, 2), col1 = 'btcap' WHERE col1 = 'cap'");
+} catch (PDOException $e) {
+    $affected = -1;
+}
 
-	if ($affected == -1) {
-	echo '
+if ($affected == -1) {
+    echo '
 	      <td class="error" align="left" width="200">Failed</td></tr>
 	<table>';
-	}
-	else {
-	echo '
+} else {
+    echo '
 	      <td class="grey" align="left" width="200">Updated ' . $affected . ' rows.</td></tr>
 	<table><br>';
-	}
+}
 
 echo '
 	<table class = "box" border="0" cellpadding="1" cellspacing="2" width="720">
 	<tbody>';
 echo '<tr><td class="smheading" align="center" colspan="4"><a class="grey" href="./admin.php?key='.htmlspecialchars($_REQUEST['key']).'">Go Back To Admin Page</a></td></tr>';
 echo '</tbody></table>';
-
-?>

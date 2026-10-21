@@ -1,14 +1,17 @@
 <?php
-if (empty($import_adminkey) or isset($_REQUEST['import_adminkey']) or $import_adminkey != $adminkey) die('bla');
+
+if (empty($import_adminkey) or isset($_REQUEST['import_adminkey']) or $import_adminkey != $adminkey) {
+    die('bla');
+}
 
 if (isset($_REQUEST['submit'])) {
-	foreach($_REQUEST['image'] as $id => $bla) {
-		db_exec("	UPDATE	uts_weapons
+    foreach ($_REQUEST['image'] as $id => $bla) {
+        db_exec("	UPDATE	uts_weapons
 								SET	image = ?,
 										sequence = ?,
 										hide = ?
 								WHERE	id =  ?;", [$_REQUEST['image'][$id], $_REQUEST['sequence'][$id] ?? '', (isset($_REQUEST['hide'][$id]) ? 'Y' : 'N'), $id]);
-	}
+    }
 }
 
 echo'<br><table border="0" cellpadding="0" cellspacing="0" width="600">
@@ -30,19 +33,21 @@ echo'<br><table border="0" cellpadding="0" cellspacing="0" width="600">
 $sql_weapons = "SELECT id, name, image, sequence, hide FROM uts_weapons ORDER BY sequence ASC;";
 $i = 0;
 foreach (db_all($sql_weapons) as $r_weapons) {
-	$i++;
-	$class = ($i%2) ? 'grey' : 'grey2';
-	echo '<tr>';
-	echo '<td class="'.$class.'">'.htmlentities($r_weapons['name']).'</td>';
-	echo '<td class="'.$class.'">';
-	echo '<table border="0" cellspacing="0" cellpadding="0" width="100%"><tr><td width="60%">';
-	echo '<input class="searchform" type="text" name="image['.$r_weapons['id'].']" value="'.$r_weapons['image'].'">';
-	echo '</td><td width="40%" align="center">';
-	if (!empty($r_weapons['image'])) echo ' <img src="assets/images/weapons/'. $r_weapons['image'] .'" border="0">';
-	echo' </td></tr></table></td>';
-	echo '<td class="'.$class.'"><input class="searchform" type="text" name="sequence['.$r_weapons['id'].']" value="'.$r_weapons['sequence'].'" size="3" maxlength="3"></td>';
-	echo '<td class="'.$class.'"><input class="searchform" type="checkbox" name="hide['.$r_weapons['id'].']" '.($r_weapons['hide'] == 'Y' ? 'checked' : '').'></td>';
-	echo '</tr>';
+    $i++;
+    $class = ($i % 2) ? 'grey' : 'grey2';
+    echo '<tr>';
+    echo '<td class="'.$class.'">'.htmlentities($r_weapons['name']).'</td>';
+    echo '<td class="'.$class.'">';
+    echo '<table border="0" cellspacing="0" cellpadding="0" width="100%"><tr><td width="60%">';
+    echo '<input class="searchform" type="text" name="image['.$r_weapons['id'].']" value="'.$r_weapons['image'].'">';
+    echo '</td><td width="40%" align="center">';
+    if (!empty($r_weapons['image'])) {
+        echo ' <img src="assets/images/weapons/'. $r_weapons['image'] .'" border="0">';
+    }
+    echo' </td></tr></table></td>';
+    echo '<td class="'.$class.'"><input class="searchform" type="text" name="sequence['.$r_weapons['id'].']" value="'.$r_weapons['sequence'].'" size="3" maxlength="3"></td>';
+    echo '<td class="'.$class.'"><input class="searchform" type="checkbox" name="hide['.$r_weapons['id'].']" '.($r_weapons['hide'] == 'Y' ? 'checked' : '').'></td>';
+    echo '</tr>';
 }
 
 echo '<tr>';
@@ -53,5 +58,3 @@ echo'</form>
 	<tr>
 	<td class="smheading" align="center" colspan="4"><a class="grey" href="./admin.php?key='.$_REQUEST['key'].'">Go Back To Admin Page</a></td>
 </tr></table>';
-
-?>

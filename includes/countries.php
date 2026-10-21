@@ -1,5 +1,6 @@
 <?php
-$a_countries = array(
+
+$a_countries = [
             'af' => 'Afghanistan',
             'al' => 'Albania, People\'s Socialist Republic of',
             'dz' => 'Algeria, People\'s Democratic Republic of',
@@ -239,6 +240,5 @@ $a_countries = array(
             'yu' => 'Yugoslavia, Socialist Federal Republic of',
             'zm' => 'Zambia, Republic of',
             'zw' => 'Zimbabwe',
-				'xx' => 'Unknown country'
-        );
-?>
+                'xx' => 'Unknown country'
+        ];

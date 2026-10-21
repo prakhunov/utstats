@@ -7,77 +7,81 @@ $pid = preg_replace('/\D/', '', (string) $pid);
 $r_info = db_row("SELECT name, country, banned FROM uts_pinfo WHERE id = ?", [$pid]);
 
 if (!$r_info) {
-  echo "Player not found";
-  include("includes/footer.php");
-  exit;
+    echo "Player not found";
+    include("includes/footer.php");
+    exit;
 }
 
 if ($r_info['banned'] == 'Y') {
-  if (isset($is_admin) and $is_admin) {
-    echo "Warning: Banned player - Admin override<br>";
-  } else {
-    echo "Sorry, this player has been banned!";
-    include("includes/footer.php");
-    exit;
-  }
+    if (isset($is_admin) and $is_admin) {
+        echo "Warning: Banned player - Admin override<br>";
+    } else {
+        echo "Sorry, this player has been banned!";
+        include("includes/footer.php");
+        exit;
+    }
 }
 
 $playername = $r_info['name'];
 
 if (isset($_GET['togglewatch'])) {
-  $status = ToggleWatchStatus($pid);
-  include('includes/header.php');
+    $status = ToggleWatchStatus($pid);
+    include('includes/header.php');
 
-  if ($status == 1) {
-    echo "<div class='watchlistbox'><h2>Added!</h2><span class='watchlist'>" .htmlentities($playername)." has been added to your watchlist</span>";
-  } else {
-    echo "<div class='watchlistbox'><h2>Removed!</h2><span class='watchlist'>" .htmlentities($playername) ." has been removed from your watchlist</span>";
-  }
+    if ($status == 1) {
+        echo "<div class='watchlistbox'><h2>Added!</h2><span class='watchlist'>" .htmlentities($playername)." has been added to your watchlist</span>";
+    } else {
+        echo "<div class='watchlistbox'><h2>Removed!</h2><span class='watchlist'>" .htmlentities($playername) ." has been removed from your watchlist</span>";
+    }
 
-  echo "<br>";
-  $target = ($PHP_SELF ?? '') .'?p=pinfo&amp;pid='. $pid;
-  echo '<span class="watchlist">Do you want to go to <a href="'. $target .'">'. htmlentities($playername) .'\'s page</a> or go to your Watchlist?.<br><a class="navCTA" href="'.$target.'" role="button">Player page</a> <a class="navCTA" href="?p=watchlist" role="button">Watchlist</a>';
-  echo '<div class="darksearch">Or search another player:<br>
+    echo "<br>";
+    $target = ($PHP_SELF ?? '') .'?p=pinfo&amp;pid='. $pid;
+    echo '<span class="watchlist">Do you want to go to <a href="'. $target .'">'. htmlentities($playername) .'\'s page</a> or go to your Watchlist?.<br><a class="navCTA" href="'.$target.'" role="button">Player page</a> <a class="navCTA" href="?p=watchlist" role="button">Watchlist</a>';
+    echo '<div class="darksearch">Or search another player:<br>
     <span><input type="text" class="search square" placeholder="Search player..." name="name"><input class="searchbutton" type="submit" value="Search"></span></div></div>';
-  return;
+    return;
 }
 
 if (isset($_GET['pics'])) {
-  $gid = $_GET['gid'] ?? '';
-  $gid = preg_replace("/\D/", "", (string) $gid);
+    $gid = $_GET['gid'] ?? '';
+    $gid = preg_replace("/\D/", "", (string) $gid);
 
-  if (!$pic_enable) {
-    echo "Sorry, pictures are disabled by the administrator";
+    if (!$pic_enable) {
+        echo "Sorry, pictures are disabled by the administrator";
+        return;
+    }
+
+    $oururl = $_SERVER["HTTP_HOST"].$_SERVER["PHP_SELF"];
+    $oururl = str_replace("index.php", "", $oururl);
+
+    echo '<div class="pages" align="left">';
+    require('includes/config_pic.php');
+    $disp = false;
+
+    foreach ($pic as $num => $options) {
+        if (!$options['enabled']) {
+            continue;
+        }
+        if ($options['gidrequired'] and empty($gid)) {
+            continue;
+        }
+        $disp = true;
+        $pinfourl = "http://{$oururl}?p=pinfo&pid=$pid";
+        $lgid = ($options['gidrequired']) ? $gid : 0;
+        $imgurl = "http://{$oururl}pic.php/$num/$pid/$lgid/.".$options['output']['type'];
+        echo '<table class="zebra box" border="0" cellspacing="0" cellpadding="0" align="center"><tr>';
+        echo '<td colspan="2" align="center"><img src="'. $imgurl .'" border="0" /></td>';
+        echo '</tr><tr>';
+        echo '<td class="smheading">BB Code:</td><td><textarea rows="1" cols="85">'. str_replace(' ', '&nbsp;', htmlentities('[url='.$pinfourl.'][img]'.$imgurl.'[/img][/url]')) .'</textarea></td>';
+        echo '</tr><tr>';
+        echo '<td class="smheading">HTML Code:</td><td><textarea rows="1" cols="85">'. str_replace(' ', '&nbsp;', htmlentities('<a href="'.$pinfourl.'" target="_blank"><img src="'.$imgurl.'" border="0"></img></a>')) .'</textarea></td>';
+        echo '</tr></table><br><br>';
+    }
+    if (!$disp) {
+        echo "Sorry, no pictures in this category";
+    }
+    echo '</div>';
     return;
-  }
-
-  $oururl = $_SERVER["HTTP_HOST"].$_SERVER["PHP_SELF"];
-  $oururl = str_replace("index.php", "", $oururl);
-
-  echo '<div class="pages" align="left">';
-  require('includes/config_pic.php');
-  $disp = false;
-
-  foreach($pic as $num => $options) {
-    if (!$options['enabled']) continue;
-    if ($options['gidrequired'] and empty($gid)) continue;
-    $disp = true;
-    $pinfourl = "http://{$oururl}?p=pinfo&pid=$pid";
-    $lgid = ($options['gidrequired']) ? $gid : 0;
-    $imgurl = "http://{$oururl}pic.php/$num/$pid/$lgid/.".$options['output']['type'];
-    echo '<table class="zebra box" border="0" cellspacing="0" cellpadding="0" align="center"><tr>';
-    echo '<td colspan="2" align="center"><img src="'. $imgurl .'" border="0" /></td>';
-    echo '</tr><tr>';
-    echo '<td class="smheading">BB Code:</td><td><textarea rows="1" cols="85">'. str_replace(' ', '&nbsp;', htmlentities('[url='.$pinfourl.'][img]'.$imgurl.'[/img][/url]')) .'</textarea></td>';
-    echo '</tr><tr>';
-    echo '<td class="smheading">HTML Code:</td><td><textarea rows="1" cols="85">'. str_replace(' ', '&nbsp;', htmlentities('<a href="'.$pinfourl.'" target="_blank"><img src="'.$imgurl.'" border="0"></img></a>')) .'</textarea></td>';
-    echo '</tr></table><br><br>';
-  }
-  if (!$disp) {
-		echo "Sorry, no pictures in this category";
-	}
-  echo '</div>';
-  return;
 }
 
 echo '
@@ -87,9 +91,9 @@ echo '
     <th class="heading" colspan="14" align="center">Career Summary for '.htmlentities($playername).'  ';
 
 if (PlayerOnWatchlist($pid)) {
-  echo '<a href="?p=pinfo&amp;pid='.$pid.'&amp;togglewatch=1&amp;noheader=1"><img src="assets/images/unwatch.png" border="0" class="tooltip" title="You are watching this player. Click to remove from your watchlist."></a>';
+    echo '<a href="?p=pinfo&amp;pid='.$pid.'&amp;togglewatch=1&amp;noheader=1"><img src="assets/images/unwatch.png" border="0" class="tooltip" title="You are watching this player. Click to remove from your watchlist."></a>';
 } else {
-  echo '<a href="?p=pinfo&amp;pid='.$pid.'&amp;togglewatch=1&amp;noheader=1"><img src="assets/images/watch.png"  border="0" class="tooltip" title="Click to add this player to your watchlist."></a>';
+    echo '<a href="?p=pinfo&amp;pid='.$pid.'&amp;togglewatch=1&amp;noheader=1"><img src="assets/images/watch.png"  border="0" class="tooltip" title="Click to add this player to your watchlist."></a>';
 }
 
 echo '</th>
@@ -148,15 +152,15 @@ $sql_plist = "SELECT
     	p.pid = ?
     GROUP BY 
     	p.gid";
-		
-foreach (db_all($sql_plist, [$pid]) as $r_plist) {
-  $gametime = sec2hour($r_plist['gametime']);
-  $eff = get_dp($r_plist['sumeff'] != 0 ? $r_plist['kills']/$r_plist['sumeff']*100 : false);
-  $acc = get_dp($r_plist['accuracy']);
-  $ttl = GetMinutes($r_plist['ttl']);
-  $winpercent = round($r_plist['games'] != 0 ? $r_plist['wins']/$r_plist['games']*100 : 0, 2);
 
-  echo'
+foreach (db_all($sql_plist, [$pid]) as $r_plist) {
+    $gametime = sec2hour($r_plist['gametime']);
+    $eff = get_dp($r_plist['sumeff'] != 0 ? $r_plist['kills'] / $r_plist['sumeff'] * 100 : false);
+    $acc = get_dp($r_plist['accuracy']);
+    $ttl = GetMinutes($r_plist['ttl']);
+    $winpercent = round($r_plist['games'] != 0 ? $r_plist['wins'] / $r_plist['games'] * 100 : 0, 2);
+
+    echo'
   <tr>
     <td align="center">'.$r_plist['gamename'].'</td>
     <td align="center">'.$r_plist['gamescore'].'</td>
@@ -193,10 +197,10 @@ AVG(p.accuracy) AS accuracy, AVG(p.ttl) AS ttl, COUNT(p.id) AS games, SUM(IF(
 FROM uts_player p, uts_match m WHERE p.matchid = m.id AND pid = ?", [$pid]);
 
 $gametime = sec2hour($r_sumplist['gametime']);
-$eff = get_dp($r_sumplist['sumeff'] != 0 ? $r_sumplist['kills']/$r_sumplist['sumeff']*100 : false);
+$eff = get_dp($r_sumplist['sumeff'] != 0 ? $r_sumplist['kills'] / $r_sumplist['sumeff'] * 100 : false);
 $acc = get_dp($r_sumplist['accuracy']);
 $ttl = GetMinutes($r_sumplist['ttl']);
-$winpercent = round($r_sumplist['games'] != 0 ? $r_sumplist['wins']/$r_sumplist['games']*100 : 0, 2);
+$winpercent = round($r_sumplist['games'] != 0 ? $r_sumplist['wins'] / $r_sumplist['games'] * 100 : 0, 2);
 
 echo'
 <tr>
@@ -218,10 +222,10 @@ echo'
 </tbody></table>
 <br>';
 
-$assgids = array();
+$assgids = [];
 
 foreach (db_all("SELECT id FROM uts_games WHERE gamename LIKE '%Assault%';") as $r_assgids) {
-  $assgids[] = (int) $r_assgids['id'];
+    $assgids[] = (int) $r_assgids['id'];
 }
 
 $assquery = (count($assgids) > 0) ? 'SUM(IF (gid IN ('. implode(',', $assgids) .'), ass_obj, 0)) AS ass_obj' : '0 AS ass_obj';
@@ -231,7 +235,7 @@ $sql_cdatot = zero_out(db_row("SELECT SUM(dom_cp) AS dom_cp, $assquery, SUM(flag
   SUM(flag_return) AS flag_return FROM uts_player WHERE pid = ?", [$pid]));
 
 if ($sql_cdatot['ass_obj'] || $sql_cdatot['dom_cp'] || $sql_cdatot['flag_taken'] || $sql_cdatot['flag_pickedup'] || $sql_cdatot['flag_dropped'] || $sql_cdatot['flag_assist'] || $sql_cdatot['flag_cover'] || $sql_cdatot['flag_seal'] || $sql_cdatot['flag_capture'] || $sql_cdatot['flag_kill'] || $sql_cdatot['flag_return']) {
-  echo '
+    echo '
   <table class="zebra box" border="0" cellpadding="0" cellspacing="0" width="700">
   <tbody>
   <tr>
@@ -277,8 +281,8 @@ $sql_multis = zero_out(db_row("SELECT SUM(spree_double) AS spree_double, SUM(spr
   SUM(spree_uns) AS spree_uns, SUM(spree_god) AS spree_god
   FROM uts_player WHERE pid = ?", [$pid]));
 
-if ($sql_firstblood['fbcount'] || $sql_multis['spree_double'] || $sql_multis['spree_multi'] || $sql_multis['spree_ultra'] || $sql_multis['spree_monster'] || $sql_multis['spree_kill'] || $sql_multis['spree_rampage'] || $sql_multis['spree_dom'] || $sql_multis['spree_uns'] || $sql_multis['spree_god'] ) {
-  echo '
+if ($sql_firstblood['fbcount'] || $sql_multis['spree_double'] || $sql_multis['spree_multi'] || $sql_multis['spree_ultra'] || $sql_multis['spree_monster'] || $sql_multis['spree_kill'] || $sql_multis['spree_rampage'] || $sql_multis['spree_dom'] || $sql_multis['spree_uns'] || $sql_multis['spree_god']) {
+    echo '
   <table class="zebra box" border="0" cellpadding="0" cellspacing="0" width="700">
   <tbody>
   <tr>
@@ -321,7 +325,7 @@ $r_pickups = zero_out(db_row("SELECT SUM(pu_pads) AS pu_pads, SUM(pu_armour) AS 
   FROM uts_player WHERE pid = ?", [$pid]));
 
 if ($r_pickups['pu_pads'] || $r_pickups['pu_armour']  || $r_pickups['pu_keg']  || $r_pickups['pu_invis'] || $r_pickups['pu_belt']) {
-  echo '
+    echo '
   <table class="zebra box" border="0" cellpadding="0" cellspacing="0" width="700">
   <tbody>
   <tr>
@@ -377,7 +381,7 @@ ORDER BY
 $q_btrecords = db_all($sql_btrecords, [$pid]);
 
 if (count($q_btrecords) > 0) {
-  echo '
+    echo '
   <table class="zebra box" border="0" cellpadding="0" cellspacing="0" width="700">
   <tbody>
   <tr>
@@ -390,19 +394,19 @@ if (count($q_btrecords) > 0) {
     <th class="smheading" align="center" width="200">Date</th>
   </tr>';
 
-  foreach ($q_btrecords as $r_btrecords) {
-    $map = un_ut($r_btrecords['map']);
-    $myurl = urlencode($map);
-    $maprank = 1 + db_count("SELECT DISTINCT p.pid AS rank FROM uts_player as p, uts_events AS e, uts_match as m WHERE (m.mapfile = ? OR m.mapfile = ?) AND m.id = e.matchid AND e.matchid = p.matchid AND e.playerid = p.playerid AND e.col3 < ? AND e.col1 = 'btcap'", [$map, $map . '.unr', (float) $r_btrecords['time']]);
+    foreach ($q_btrecords as $r_btrecords) {
+        $map = un_ut($r_btrecords['map']);
+        $myurl = urlencode($map);
+        $maprank = 1 + db_count("SELECT DISTINCT p.pid AS rank FROM uts_player as p, uts_events AS e, uts_match as m WHERE (m.mapfile = ? OR m.mapfile = ?) AND m.id = e.matchid AND e.matchid = p.matchid AND e.playerid = p.playerid AND e.col3 < ? AND e.col1 = 'btcap'", [$map, $map . '.unr', (float) $r_btrecords['time']]);
 
-    echo '
+        echo '
     <tr>
       <td>&nbsp;<a href="./?p=minfo&amp;map='.$myurl.'">'.htmlentities($map).'</a></td>
       <td align = "center">', $maprank, '</td>
       <td align = "center">', btcaptime($r_btrecords['time']), '</td>
       <td align = "center">', gmdate('d-m-Y h:i a', $r_btrecords['date']), '</td></tr>';
-  }
-  echo '</tbody></table>
+    }
+    echo '</tbody></table>
   <br>';
 }
 
@@ -424,33 +428,33 @@ echo '<table class="zebra box" border="0" cellpadding="0" cellspacing="0" width=
 <th class="smheading" align="center" width="50">Explain</th>';
 
 if ($pic_enable and basename($_SERVER['PATH_TRANSLATED'] ?? '') != 'admin.php') {
-  echo '<th class="smheading" align="center" width="50">Pics</th>';
+    echo '<th class="smheading" align="center" width="50">Pics</th>';
 }
 echo '</tr>';
 
 $sql_rank = "SELECT g.name AS gamename, r.rank, r.prevrank, r.matches, r.gid, r.pid FROM uts_rank AS r, uts_games AS g WHERE r.gid = g.id AND r.pid = ?;";
 
 foreach (db_all($sql_rank, [$pid]) as $r_rank) {
-  $r_no = db_row("SELECT (COUNT(*) + 1) AS no FROM uts_rank WHERE gid= ? and rank > ?", [$r_rank['gid'], get_dp($r_rank['rank']) ."9"]);
+    $r_no = db_row("SELECT (COUNT(*) + 1) AS no FROM uts_rank WHERE gid= ? and rank > ?", [$r_rank['gid'], get_dp($r_rank['rank']) ."9"]);
 
-  echo'<tr>
+    echo'<tr>
   <td align="center">'.RankImageOrText($r_rank['pid'], $name ?? null, $r_no['no'], $r_rank['gid'], $r_rank['gamename'], false, '%IT%').'</td>
   <td align="center">'.$r_rank['gamename'].'</td>
   <td align="center">'.get_dp($r_rank['rank']) .' '. RankMovement($r_rank['rank'] - $r_rank['prevrank']) . '</td>
   <td align="center">'.$r_rank['matches'].'</td>';
 
-  echo '<td align="center"><a href="?p=pexplrank&amp;pid='.$pid.'&amp;gid='.$r_rank['gid'].'">(Click)</a></td>';
-  if ($pic_enable and basename($_SERVER['PATH_TRANSLATED'] ?? '') != 'admin.php') {
-    echo '<td  align="center"><a href="?p=pinfo&amp;pid='.$pid.'&amp;gid='.$r_rank['gid'].'&amp;pics=1">(Click)</a></td>';
-  }
-  echo '</tr>';
+    echo '<td align="center"><a href="?p=pexplrank&amp;pid='.$pid.'&amp;gid='.$r_rank['gid'].'">(Click)</a></td>';
+    if ($pic_enable and basename($_SERVER['PATH_TRANSLATED'] ?? '') != 'admin.php') {
+        echo '<td  align="center"><a href="?p=pinfo&amp;pid='.$pid.'&amp;gid='.$r_rank['gid'].'&amp;pics=1">(Click)</a></td>';
+    }
+    echo '</tr>';
 }
 echo '</tbody></table>';
 
 $r_pings = db_row("SELECT MIN(lowping * 1) AS lowping, AVG(avgping * 1) AS avgping, MAX(highping * 1) AS highping FROM uts_player WHERE pid = ? and lowping > 0", [$pid]);
 
 if ($r_pings and $r_pings['lowping']) {
-  echo '
+    echo '
   <br>
   <table class="zebra box" border="0" cellpadding="0" cellspacing="0" width=700>
   <tbody>
@@ -471,24 +475,29 @@ if ($r_pings and $r_pings['lowping']) {
 }
 
 $mcount = $r_sumplist['games'];
-$ecount = $mcount/50;
+$ecount = $mcount / 50;
 $ecount2 = number_format($ecount, 0, '.', '');
 
 if ($ecount > $ecount2) {
-  $ecount2 = $ecount2+1;
+    $ecount2 = $ecount2 + 1;
 }
 
 $fpage = 0;
-if ($ecount < 1) { $lpage = 0; }
-else { $lpage = $ecount2-1; }
+if ($ecount < 1) {
+    $lpage = 0;
+} else {
+    $lpage = $ecount2 - 1;
+}
 
 $cpage = preg_replace('/\D/', '', (string) ($_REQUEST["page"] ?? ''));
-if ($cpage == "") { $cpage = "0"; }
+if ($cpage == "") {
+    $cpage = "0";
+}
 
-$qpage = $cpage*50;
-$tfpage = $cpage+1;
-$tlpage = $lpage+1;
-$ppage = $cpage-1;
+$qpage = $cpage * 50;
+$tfpage = $cpage + 1;
+$tlpage = $lpage + 1;
+$ppage = $cpage - 1;
 
 echo '<br>
 <table class="zebra box" border="0" cellpadding="0" cellspacing="0" width=700>
@@ -500,42 +509,52 @@ echo '<br>
   <th class="smheading" align="center" width="220">Date/Time</th>
   <th class="smheading" align="center" width="140">Match Type</th>
   <th class="smheading" align="center">Map</th>';
-if (isset($is_admin) and $is_admin) echo '<td class="smheading" align="center">IP Used</td>';
+if (isset($is_admin) and $is_admin) {
+    echo '<td class="smheading" align="center">IP Used</td>';
+}
 echo'</tr>';
 
 $sql_recent = "SELECT m.id, m.time, g.name AS gamename, m.mapfile, INET_NTOA(p.ip) AS ip FROM uts_match m, uts_player p, uts_games g
   WHERE p.pid = ? AND m.id = p.matchid AND m.gid = g.id ORDER BY time DESC LIMIT ?,50";
 
 foreach (db_all($sql_recent, [$pid, (int) $qpage]) as $r_recent) {
-  $r_time = mdate($r_recent['time']);
-  $r_mapfile = un_ut($r_recent['mapfile']);
+    $r_time = mdate($r_recent['time']);
+    $r_mapfile = un_ut($r_recent['mapfile']);
 
-  echo'
+    echo'
   <tr class="clickableRow" href="./?p=match&amp;mid='.$r_recent['id'].'">
   <td  align="center">'.$r_recent['id'].'</td>
   <td  align="center"><a href="./?p=match&amp;mid='.$r_recent['id'].'">'.$r_time.'</a></td>
   <td  align="center">'.$r_recent['gamename'].'</td>
   <td  align="center">'.$r_mapfile.'</td>';
-  if (isset($is_admin) and $is_admin) echo '<td  align="center">'. $r_recent['ip'].'</td>';
+    if (isset($is_admin) and $is_admin) {
+        echo '<td  align="center">'. $r_recent['ip'].'</td>';
+    }
 
-  echo '</tr>';
+    echo '</tr>';
 }
 
 echo'</tbody></table>';
 
 $ppageurl = "<a class=\"pages\" href=\"./?p=pinfo&amp;pid=$pid&amp;page=$ppage\">[Previous]</a>";
-if ($ppage < "0") { $ppageurl = "[Previous]"; }
+if ($ppage < "0") {
+    $ppageurl = "[Previous]";
+}
 
-$npage = $cpage+1;
+$npage = $cpage + 1;
 $npageurl = "<a class=\"pages\" href=\"./?p=pinfo&amp;pid=$pid&amp;page=$npage\">[Next]</a>";
-if ($npage >= "$ecount") { $npageurl = "[Next]"; }
+if ($npage >= "$ecount") {
+    $npageurl = "[Next]";
+}
 
 $fpageurl = "<a class=\"pages\" href=\"./?p=pinfo&amp;pid=$pid&amp;page=$fpage\">[First]</a>";
-if ($cpage == "0") { $fpageurl = "[First]"; }
+if ($cpage == "0") {
+    $fpageurl = "[First]";
+}
 
 $lpageurl = "<a class=\"pages\" href=\"./?p=pinfo&amp;pid=$pid&amp;page=$lpage\">[Last]</a>";
-if ($cpage == "$lpage") { $lpageurl = "[Last]"; }
+if ($cpage == "$lpage") {
+    $lpageurl = "[Last]";
+}
 
 echo '<div class="pages"><b>Page ['.$tfpage.'/'.$tlpage.'] Selection: '.$fpageurl.' / '.$ppageurl.' / '.$npageurl.' / '.$lpageurl.'</b></div>';
-
-?>

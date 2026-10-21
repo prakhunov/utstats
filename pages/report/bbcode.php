@@ -1,10 +1,11 @@
 <?php
+
 echo'<textarea rows="50" name="cbrep" cols="75">';
 
 $id = preg_replace('/\D/', '', $_GET['id'] ?? '');
 
 if (empty($id)) {
-      die("No ID given");
+    die("No ID given");
 }
 
 $sql_s = db_row("SELECT mapfile, gametime FROM uts_match WHERE id = ?", [(int) $id]);
@@ -22,61 +23,62 @@ $t1score = $q_score['t1score'];
 $teama = "Red Team";
 $teamb = "Blue Team";
 
-IF ($t0score > $t1score) {
+if ($t0score > $t1score) {
 
-	$twin = 0;
-	$twin_team = $teama;
-	$twin_score = $t0score;
+    $twin = 0;
+    $twin_team = $teama;
+    $twin_score = $t0score;
 
-	$tlose = 1;
-	$tlose_team = $teamb;
-	$tdraw = "0";
+    $tlose = 1;
+    $tlose_team = $teamb;
+    $tdraw = "0";
 
-	$tdiff = $t0score+$t1score;
+    $tdiff = $t0score + $t1score;
 
-	IF ($tdiff <= 3) {
-		$reptype = "low";
-	} elseIF ($tdiff >= 9) {
-		$reptype = "high";
-	} else {
-		$reptype = "medium";
-	}
+    if ($tdiff <= 3) {
+        $reptype = "low";
+    } elseif ($tdiff >= 9) {
+        $reptype = "high";
+    } else {
+        $reptype = "medium";
+    }
 
-} elseIF ($t0score < $t1score) {
-	$twin = 1;
-	$twin_team = $teamb;
-	$twin_score = $t1score;
+} elseif ($t0score < $t1score) {
+    $twin = 1;
+    $twin_team = $teamb;
+    $twin_score = $t1score;
 
-	$tlose = 0;
-	$tlose_team = $teama;
-	$tdraw = "0";
+    $tlose = 0;
+    $tlose_team = $teama;
+    $tdraw = "0";
 
-	$tdiff = $t1score+$t0score;
+    $tdiff = $t1score + $t0score;
 
-	IF ($tdiff <= 2) {
-		$reptype = "low";
-	} elseIF ($tdiff >= 9) {
-		$reptype = "high";
-	} else {
-		$reptype = "medium";
-	}
+    if ($tdiff <= 2) {
+        $reptype = "low";
+    } elseif ($tdiff >= 9) {
+        $reptype = "high";
+    } else {
+        $reptype = "medium";
+    }
 
 } else {
-	$twin = "0";
-	$tlose = "1";
-	$tdraw = "1";
+    $twin = "0";
+    $tlose = "1";
+    $tdraw = "1";
 
-	$tdiff = $t1score+$t0score;
-	$twin_team = $teama;;
-	$tlose_team = $teamb;
+    $tdiff = $t1score + $t0score;
+    $twin_team = $teama;
+    ;
+    $tlose_team = $teamb;
 
-	IF ($tdiff <= 4) {
-		$reptype = "low";
-	} elseIF ($tdiff >= 10) {
-		$reptype = "high";
-	} else {
-		$reptype = "medium";
-	}
+    if ($tdiff <= 4) {
+        $reptype = "low";
+    } elseif ($tdiff >= 10) {
+        $reptype = "high";
+    } else {
+        $reptype = "medium";
+    }
 }
 
 // Queries used within the report
@@ -117,12 +119,12 @@ $q_topgrabd = db_row("SELECT p.id, pi.name, p.flag_taken, team FROM uts_player A
 $r_topgrabidd = $q_topgrabd['id'];
 $r_topgrabnamed = $q_topgrabd['name'];
 
-IF ($redteam == $q_topgrabd['team']) {
-	$r_topgrabteamd = $warinfo[0][2];
-	$r_topgrabteamdid = $warinfo[0][1];
+if ($redteam == $q_topgrabd['team']) {
+    $r_topgrabteamd = $warinfo[0][2];
+    $r_topgrabteamdid = $warinfo[0][1];
 } else {
-	$r_topgrabteamd = $warinfo[1][2];
-	$r_topgrabteamdid = $warinfo[1][1];
+    $r_topgrabteamd = $warinfo[1][2];
+    $r_topgrabteamdid = $warinfo[1][1];
 }
 
 
@@ -151,10 +153,10 @@ $q_topassistd = db_row("SELECT p.id, pi.name, p.flag_assist, team FROM uts_playe
 $r_topassistdid = $q_topassistd['id'];
 $r_topassistdname = $q_topassistd['name'];
 
-IF ($q_topassistd['team'] == $redteam) {
-   $r_topassistdteam = $teamb;
+if ($q_topassistd['team'] == $redteam) {
+    $r_topassistdteam = $teamb;
 } else {
-   $r_topassistdteam = $teama;
+    $r_topassistdteam = $teama;
 }
 
 // Most Flag Seals (W)
@@ -223,7 +225,7 @@ $sql_rplayer = "SELECT p.id, pi.name FROM uts_player AS p, uts_pinfo AS pi WHERE
 $q_rplayer = db_query($sql_rplayer, [(int) $id]);
 while ($r_rplayer = $q_rplayer->fetch()) {
 
-	echo''.$r_rplayer['name'].'
+    echo''.$r_rplayer['name'].'
 ';
 }
 
@@ -237,7 +239,7 @@ $sql_bplayer = "SELECT p.id, pi.name FROM uts_player AS p, uts_pinfo AS pi WHERE
 $q_bplayer = db_query($sql_bplayer, [(int) $id]);
 while ($r_bplayer = $q_bplayer->fetch()) {
 
-	echo''.$r_bplayer['name'].'
+    echo''.$r_bplayer['name'].'
 ';
 }
 
@@ -256,31 +258,31 @@ First Blood: '.$r_fbloodname.'
 
 
 // Low Scores and a Draw
-IF ($reptype == "low" && $tdraw == 1) {
-echo'Neither team were better this map, scorline is proof of this.
+if ($reptype == "low" && $tdraw == 1) {
+    echo'Neither team were better this map, scorline is proof of this.
 [cl]'.$r_topgrabteamdid.','.$r_topgrabteamd.'[/cl] had the most chances to cap with '.$r_topgrabnamed.' taking the flag '.$q_topgrabd['flag_taken'].' times, but unfortuantely couldnt cap as many as he took.
 
 Big credit to both teams defences; ';
 
-IF ($q_topdefl['flag_kill'] >= $q_topfkill['flag_kill']) {
-   echo ''.$r_topdeflname.' defended the flag and got '.$q_topdefl['flag_kill'].' flagkills while '.$r_topfkillname.' also had a pretty nice defensive game killing '.$q_topfkill['flag_kill'].' flag carriers.
+    if ($q_topdefl['flag_kill'] >= $q_topfkill['flag_kill']) {
+        echo ''.$r_topdeflname.' defended the flag and got '.$q_topdefl['flag_kill'].' flagkills while '.$r_topfkillname.' also had a pretty nice defensive game killing '.$q_topfkill['flag_kill'].' flag carriers.
    ';
-} else {
-   echo ''.$r_topfkillname.' defended the flag and got '.$q_topfkill['flag_kill'].' flagkills while '.$r_topdeflname.' also had a pretty nice defensive game killing '.$q_topdefl['flag_kill'].' flag carriers.
+    } else {
+        echo ''.$r_topfkillname.' defended the flag and got '.$q_topfkill['flag_kill'].' flagkills while '.$r_topdeflname.' also had a pretty nice defensive game killing '.$q_topdefl['flag_kill'].' flag carriers.
    ';
-}
+    }
 
-echo'Seems the attackers had a frustrating game on this map, credit to ';
+    echo'Seems the attackers had a frustrating game on this map, credit to ';
 
-IF ($q_topcover['flag_cover'] >= $q_topcoverl['flag_cover']) {
-   echo ''.$r_topcovername.' for covering his flag carrier '.$q_topcover['flag_cover'].' times and also '.$r_topcoverlname.' for covering '.$q_topcoverl['flag_cover'].' times.
+    if ($q_topcover['flag_cover'] >= $q_topcoverl['flag_cover']) {
+        echo ''.$r_topcovername.' for covering his flag carrier '.$q_topcover['flag_cover'].' times and also '.$r_topcoverlname.' for covering '.$q_topcoverl['flag_cover'].' times.
    ';
-} else {
-   echo ''.$r_topcoverlname.' for covering his flag carrier '.$q_topcoverl['flag_cover'].' times and also '.$r_topcovername.' for covering '.$q_topcover['flag_cover'].' times.
+    } else {
+        echo ''.$r_topcoverlname.' for covering his flag carrier '.$q_topcoverl['flag_cover'].' times and also '.$r_topcovername.' for covering '.$q_topcover['flag_cover'].' times.
    ';
-}
+    }
 
-echo'Well done '.$r_topfragname.' for ensuring a tight scoreline with '.$q_topfrag['frags'].' frags.
+    echo'Well done '.$r_topfragname.' for ensuring a tight scoreline with '.$q_topfrag['frags'].' frags.
 If this map would be played again between these two clans, we might see a change of strategy in the attacking play, but the defenders were strong on both sides this time.
 
 Good game.
@@ -289,8 +291,8 @@ Well played both teams.';
 }
 
 // Medium Scores and a Draw
-IF ($reptype == "medium" && $tdraw == 1) {
-echo'An excitingly close game with neither side having the upper hand.
+if ($reptype == "medium" && $tdraw == 1) {
+    echo'An excitingly close game with neither side having the upper hand.
 Both clans teamplay was about even and the result shows that it could have easily gone either way.
 
 Capping opportunities came along time after time, with [cl]'.$r_topgrabid.','.$r_topgrabname.'[/cl] taking the flag '.$q_topgrab['flag_taken'].' times and at the other end [cl]'.$r_topgrabidl.','.$r_topgrabnamel.'[/cl] taking the flag '.$q_topgrabl['flag_taken'].' times.
@@ -299,15 +301,15 @@ Help was at hand for the flag runners with '.$teama.'\'s '.$r_topcoverrname.' co
 
 Big credit to both teams defences; ';
 
-IF ($q_topdefl['flag_kill'] >= $q_topfkill['flag_kill']) {
-   echo ''.$r_topdeflname.' defended the flag and got '.$q_topdefl['flag_kill'].' flagkills while '.$r_topfkillname.' also had a pretty nice defensive game killing '.$q_topfkill['flag_kill'].' flag carriers.
+    if ($q_topdefl['flag_kill'] >= $q_topfkill['flag_kill']) {
+        echo ''.$r_topdeflname.' defended the flag and got '.$q_topdefl['flag_kill'].' flagkills while '.$r_topfkillname.' also had a pretty nice defensive game killing '.$q_topfkill['flag_kill'].' flag carriers.
    ';
-} else {
-   echo ''.$r_topfkillname.' defended the flag and got '.$q_topfkill['flag_kill'].' flagkills while '.$r_topdeflname.' also had a pretty nice defensive game killing '.$q_topdefl['flag_kill'].' flag carriers.
+    } else {
+        echo ''.$r_topfkillname.' defended the flag and got '.$q_topfkill['flag_kill'].' flagkills while '.$r_topdeflname.' also had a pretty nice defensive game killing '.$q_topdefl['flag_kill'].' flag carriers.
    ';
-}
+    }
 
-echo'Both teams showed great teamplay and skill and the scoreline represents this.
+    echo'Both teams showed great teamplay and skill and the scoreline represents this.
 Two even lineups for this map.
 
 Well done '.$r_topfragname.' who had '.$q_topfrag['frags'].' frags.
@@ -318,8 +320,8 @@ Well played both teams.';
 }
 
 // High Scores and a Draw
-IF ($reptype == "high" && $tdraw == 1) {
-echo'A very very exciting, close CTF game Im sure both clans will agree.
+if ($reptype == "high" && $tdraw == 1) {
+    echo'A very very exciting, close CTF game Im sure both clans will agree.
 This high scoring draw proves that '.$teama.' and '.$teamb.' were evenly matched on this map.
 Teamplay and strategy enabled both teams to cap quite a few times.
 Well done to both teams attackers especially '.$r_topcapdname.' who capped '.$q_topcapd['flag_capture'].' times.
@@ -330,21 +332,21 @@ Help was at hand for the flag runners with '.$teama.'\'s '.$r_topcoverrname.' co
 
 Although the defenders probably didnt have as good a game as the attackers on this map, credit should be awarded to ';
 
-IF ($q_topdefl['flag_kill'] >= $q_topfkill['flag_kill']) {
-   echo ''.$r_topdeflname.' for killing '.$q_topdefl['flag_kill'].' flag carriers and also to ';
-} else {
-   echo ''.$r_topfkillname.' for killing '.$q_topfkill['flag_kill'].' flag carriers and also to ';
-}
+    if ($q_topdefl['flag_kill'] >= $q_topfkill['flag_kill']) {
+        echo ''.$r_topdeflname.' for killing '.$q_topdefl['flag_kill'].' flag carriers and also to ';
+    } else {
+        echo ''.$r_topfkillname.' for killing '.$q_topfkill['flag_kill'].' flag carriers and also to ';
+    }
 
-IF ($q_topseall['flag_seal'] >= $q_topseal['flag_seal']) {
-   echo ''.$r_topseallname.' for sealing the base '.$q_topseall['flag_seal'].' times for his flag carrier to cap.
+    if ($q_topseall['flag_seal'] >= $q_topseal['flag_seal']) {
+        echo ''.$r_topseallname.' for sealing the base '.$q_topseall['flag_seal'].' times for his flag carrier to cap.
    <br >';
-} else {
-   echo ''.$r_topsealname.' for sealing the base '.$q_topseal['flag_seal'].' times for his flag carrier to cap.
+    } else {
+        echo ''.$r_topsealname.' for sealing the base '.$q_topseal['flag_seal'].' times for his flag carrier to cap.
    <br >';
-}
+    }
 
-echo' '.$r_topassistdname.' helped '.$r_topassistdteam.' get as many caps as they did by assisting '.$q_topassistd['flag_assist'].' times in their caps.
+    echo' '.$r_topassistdname.' helped '.$r_topassistdteam.' get as many caps as they did by assisting '.$q_topassistd['flag_assist'].' times in their caps.
 This shows great teamplay and cover, well played.
 
 Both teams showed great teamplay and skill and the scoreline represents this.
@@ -356,20 +358,20 @@ Well played both teams.';
 }
 
 // Low Scores and not a Draw
-IF ($reptype == "low" && $tdraw == 0) {
-echo 'Not very many caps in this close game, but '.$twin_team.' emerge victorious.
+if ($reptype == "low" && $tdraw == 0) {
+    echo 'Not very many caps in this close game, but '.$twin_team.' emerge victorious.
 
 Big credit to both teams defences; ';
 
-IF ($q_topdefl['flag_kill'] >= $q_topfkill['flag_kill']) {
-   echo ''.$r_topdeflname.' defended the flag and got '.$q_topdefl['flag_kill'].' flagkills while '.$r_topfkillname.' also had a pretty nice defensive game killing '.$q_topfkill['flag_kill'].' flag carriers.
+    if ($q_topdefl['flag_kill'] >= $q_topfkill['flag_kill']) {
+        echo ''.$r_topdeflname.' defended the flag and got '.$q_topdefl['flag_kill'].' flagkills while '.$r_topfkillname.' also had a pretty nice defensive game killing '.$q_topfkill['flag_kill'].' flag carriers.
    ';
-} else {
-   echo ''.$r_topfkillname.' defended the flag and got '.$q_topfkill['flag_kill'].' flagkills while '.$r_topdeflname.' also had a pretty nice defensive game killing '.$q_topdefl['flag_kill'].' flag carriers.
+    } else {
+        echo ''.$r_topfkillname.' defended the flag and got '.$q_topfkill['flag_kill'].' flagkills while '.$r_topdeflname.' also had a pretty nice defensive game killing '.$q_topdefl['flag_kill'].' flag carriers.
    ';
-}
+    }
 
-echo 'Seems the attackers had a frustrating game on this map, especially [cl]'.$r_topgrabidl.','.$r_topgrabnamel.'[/cl] who took the flag '.$q_topgrabl['flag_taken'].' and still lost the game :(
+    echo 'Seems the attackers had a frustrating game on this map, especially [cl]'.$r_topgrabidl.','.$r_topgrabnamel.'[/cl] who took the flag '.$q_topgrabl['flag_taken'].' and still lost the game :(
 
 Suportive play was made by '.$r_topcoverlname.' having '.$q_topcoverl['flag_cover'].'  covers, but even with covering play, the majority of the flags got returned and the game ended with '.$tlose_team.' losing out.
 
@@ -382,8 +384,8 @@ Well played both teams.';
 }
 
 // Medium Scores and not a Draw
-IF ($reptype == "medium" && $tdraw == 0) {
-echo 'A nice game of Capture the Flag took place this map with both teams trying hard to get flags back but only occasionally succeeding.
+if ($reptype == "medium" && $tdraw == 0) {
+    echo 'A nice game of Capture the Flag took place this map with both teams trying hard to get flags back but only occasionally succeeding.
 
 '.$twin_team.' however managed to succesfully cap more than '.$tlose_team.' with big help from '.$r_topcapname.' who capped '.$q_topcap['flag_capture'].'.
 '.$r_topgrabname.' made it hard for the '.$tlose_team.' defenders taking the flag a total of '.$q_topgrab['flag_taken'].' times.
@@ -401,8 +403,8 @@ Well played both teams.';
 }
 
 // High Scores and not a Draw
-IF ($reptype == "high" && $tdraw == 0) {
-echo ''.$twin_team.' were victorious thanks to some nice capping by '.$r_topcapname.' who capped '.$q_topcap['flag_capture'].' and '.$r_topgrabname.' who took the flag'.$q_topgrab['flag_taken'].' times.
+if ($reptype == "high" && $tdraw == 0) {
+    echo ''.$twin_team.' were victorious thanks to some nice capping by '.$r_topcapname.' who capped '.$q_topcap['flag_capture'].' and '.$r_topgrabname.' who took the flag'.$q_topgrab['flag_taken'].' times.
 
 '.$r_topcapname.' probably could not have done it without the help of '.$r_topcovername.' who had '.$q_topcover['flag_cover'].' covers and '.$r_topsealname.' for sealing the base off '.$q_topseal['flag_seal'].' times.
 
@@ -421,4 +423,3 @@ echo'
 This report was created with UTStats from the following game:
 [url]http://'.$oururl.'?p=match&mid='.$id.'[/url]
 </textarea>';
-?>

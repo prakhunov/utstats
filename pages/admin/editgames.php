@@ -1,19 +1,24 @@
 <?php
-if (empty($import_adminkey) or isset($_REQUEST['import_adminkey']) or $import_adminkey != $adminkey) die('bla');
-	
+
+if (empty($import_adminkey) or isset($_REQUEST['import_adminkey']) or $import_adminkey != $adminkey) {
+    die('bla');
+}
+
 if (isset($_REQUEST['submit'])) {
-	foreach($_REQUEST['name'] as $id => $bla) {
-		if ($id == 0) {
-			if (empty($_REQUEST['name'][$id])) continue;
-			db_exec("	INSERT	INTO	uts_games
+    foreach ($_REQUEST['name'] as $id => $bla) {
+        if ($id == 0) {
+            if (empty($_REQUEST['name'][$id])) {
+                continue;
+            }
+            db_exec("	INSERT	INTO	uts_games
 									SET	name = ?,
 											gamename = '(user defined)';", [$_REQUEST['name'][$id]]);
-		} else {
-			db_exec("	UPDATE	uts_games
+        } else {
+            db_exec("	UPDATE	uts_games
 									SET	name = ?
 									WHERE	id =  ?;", [$_REQUEST['name'][$id], $id]);
-		}
-	}
+        }
+    }
 }
 
 echo'<br><table border="0" cellpadding="0" cellspacing="0" width="600">
@@ -33,12 +38,12 @@ echo'<br><table border="0" cellpadding="0" cellspacing="0" width="600">
 $sql_games = "SELECT id, gamename, name FROM uts_games ORDER BY gamename ASC;";
 $i = 0;
 foreach (db_all($sql_games) as $r_games) {
-	$i++;
-	$class = ($i%2) ? 'grey' : 'grey2';
-	echo '<tr>';
-	echo '<td class="'.$class.'">'.htmlentities($r_games['gamename']).'</td>';
-	echo '<td class="'.$class.'"><input class="searchform" type="text" name="name['.$r_games['id'].']" value="'.$r_games['name'].'"></td>';
-	echo '</tr>';
+    $i++;
+    $class = ($i % 2) ? 'grey' : 'grey2';
+    echo '<tr>';
+    echo '<td class="'.$class.'">'.htmlentities($r_games['gamename']).'</td>';
+    echo '<td class="'.$class.'"><input class="searchform" type="text" name="name['.$r_games['id'].']" value="'.$r_games['name'].'"></td>';
+    echo '</tr>';
 }
 echo'
 <tr>
@@ -69,5 +74,3 @@ echo'</form>
 	<td class="smheading" align="center" colspan="4"><a class="grey" href="./admin.php?key='.$_REQUEST['key'].'">Go Back To Admin Page</a></td>
 </tr>
 </table>';
-	
-?>

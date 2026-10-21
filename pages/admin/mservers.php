@@ -1,6 +1,9 @@
 <?php
-if (empty($import_adminkey) or isset($_REQUEST['import_adminkey']) or $import_adminkey != $adminkey) die('bla');
-	
+
+if (empty($import_adminkey) or isset($_REQUEST['import_adminkey']) or $import_adminkey != $adminkey) {
+    die('bla');
+}
+
 $options['title'] = 'Merge Servers';
 $i = 0;
 $options['vars'][$i]['name'] = 'mserver1';
@@ -32,10 +35,8 @@ echo'<br><table border="0" cellpadding="0" cellspacing="0" width="600">
 <tr>
 	<td class="smheading" align="left" width="200">Merging Records</td>';
 db_exec("UPDATE uts_match SET serverip = ?, servername = ? WHERE serverip = ? and servername = ?", [$q_myserver1['serverip'], $q_myserver1['servername'], $q_myserver2['serverip'], $q_myserver2['servername']]);
-	echo'<td class="grey" align="left" width="400">Done</td>
+echo'<td class="grey" align="left" width="400">Done</td>
 </tr>
 <tr>
 	<td class="smheading" align="center" colspan="2">Server Records Merged - <a href="./admin.php?key='.$_REQUEST['key'].'">Go Back To Admin Page</a></td>
 </tr></table>';
-
-?>

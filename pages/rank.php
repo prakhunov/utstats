@@ -1,4 +1,5 @@
 <?php
+
 $sql_rgame = "SELECT DISTINCT(p.gid), g.name FROM uts_player AS p, uts_games AS g WHERE p.gid = g.id ORDER BY g.name ASC";
 foreach (db_all($sql_rgame) as $r_rgame) {
 
@@ -16,13 +17,13 @@ foreach (db_all($sql_rgame) as $r_rgame) {
 	    </tr>
     ';
 
-  $ranking = 0;
+    $ranking = 0;
 
-  $sql_rplayer = "SELECT pi.id AS pid, pi.name, pi.country, r.rank, r.prevrank, r.matches FROM uts_rank AS r, uts_pinfo AS pi WHERE r.pid = pi.id AND r.gid =  ? AND pi.banned <> 'Y' ORDER BY r.rank DESC LIMIT 0,10";
-  $q_rplayer = db_all($sql_rplayer, [$r_rgame['gid']]);
+    $sql_rplayer = "SELECT pi.id AS pid, pi.name, pi.country, r.rank, r.prevrank, r.matches FROM uts_rank AS r, uts_pinfo AS pi WHERE r.pid = pi.id AND r.gid =  ? AND pi.banned <> 'Y' ORDER BY r.rank DESC LIMIT 0,10";
+    $q_rplayer = db_all($sql_rplayer, [$r_rgame['gid']]);
 
-  if (count($q_rplayer) == 0) {
-    echo '
+    if (count($q_rplayer) == 0) {
+        echo '
     <tr>
 	    <th align="center" colspan = "4">No players entered the rankings yet.</th>
     </tr>
@@ -31,14 +32,13 @@ foreach (db_all($sql_rgame) as $r_rgame) {
     </tr>
     </tbody></table>
 		<br>';
-  }
-  else {
-    foreach ($q_rplayer as $r_rplayer) {
+    } else {
+        foreach ($q_rplayer as $r_rplayer) {
 
-      $ranking++;
-      $myurl = urlencode($r_rplayer['name']);
+            $ranking++;
+            $myurl = urlencode($r_rplayer['name']);
 
-      echo'
+            echo'
       <tr class="clickableRow" href="./?p=pinfo&amp;pid='.$r_rplayer['pid'].'">
 	      <td align="center">'.$ranking.'</td>
 	      <td nowrap align="left">
@@ -47,8 +47,8 @@ foreach (db_all($sql_rgame) as $r_rgame) {
 	      <td align="center">'.get_dp($r_rplayer['rank']).'</td>
 	      <td align="center">'.$r_rplayer['matches'].'</td>
       </tr>';
-    }
-    echo'
+        }
+        echo'
     <tr>
 	    <td class="totals" align="center" colspan="4">
 				<a href="./?p=ext_rank&amp;gid='.$r_rgame['gid'].'">Click here to see all the rankings</a>
@@ -56,6 +56,5 @@ foreach (db_all($sql_rgame) as $r_rgame) {
     </tr>
     </tbody></table>
 		<br>';
-  }
+    }
 }
-?>

@@ -1,46 +1,55 @@
 <?php
-function InvertSort($curr_field, $filter, $sort) {
-	if ($curr_field != $filter) return(($curr_field == "mapfile") ? "ASC" : "DESC");
-	if ($sort == 'ASC') return('DESC');
-	return('ASC');
+
+function InvertSort($curr_field, $filter, $sort)
+{
+    if ($curr_field != $filter) {
+        return(($curr_field == "mapfile") ? "ASC" : "DESC");
+    }
+    if ($sort == 'ASC') {
+        return('DESC');
+    }
+    return('ASC');
 }
 
-function SortPic($curr_field, $filter, $sort) {
-	if ($curr_field != $filter) return;
-	$fname = 'assets/images/s_'. strtolower($sort) .'.png';
-	if (!file_exists($fname)) return;
-	return('&nbsp;<img src="'. $fname .'" border="0" width="11" height="9" alt="" class="tooltip" title="('.strtolower($sort).'ending)">');
+function SortPic($curr_field, $filter, $sort)
+{
+    if ($curr_field != $filter) {
+        return;
+    }
+    $fname = 'assets/images/s_'. strtolower($sort) .'.png';
+    if (!file_exists($fname)) {
+        return;
+    }
+    return('&nbsp;<img src="'. $fname .'" border="0" width="11" height="9" alt="" class="tooltip" title="('.strtolower($sort).'ending)">');
 }
 
 // Get filter and set sorting
-$filter = db_pick(strtolower($_GET['filter'] ?? ''), array("mapfile", "matchcount", "frags", "matchscore", "gametime"), "mapfile");
-$sort = db_pick($_GET['sort'] ?? '', array('ASC', 'DESC'), ($filter == "mapfile") ? "ASC" : "DESC");
+$filter = db_pick(strtolower($_GET['filter'] ?? ''), ["mapfile", "matchcount", "frags", "matchscore", "gametime"], "mapfile");
+$sort = db_pick($_GET['sort'] ?? '', ['ASC', 'DESC'], ($filter == "mapfile") ? "ASC" : "DESC");
 $q = (string) ($_GET['q'] ?? '');
 $gid = (int) preg_replace('/\D/', '', (string) ($_GET['gid'] ?? ''));
 $url_condition = '';
 $sql_condition = '';
-$sql_params = array();
+$sql_params = [];
 
 if (isset($gid)) {
-	if ($gid != 0) {
-		$url_condition .= "&amp;gid=".urlencode($gid);
-		$sql_condition = " WHERE gid = ?";
-		$sql_params[] = $gid;
-	}
-}
-else {
-	$gid = 0;
+    if ($gid != 0) {
+        $url_condition .= "&amp;gid=".urlencode($gid);
+        $sql_condition = " WHERE gid = ?";
+        $sql_params[] = $gid;
+    }
+} else {
+    $gid = 0;
 }
 
 if (isset($q)) {
-	if ($gid != 0) {
-		$sql_condition .= ' AND mapfile LIKE ? ';
-	}
-	else {
-		$sql_condition .= ' WHERE mapfile LIKE ? ';
-	}
-	$sql_params[] = '%' . $q . '%';
-	$url_condition .= "&amp;q=".urlencode($q);
+    if ($gid != 0) {
+        $sql_condition .= ' AND mapfile LIKE ? ';
+    } else {
+        $sql_condition .= ' WHERE mapfile LIKE ? ';
+    }
+    $sql_params[] = '%' . $q . '%';
+    $url_condition .= "&amp;q=".urlencode($q);
 }
 
 // Firstly we need to work out First Last Next Prev pages
@@ -49,33 +58,46 @@ $ecount = $mcount / 25;
 $ecount2 = number_format($ecount, 0, '.', '');
 
 if ($ecount > $ecount2) {
-	$ecount2 = $ecount2+1;
+    $ecount2 = $ecount2 + 1;
 }
 
 $fpage = 0;
-if ($ecount < 1) { $lpage = 0; }
-else { $lpage = $ecount2-1; }
+if ($ecount < 1) {
+    $lpage = 0;
+} else {
+    $lpage = $ecount2 - 1;
+}
 
 $cpage = preg_replace('/\D/', '', (string) ($_GET["page"] ?? ''));
-if ($cpage == "") { $cpage = "0"; }
-$qpage = $cpage*25;
+if ($cpage == "") {
+    $cpage = "0";
+}
+$qpage = $cpage * 25;
 
-$tfpage = $cpage+1;
-$tlpage = $lpage+1;
+$tfpage = $cpage + 1;
+$tlpage = $lpage + 1;
 
-$ppage = $cpage-1;
+$ppage = $cpage - 1;
 $ppageurl = "<a class=\"pages\" href=\"./?p=maps&amp;filter=$filter&amp;sort=$sort&amp;page=$ppage".$url_condition."\">[Previous]</a>";
-if ($ppage < "0") { $ppageurl = "[Previous]"; }
+if ($ppage < "0") {
+    $ppageurl = "[Previous]";
+}
 
-$npage = $cpage+1;
+$npage = $cpage + 1;
 $npageurl = "<a class=\"pages\" href=\"./?p=maps&amp;filter=$filter&amp;sort=$sort&amp;page=$npage".$url_condition."\">[Next]</a>";
-if ($npage >= "$ecount") { $npageurl = "[Next]"; }
+if ($npage >= "$ecount") {
+    $npageurl = "[Next]";
+}
 
 $fpageurl = "<a class=\"pages\" href=\"./?p=maps&amp;filter=$filter&amp;sort=$sort&amp;page=$fpage".$url_condition."\">[First]</a>";
-if ($cpage == "0") { $fpageurl = "[First]"; }
+if ($cpage == "0") {
+    $fpageurl = "[First]";
+}
 
 $lpageurl = "<a class=\"pages\" href=\"./?p=maps&amp;filter=$filter&amp;sort=$sort&amp;page=$lpage".$url_condition."\">[Last]</a>";
-if ($cpage == "$lpage") { $lpageurl = "[Last]"; }
+if ($cpage == "$lpage") {
+    $lpageurl = "[Last]";
+}
 
 echo'
 <form NAME="mapfilter" METHOD="get" ACTION="">
@@ -93,11 +115,11 @@ echo'
 			<select class="searchform" name="gid">
 				<option value="0">*</option>';
 
-				$sql_game = "SELECT DISTINCT(p.gid), g.name FROM uts_player AS p, uts_games AS g WHERE p.gid = g.id ORDER BY g.name ASC";
-				foreach (db_all($sql_game) as $r_game) {
-					$selected = ($r_game['gid'] == $gid) ? 'selected' : '';
-					echo '<option '.$selected.' value="'.$r_game['gid'].'">'. $r_game['name'] .'</option>';
-				}
+$sql_game = "SELECT DISTINCT(p.gid), g.name FROM uts_player AS p, uts_games AS g WHERE p.gid = g.id ORDER BY g.name ASC";
+foreach (db_all($sql_game) as $r_game) {
+    $selected = ($r_game['gid'] == $gid) ? 'selected' : '';
+    echo '<option '.$selected.' value="'.$r_game['gid'].'">'. $r_game['name'] .'</option>';
+}
 
 echo '</select>
 			<div class="darksearch">
@@ -119,12 +141,12 @@ echo '</select>
 $sql_maps = "SELECT IF(RIGHT(mapfile,4) LIKE '.unr', mapfile, CONCAT(mapfile, '.unr')) as mapfile, COUNT(id) AS matchcount, AVG(frags) AS frags, AVG(t0score+t1score+t2score+t3score) AS matchscore, SUM(gametime) AS gametime
 	FROM uts_match" . $sql_condition . " GROUP BY mapfile ORDER BY $filter $sort LIMIT ?,25";
 
-foreach (db_all($sql_maps, array_merge($sql_params, array((int) $qpage))) as $r_maps) {
-	  $r_mapfile = un_ut($r_maps['mapfile']);
-	  $myurl = urlencode($r_mapfile);
-	  $r_gametime = GetMinutes($r_maps['gametime']);
+foreach (db_all($sql_maps, array_merge($sql_params, [(int) $qpage])) as $r_maps) {
+    $r_mapfile = un_ut($r_maps['mapfile']);
+    $myurl = urlencode($r_mapfile);
+    $r_gametime = GetMinutes($r_maps['gametime']);
 
-	  echo '
+    echo '
 	  <tr class="clickableRow" href="./?p=minfo&amp;map='.$myurl.'">
 			<td align="center"><a href="./?p=minfo&amp;map='.$myurl.'">'.$r_mapfile.'</a></td>
 			<td align="center">'.$r_maps['matchcount'].'</td>
@@ -138,4 +160,3 @@ echo '
 </tbody></table>
 <div class="pages">Page ['.$tfpage.'/'.$tlpage.'] Selection: '.$fpageurl.' / '.$ppageurl.' / '.$npageurl.' / '.$lpageurl.'</div>
 </form>';
-?>

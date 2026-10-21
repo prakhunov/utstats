@@ -1,4 +1,5 @@
 <?php
+
 /* get events first
 $sql_caprecords = "SELECT playerid, col3 FROM uts_events WHERE matchid = ? AND col1 = 'btcap' ORDER BY col3 DESC";
 $q_caprecords = db_query($sql_caprecords, [$mid]);
@@ -38,28 +39,28 @@ $sql_msred = "SELECT p.playerid, pi.name, pi.banned, p.country, p.pid, p.gamesco
 $q_msred = db_query($sql_msred, [$mid]);
 $i = 0;
 while ($r_msred = zero_out($q_msred->fetch())) {
-	  if (!$r_msred['playerid']) {
-		$r_msred['playerid'] = 0;
-	  }
-	  $i++;
-	  $class = ($i % 2) ? 'grey' : 'grey2';
+    if (!$r_msred['playerid']) {
+        $r_msred['playerid'] = 0;
+    }
+    $i++;
+    $class = ($i % 2) ? 'grey' : 'grey2';
 
-	  $redpname = $r_msred['name'];
-	  $myurl = urlencode($r_msred['name']);
+    $redpname = $r_msred['name'];
+    $myurl = urlencode($r_msred['name']);
 
 
 
-	echo'<tr>';
-	if ($r_msred['banned'] != 'Y') {
-		echo '<td nowrap class="darkhuman" align="left"><a class="darkhuman" href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msred['pid'].'">'.FormatPlayerName($r_msred['country'], $r_msred['pid'], $redpname, $gid, $gamename, true, $r_msred['rank']).'</a></td>';
-	} else {
-		$r_msred ['gamescore'] = '-';
-		$r_msred ['suicides'] = '-';
-		$r_msred ['flag_capture'] = '-';
-		echo '<td nowrap class="darkhuman" align="left"><span style="text-decoration: line-through;">'.FormatPlayerName($r_msred['country'], $r_msred['pid'], $redpname, $gid, $gamename, true, $r_msred['rank']).'</span></td>';
-	}
+    echo'<tr>';
+    if ($r_msred['banned'] != 'Y') {
+        echo '<td nowrap class="darkhuman" align="left"><a class="darkhuman" href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msred['pid'].'">'.FormatPlayerName($r_msred['country'], $r_msred['pid'], $redpname, $gid, $gamename, true, $r_msred['rank']).'</a></td>';
+    } else {
+        $r_msred ['gamescore'] = '-';
+        $r_msred ['suicides'] = '-';
+        $r_msred ['flag_capture'] = '-';
+        echo '<td nowrap class="darkhuman" align="left"><span style="text-decoration: line-through;">'.FormatPlayerName($r_msred['country'], $r_msred['pid'], $redpname, $gid, $gamename, true, $r_msred['rank']).'</span></td>';
+    }
 
-	echo '
+    echo '
 		<td class="'.$class.'" align="center">'.GetMinutes($r_msred['gametime']).'</td>
 		<td class="'.$class.'" align="center"></td>
 		<td class="'.$class.'" align="center">'.$r_msred['gamescore'].'</td>
@@ -111,28 +112,28 @@ $sql_msblue = "SELECT p.playerid, pi.name, pi.banned, p.country, p.pid, p.gamesc
 $q_msblue = db_query($sql_msblue, [$mid]);
 $i = 0;
 while ($r_msblue = zero_out($q_msblue->fetch())) {
-	  if (!$r_msblue['playerid']) {
-		$r_msblue['playerid'] = 0;
-	  }
-	  $i++;
-	  $class = ($i % 2) ? 'grey' : 'grey2';
+    if (!$r_msblue['playerid']) {
+        $r_msblue['playerid'] = 0;
+    }
+    $i++;
+    $class = ($i % 2) ? 'grey' : 'grey2';
 
-	  $bluepname = $r_msblue['name'];
-	  $myurl = urlencode($r_msblue['name']);
+    $bluepname = $r_msblue['name'];
+    $myurl = urlencode($r_msblue['name']);
 
 
 
-	echo'<tr>';
-	if ($r_msblue['banned'] != 'Y') {
-		echo '<td nowrap class="darkhuman" align="left"><a class="darkhuman" href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msblue['pid'].'">'.FormatPlayerName($r_msblue['country'], $r_msblue['pid'], $bluepname, $gid, $gamename, true, $r_msblue['rank']).'</a></td>';
-	} else {
-		$r_msblue ['gamescore'] = '-';
-		$r_msblue ['suicides'] = '-';
-		$r_msblue ['flag_capture'] = '-';
-		echo '<td nowrap class="darkhuman" align="left"><span style="text-decoration: line-through;">'.FormatPlayerName($r_msblue['country'], $r_msblue['pid'], $bluepname, $gid, $gamename, true, $r_msblue['rank']).'</span></td>';
-	}
+    echo'<tr>';
+    if ($r_msblue['banned'] != 'Y') {
+        echo '<td nowrap class="darkhuman" align="left"><a class="darkhuman" href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msblue['pid'].'">'.FormatPlayerName($r_msblue['country'], $r_msblue['pid'], $bluepname, $gid, $gamename, true, $r_msblue['rank']).'</a></td>';
+    } else {
+        $r_msblue ['gamescore'] = '-';
+        $r_msblue ['suicides'] = '-';
+        $r_msblue ['flag_capture'] = '-';
+        echo '<td nowrap class="darkhuman" align="left"><span style="text-decoration: line-through;">'.FormatPlayerName($r_msblue['country'], $r_msblue['pid'], $bluepname, $gid, $gamename, true, $r_msblue['rank']).'</span></td>';
+    }
 
-	echo '
+    echo '
 		<td class="'.$class.'" align="center">'.GetMinutes($r_msblue['gametime']).'</td>
 		<td class="'.$class.'" align="center"></td>
 		<td class="'.$class.'" align="center">'.$r_msblue['gamescore'].'</td>
@@ -160,5 +161,3 @@ echo'
 
 echo'</tbody></table>
 <br>';
-
-?>

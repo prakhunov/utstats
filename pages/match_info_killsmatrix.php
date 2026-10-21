@@ -1,11 +1,13 @@
 <?php
-function PrintVertical($text) {
-  $len = strlen($text);
-  $ret = '';
-  for ($i = 0; $i < $len; $i++) {
-    $ret .= substr($text, $i, 1) .'<br>';
-  }
-  return($ret);
+
+function PrintVertical($text)
+{
+    $len = strlen($text);
+    $ret = '';
+    for ($i = 0; $i < $len; $i++) {
+        $ret .= substr($text, $i, 1) .'<br>';
+    }
+    return($ret);
 }
 
 // Retrieve the killmatrix
@@ -15,11 +17,13 @@ $sql_km = "SELECT killer, victim, kills
 
 $q_km = db_query($sql_km, [$mid]);
 while ($r_km = $q_km->fetch()) {
-  $km[intval($r_km['killer'])][intval($r_km['victim'])] = $r_km['kills'];
+    $km[intval($r_km['killer'])][intval($r_km['victim'])] = $r_km['kills'];
 }
 
 // No matrix: bye
-if (!isset($km)) return;
+if (!isset($km)) {
+    return;
+}
 
 // Are we processing a teamgame?
 $qm_teamgame = db_row("SELECT teamgame FROM uts_match WHERE id = ?;", [$mid]);
@@ -42,12 +46,12 @@ $sql_players = "  SELECT  p.pid,
                   gamescore DESC;";
 $q_players = db_query($sql_players, [$mid]);
 while ($r_players = $q_players->fetch()) {
-  $players[intval($r_players['playerid'])] = array(  'pid'     => $r_players['pid'],
-                                    'name'     => $r_players['name'],
-                                    'country'  => $r_players['country'],
-                                    'banned'    => $r_players['banned'],
-                                    'suicides'  => intval($r_players['suicides']),
-                                    'team'     => intval($r_players['team']));
+    $players[intval($r_players['playerid'])] = [  'pid'     => $r_players['pid'],
+                                      'name'     => $r_players['name'],
+                                      'country'  => $r_players['country'],
+                                      'banned'    => $r_players['banned'],
+                                      'suicides'  => intval($r_players['suicides']),
+                                      'team'     => intval($r_players['team'])];
 }
 
 // Table header
@@ -64,15 +68,15 @@ echo '
   <tr>';
 
 // Victims
-foreach($players as $player) {
-  echo '<th align="center" class="tooltip" title="'.($player['name']).'" href="?p=matchp&amp;mid='. $mid .'&amp;pid='. urlencode($player['pid']). '">
+foreach ($players as $player) {
+    echo '<th align="center" class="tooltip" title="'.($player['name']).'" href="?p=matchp&amp;mid='. $mid .'&amp;pid='. urlencode($player['pid']). '">
   <div class="vertical">';
-  if (strlen($player['name']) > 10) {
-    echo substr($player['name'], 0, 10);
-  } else {
-    echo $player['name'] ;
-  };
-  echo '</div>
+    if (strlen($player['name']) > 10) {
+        echo substr($player['name'], 0, 10);
+    } else {
+        echo $player['name'] ;
+    };
+    echo '</div>
   </th>';
 }
 echo '</tr>
@@ -80,56 +84,66 @@ echo '</tr>
 
 // Team colors victims
 if ($teamgame) {
-  foreach($players as $player) {
-    switch($player['team']) {
-      case 0: $teamcolor = 'redteamb'; break;
-      case 1: $teamcolor = 'blueteamb'; break;
-      case 2: $teamcolor = 'greenteamb'; break;
-      case 3: $teamcolor = 'goldteamb'; break;
-    }
-    echo '<td class="'. $teamcolor .'" align="center" width="25" height="25">
+    foreach ($players as $player) {
+        switch ($player['team']) {
+            case 0: $teamcolor = 'redteamb';
+                break;
+            case 1: $teamcolor = 'blueteamb';
+                break;
+            case 2: $teamcolor = 'greenteamb';
+                break;
+            case 3: $teamcolor = 'goldteamb';
+                break;
+        }
+        echo '<td class="'. $teamcolor .'" align="center" width="25" height="25">
       <img src="assets/images/victim.png" height="15">
     </td>';
-  }
-  echo '</tr>';
+    }
+    echo '</tr>';
 }
 
 // Killer rows
 $first = true;
 $i = 0;
 
-foreach($players as $kid => $killer) {
-  if ($killer['banned'] == 'Y') continue;
-  $i++;
-  echo '<tr class="clickableRow" href="?p=matchp&amp;mid='. $mid .'&amp;pid='. urlencode($killer['pid']). '">';
-  if ($first) echo'<td class="smheading" rowspan="'. count($players) .'" align="center" width="20"> <img src="assets/images/xhair.png"> </td>';
-  echo '<td nowrap align="left" style="width: 220px;">';
-  echo '<a href="?p=matchp&amp;mid='. $mid .'&amp;pid='. urlencode($killer['pid']). '">'.
-      FormatPlayerName($killer['country'], $killer['pid'], $killer['name'], $gid, $gamename) .'&nbsp;</a></td>';
-  if ($teamgame) {
-    switch($killer['team']) {
-      case 0: $teamcolor = 'redteamb'; break;
-      case 1: $teamcolor = 'blueteamb'; break;
-      case 2: $teamcolor = 'greenteamb'; break;
-      case 3: $teamcolor = 'goldteamb'; break;
+foreach ($players as $kid => $killer) {
+    if ($killer['banned'] == 'Y') {
+        continue;
     }
-    echo '<td class="'. $teamcolor .'" align="center" width="30" height="25"><img src="assets/images/xhair.png" height="15"></td>';
-  }
-  foreach($players as $vid => $victim) {
-    $class = ($kid == $vid) ? 'suicide' : 'killCell';
-    //if  ($i % 2) $class .= '2';
-    echo '<td class="'.$class.' tooltip" title="'.($victim['name']).'" href="?p=matchp&amp;mid='. $mid .'&amp;pid='. urlencode($player['pid']). '" align="center" width="20">';
-    if ($kid == $vid) {
-      $val = ($killer['suicides'] != 0) ? $killer['suicides'] : '&nbsp;';
-    } else {
-      $val = (isset($km[$kid][$vid])) ? $km[$kid][$vid] : '&nbsp';
+    $i++;
+    echo '<tr class="clickableRow" href="?p=matchp&amp;mid='. $mid .'&amp;pid='. urlencode($killer['pid']). '">';
+    if ($first) {
+        echo'<td class="smheading" rowspan="'. count($players) .'" align="center" width="20"> <img src="assets/images/xhair.png"> </td>';
     }
-    echo $val .'</td>';
-  }
+    echo '<td nowrap align="left" style="width: 220px;">';
+    echo '<a href="?p=matchp&amp;mid='. $mid .'&amp;pid='. urlencode($killer['pid']). '">'.
+        FormatPlayerName($killer['country'], $killer['pid'], $killer['name'], $gid, $gamename) .'&nbsp;</a></td>';
+    if ($teamgame) {
+        switch ($killer['team']) {
+            case 0: $teamcolor = 'redteamb';
+                break;
+            case 1: $teamcolor = 'blueteamb';
+                break;
+            case 2: $teamcolor = 'greenteamb';
+                break;
+            case 3: $teamcolor = 'goldteamb';
+                break;
+        }
+        echo '<td class="'. $teamcolor .'" align="center" width="30" height="25"><img src="assets/images/xhair.png" height="15"></td>';
+    }
+    foreach ($players as $vid => $victim) {
+        $class = ($kid == $vid) ? 'suicide' : 'killCell';
+        //if  ($i % 2) $class .= '2';
+        echo '<td class="'.$class.' tooltip" title="'.($victim['name']).'" href="?p=matchp&amp;mid='. $mid .'&amp;pid='. urlencode($player['pid']). '" align="center" width="20">';
+        if ($kid == $vid) {
+            $val = ($killer['suicides'] != 0) ? $killer['suicides'] : '&nbsp;';
+        } else {
+            $val = (isset($km[$kid][$vid])) ? $km[$kid][$vid] : '&nbsp';
+        }
+        echo $val .'</td>';
+    }
 
-  $first = false;
+    $first = false;
 }
 
 echo '</tbody></table><br>';
-
-?>

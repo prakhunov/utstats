@@ -1,4 +1,5 @@
 <?php
+
 // Picture configuration file
 
 // General note about colors:
@@ -11,7 +12,7 @@
 // Acceptable values are 00 (completely opaque) to 7F (completely transparent)
 // FFFF003F will become half transparent yellow
 
-$i=0;
+$i = 0;
 // Enable users to use this picutre or (temporary) disable it?
 $pic[$i]['enabled'] = true;
 
@@ -151,7 +152,7 @@ $pic[$i]['default']['fontsize'] = 12;
 //           '%PLAYERNAME%'s overall accuracy this month was %MONTH_ACC% % while it was %LMONTH_ACC% last month!'
 //       ==> 'Player's overall accuracy this month was 42.22 % while it was 27.52 % last month!'
 
-$j=0;
+$j = 0;
 $pic[$i]['process'][$j]['type'] = 'text';
 $pic[$i]['process'][$j]['value'] = '%PLAYERNAME%';
 $pic[$i]['process'][$j]['fontcolor'] = '000000';
@@ -208,7 +209,7 @@ $pic[$i]['default']['font'] = 'microsbe.ttf';
 $pic[$i]['default']['fontcolor'] = 'FFFFFF';
 $pic[$i]['default']['fontsize'] = 10;
 
-$j=0;
+$j = 0;
 $pic[$i]['process'][$j]['type'] = 'text';
 $pic[$i]['process'][$j]['value'] = '%PLAYERNAME% sucks!';
 $pic[$i]['process'][$j]['x_from'] = 9;
@@ -219,5 +220,3 @@ $pic[$i]['process'][$j]['value'] = 'in %GAMENAME% games that is...';
 $pic[$i]['process'][$j]['x_from'] = 9;
 $pic[$i]['process'][$j]['y_from'] = 43;
 $j++;
-
-?>

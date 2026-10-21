@@ -1,4 +1,5 @@
 <?php
+
 $id = preg_replace('/\D/', '', $_GET["id"] ?? '');
 $wid = preg_replace('/\D/', '', $_GET["wid"] ?? '');
 $stage = $_GET["stage"] ?? '';
@@ -7,18 +8,17 @@ $oururl = str_replace("index.php", "", $oururl);
 $rtype = $_GET["rtype"] ?? '';
 
 if (empty($id)) {
-      die("No ID given");
+    die("No ID given");
 }
 
-IF ($rtype == "clanbase") {
-	include("pages/report_cb.php");
+if ($rtype == "clanbase") {
+    include("pages/report_cb.php");
 }
 
-IF ($rtype == "bbcode") {
-	include("pages/report/bbcode.php");
+if ($rtype == "bbcode") {
+    include("pages/report/bbcode.php");
 }
 
-IF ($rtype == "clanbase" && $stage == "generate") {
-	include("pages/report/clanbase.php");
+if ($rtype == "clanbase" && $stage == "generate") {
+    include("pages/report/clanbase.php");
 }
-?>

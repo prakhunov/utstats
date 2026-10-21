@@ -1,13 +1,16 @@
 <?php
 
 // Secrets come from the container environment (see .env.example); never hardcode them here.
-function utstats_env(string $name, ?string $default = null): string {
-	$value = getenv($name);
-	if ($value === false || $value === '') {
-		if ($default !== null) return $default;
-		throw new RuntimeException("Missing required environment variable $name");
-	}
-	return $value;
+function utstats_env(string $name, ?string $default = null): string
+{
+    $value = getenv($name);
+    if ($value === false || $value === '') {
+        if ($default !== null) {
+            return $default;
+        }
+        throw new RuntimeException("Missing required environment variable $name");
+    }
+    return $value;
 }
 
 // Database connection details
@@ -224,5 +227,3 @@ define("RENDERER_CHART_FRAGS_PLAYERNORMAL5", 97);
 define("RENDERER_CHART_ITEMS_TEAMPICKUPS", 100);
 define("RENDERER_CHART_ITEMS_PLAYERPICKUPS", 101);
 define("RENDERER_CHART_ITEMS_AMPRUNS", 102);
-
-?>

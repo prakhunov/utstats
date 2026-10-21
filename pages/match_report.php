@@ -1,4 +1,5 @@
 <?php
+
 $matchid = preg_replace('/\D/', '', $_GET['mid'] ?? '');
 
 echo'<br><table class = "zebra box" border="0" cellpadding="0" cellspacing="0" width="300">
@@ -11,4 +12,3 @@ echo'<br><table class = "zebra box" border="0" cellpadding="0" cellspacing="0" w
   </tr>
   </tbody>
 </table>';
-?>

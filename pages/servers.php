@@ -2,37 +2,50 @@
 
 // Firstly we need to work out First Last Next Prev pages
 $scount = db_count("SELECT servername, serverip FROM uts_match GROUP BY servername, serverip");
-$ecount = $scount/25;
+$ecount = $scount / 25;
 $ecount2 = number_format($ecount, 0, '.', '');
 
 if ($ecount > $ecount2) {
-  $ecount2 = $ecount2+1;
+    $ecount2 = $ecount2 + 1;
 }
 
 $fpage = 0;
-if($ecount < 1) { $lpage = 0; }
-else { $lpage = $ecount2-1; }
+if ($ecount < 1) {
+    $lpage = 0;
+} else {
+    $lpage = $ecount2 - 1;
+}
 
 $cpage = preg_replace('/\D/', '', (string) ($_GET["page"] ?? ''));
-if ($cpage == "") { $cpage = "0"; }
-$qpage = $cpage*25;
+if ($cpage == "") {
+    $cpage = "0";
+}
+$qpage = $cpage * 25;
 
-$tfpage = $cpage+1;
-$tlpage = $lpage+1;
+$tfpage = $cpage + 1;
+$tlpage = $lpage + 1;
 
-$ppage = $cpage-1;
+$ppage = $cpage - 1;
 $ppageurl = "<a class=\"pages\" href=\"./?p=servers&amp;page=$ppage\">[Previous]</a>";
-if ($ppage < "0") { $ppageurl = "[Previous]"; }
+if ($ppage < "0") {
+    $ppageurl = "[Previous]";
+}
 
-$npage = $cpage+1;
+$npage = $cpage + 1;
 $npageurl = "<a class=\"pages\" href=\"./?p=servers&amp;page=$npage\">[Next]</a>";
-if ($npage >= "$ecount") { $npageurl = "[Next]"; }
+if ($npage >= "$ecount") {
+    $npageurl = "[Next]";
+}
 
 $fpageurl = "<a class=\"pages\" href=\"./?p=servers&amp;page=$fpage\">[First]</a>";
-if ($cpage == "0") { $fpageurl = "[First]"; }
+if ($cpage == "0") {
+    $fpageurl = "[First]";
+}
 
 $lpageurl = "<a class=\"pages\" href=\"./?p=servers&amp;page=$lpage\">[Last]</a>";
-if ($cpage == "$lpage") { $lpageurl = "[Last]"; }
+if ($cpage == "$lpage") {
+    $lpageurl = "[Last]";
+}
 
 echo '
 <div class="pages">Page ['.$tfpage.'/'.$tlpage.'] Selection: '.$fpageurl.' / '.$ppageurl.' / '.$npageurl.' / '.$lpageurl.'</div>
@@ -78,4 +91,3 @@ echo '
 </table>
 
 <div class="pages">Page ['.$tfpage.'/'.$tlpage.'] Selection: '.$fpageurl.' / '.$ppageurl.' / '.$npageurl.' / '.$lpageurl.'</div>';
-?>

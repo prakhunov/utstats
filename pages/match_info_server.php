@@ -12,7 +12,7 @@ $myurl = urlencode($mapname);
 
 $mapnameToPrint = $matchinfo['mapname'];
 if ($mapnameToPrint == "Untitled") {
-  $mapnameToPrint = $mapname;
+    $mapnameToPrint = $mapname;
 }
 
 echo'
@@ -31,19 +31,19 @@ echo'
 ';
 
 if ($r_info['t0score'] > 0 || $r_info['t1score'] > 0) {
-  echo '
+    echo '
   <tr>
   <th colspan="2" class="red score" width="50%">'.$r_info['t0score'].'</th>
   <th colspan="2" class="blue score" width="50%">'.$r_info['t1score'].'</th>
   </tr>';
 
-  if ($r_info['t2score'] > 0 || $r_info['t3score'] > 0) {
-    echo'
+    if ($r_info['t2score'] > 0 || $r_info['t3score'] > 0) {
+        echo'
     <tr>
     <th colspan="2" class="green score" width="50%">'.$r_info['t2score'].'</th>
     <th colspan="2" class="yellow score" width="50%">'.$r_info['t3score'].'</th>
     </tr>';
-  }
+    }
 }
 
 echo '
@@ -69,5 +69,3 @@ echo '
 </tbody>
 </table>
 <br>';
-
-?>

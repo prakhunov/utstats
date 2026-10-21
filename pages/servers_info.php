@@ -1,48 +1,62 @@
 <?php
+
 $serverip = (string) ($_GET['serverip'] ?? '');
 $serverip_html = htmlspecialchars($serverip);
- 
+
 // Firstly we need to work out First Last Next Prev pages
 $scount = db_count("SELECT id FROM uts_match WHERE serverip = ?", [$serverip]);
- 
-$ecount = $scount/25;
+
+$ecount = $scount / 25;
 $ecount2 = number_format($ecount, 0, '.', '');
- 
-IF($ecount > $ecount2) {
-        $ecount2 = $ecount2+1;
+
+if ($ecount > $ecount2) {
+    $ecount2 = $ecount2 + 1;
 }
- 
+
 $fpage = 0;
-IF($ecount < 1) { $lpage = 0; }
-else { $lpage = $ecount2-1; }
- 
+if ($ecount < 1) {
+    $lpage = 0;
+} else {
+    $lpage = $ecount2 - 1;
+}
+
 $cpage = preg_replace('/\D/', '', (string) ($_GET["page"] ?? ''));
-IF ($cpage == "") { $cpage = "0"; }
-$qpage = $cpage*25;
- 
-$tfpage = $cpage+1;
-$tlpage = $lpage+1;
- 
-$ppage = $cpage-1;
+if ($cpage == "") {
+    $cpage = "0";
+}
+$qpage = $cpage * 25;
+
+$tfpage = $cpage + 1;
+$tlpage = $lpage + 1;
+
+$ppage = $cpage - 1;
 $ppageurl = "<a class=\"pages\" href=\"./?p=sinfo&amp;serverip=$serverip_html&amp;page=$ppage\">[Previous]</a>";
-IF ($ppage < "0") { $ppageurl = "[Previous]"; }
- 
-$npage = $cpage+1;
+if ($ppage < "0") {
+    $ppageurl = "[Previous]";
+}
+
+$npage = $cpage + 1;
 $npageurl = "<a class=\"pages\" href=\"./?p=sinfo&amp;serverip=$serverip_html&amp;page=$npage\">[Next]</a>";
-IF ($npage >= "$ecount") { $npageurl = "[Next]"; }
- 
+if ($npage >= "$ecount") {
+    $npageurl = "[Next]";
+}
+
 $fpageurl = "<a class=\"pages\" href=\"./?p=sinfo&amp;serverip=$serverip_html&amp;page=$fpage\">[First]</a>";
-IF ($cpage == "0") { $fpageurl = "[First]"; }
- 
+if ($cpage == "0") {
+    $fpageurl = "[First]";
+}
+
 $lpageurl = "<a class=\"pages\" href=\"./?p=sinfo&amp;serverip=$serverip_html&amp;page=$lpage\">[Last]</a>";
-IF ($cpage == "$lpage") { $lpageurl = "[Last]"; }
- 
- 
+if ($cpage == "$lpage") {
+    $lpageurl = "[Last]";
+}
+
+
 // Get the last match entry for this server
- 
+
 $serverinfo = db_row("SELECT time, servername, serverinfo, gameinfo, mutators FROM uts_match WHERE serverip = ? ORDER BY time DESC LIMIT 0,1", [$serverip]);
 $matchdate = mdate($serverinfo['time']);
- 
+
 echo'
 <table class = "zebra box" border="0" cellpadding="0" cellspacing="0" width="700">
   <tbody><tr>
@@ -66,12 +80,12 @@ echo'
   </tr>
 </tbody></table>
 <br>';
- 
+
 // Do graph stuff
 $bgwhere = "serverip = ?";
 $bgparams = [$serverip];
 include("pages/graph_mbreakdown.php");
- 
+
 echo'<div class="pages">Page ['.$tfpage.'/'.$tlpage.'] Selection: '.$fpageurl.' / '.$ppageurl.' / '.$npageurl.' / '.$lpageurl.'</div>
 <table class="zebra box" border="0" cellpadding="0" cellspacing="0">
   <tbody><tr>
@@ -83,16 +97,16 @@ echo'<div class="pages">Page ['.$tfpage.'/'.$tlpage.'] Selection: '.$fpageurl.' 
     <th class="smheading" align="center">Map</td>
     <th class="smheading" align="center" width="40">Time</th>
   </tr>';
- 
+
 $sql_recent = "SELECT m.id, m.time, g.name AS gamename, m.mapfile, m.gametime FROM uts_match AS m, uts_games AS g  WHERE g.id = m.gid AND m.serverip = ? ORDER BY m.time DESC LIMIT ?,25";
 foreach (db_all($sql_recent, [$serverip, (int) $qpage]) as $r_recent) {
- 
-          $r_time = mdate($r_recent['time']);
-          $r_mapfile = un_ut($r_recent['mapfile']);
-          $r_gametime = sec2min($r_recent['gametime']);
-          $myurl = urlencode($r_mapfile);
- 
-          echo'
+
+    $r_time = mdate($r_recent['time']);
+    $r_mapfile = un_ut($r_recent['mapfile']);
+    $r_gametime = sec2min($r_recent['gametime']);
+    $myurl = urlencode($r_mapfile);
+
+    echo'
           <tr class="clickableRow" href="./?p=match&amp;mid='.$r_recent['id'].'">
                 <td align="center"><a href="./?p=match&amp;mid='.$r_recent['id'].'">'.$r_time.'</a></td>
                 <td align="center">'.$r_recent['gamename'].'</td>
@@ -100,8 +114,7 @@ foreach (db_all($sql_recent, [$serverip, (int) $qpage]) as $r_recent) {
                 <td align="center">'.$r_gametime.'</td>
           </tr>';
 }
- 
+
 echo'
 </tbody></table>
 <div class="pages">Page ['.$tfpage.'/'.$tlpage.'] Selection: '.$fpageurl.' / '.$ppageurl.' / '.$npageurl.' / '.$lpageurl.'</div>';
-?>

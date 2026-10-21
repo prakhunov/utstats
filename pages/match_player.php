@@ -8,19 +8,19 @@ $r_infos = db_row("SELECT p.playerid, p.country, pi.name, pi.banned, p.gid, g.na
   WHERE p.gid = g.id AND p.pid = pi.id AND p.pid = ? AND matchid = ? LIMIT 0,1;", [$pid, $mid]);
 
 if (!$r_infos) {
-  echo "Unable to retrieve data!";
-  include("includes/footer.php");
-  exit;
+    echo "Unable to retrieve data!";
+    include("includes/footer.php");
+    exit;
 }
 
 if ($r_infos['banned'] == 'Y') {
-  if (isset($is_admin) and $is_admin) {
-    echo "Warning: Banned player - Admin override<br>";
-  } else {
-    echo "Sorry, this player has been banned!";
-    include("includes/footer.php");
-    exit;
-  }
+    if (isset($is_admin) and $is_admin) {
+        echo "Warning: Banned player - Admin override<br>";
+    } else {
+        echo "Sorry, this player has been banned!";
+        include("includes/footer.php");
+        exit;
+    }
 }
 
 $playerid = $r_infos['playerid'];
@@ -41,16 +41,16 @@ echo '
         <a href="./?p=pinfo&amp;pid='.$pid.'">'.FlagImage($country) .' '. htmlentities($playername) .'</a>
       </div>
       <div>'.
-        RankImageOrText($pid, $playername, NULL, $gid, $gamename, true, '%IT% in %GN% with %RP% ranking points.')
+        RankImageOrText($pid, $playername, null, $gid, $gamename, true, '%IT% in %GN% with %RP% ranking points.')
       .'</div>
       <a class="navCTA" href="./?p=pinfo&amp;pid='.$pid.'" role="button">Player page</a>
       <a class="navCTA" href="?p=pinfo&amp;pid='.$pid.'&amp;togglewatch=1&amp;noheader=1" role="button">';
 
-      if (PlayerOnWatchlist($pid)) {
-        echo 'Remove from Watchlist';
-      } else {
-        echo 'Add to Watchlist';
-      };
+if (PlayerOnWatchlist($pid)) {
+    echo 'Remove from Watchlist';
+} else {
+    echo 'Add to Watchlist';
+};
 
 echo '</a>
     </th>
@@ -78,7 +78,7 @@ echo '
     <th class="smheading" align="center" width="50">Time</th>
   </tr>';
 
-  $r_gsumm = zero_out(db_row("SELECT gamescore, frags, SUM(frags+suicides) AS kills, deaths, suicides, teamkills, eff, accuracy, ttl, gametime, spree_kill, spree_rampage, spree_dom, spree_uns, spree_god
+$r_gsumm = zero_out(db_row("SELECT gamescore, frags, SUM(frags+suicides) AS kills, deaths, suicides, teamkills, eff, accuracy, ttl, gametime, spree_kill, spree_rampage, spree_dom, spree_uns, spree_god
     FROM uts_player
     WHERE matchid = ? AND pid = ?
     GROUP BY pid, gamescore, frags, deaths, suicides, teamkills, eff, accuracy, ttl, gametime, spree_kill, spree_rampage, spree_dom, spree_uns, spree_god", [$mid, $pid]));
@@ -127,9 +127,9 @@ $r_gsumm = zero_out(db_row("SELECT spree_double, spree_multi, spree_ultra, spree
 $sql_firstblood = db_row("SELECT firstblood FROM uts_match WHERE id = ?", [$mid]);
 
 if ($sql_firstblood['firstblood'] == $pid) {
-  $firstblood = "Yes";
+    $firstblood = "Yes";
 } else {
-  $firstblood = "No";
+    $firstblood = "No";
 }
 
 echo '
@@ -155,7 +155,7 @@ weaponstats($mid, $pid);
 $r_pings = db_row("SELECT lowping, avgping, highping FROM uts_player WHERE pid = ?  and matchid = ? and lowping > 0", [$pid, $mid]);
 
 if ($r_pings and $r_pings['lowping']) {
-  echo '<br>
+    echo '<br>
   <table class="zebra box" border="0" cellpadding="0" cellspacing="0">
   <tbody>
   <tr>
@@ -173,5 +173,3 @@ if ($r_pings and $r_pings['lowping']) {
   </tr>
   </tbody></table>';
 }
-
-?>

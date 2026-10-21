@@ -1,6 +1,9 @@
 <?php
-if (empty($import_adminkey) or isset($_REQUEST['import_adminkey']) or $import_adminkey != $adminkey) die('bla');
-	
+
+if (empty($import_adminkey) or isset($_REQUEST['import_adminkey']) or $import_adminkey != $adminkey) {
+    die('bla');
+}
+
 $options['title'] = 'Extended Player Info';
 $options['requireconfirmation'] = false;
 $i = 0;
@@ -11,10 +14,10 @@ $options['vars'][$i]['caption'] = 'Player:';
 $i++;
 
 if (isset($_REQUEST['pid'])) {
-	$pid = (int)$_REQUEST['pid'];
-}else {
-	$results = adminselect($options);
-	$pid = (int)$results['v_pid'];
+    $pid = (int)$_REQUEST['pid'];
+} else {
+    $results = adminselect($options);
+    $pid = (int)$results['v_pid'];
 }
 
 $is_admin = true;
@@ -38,7 +41,7 @@ echo '
   </tr>';
 
 foreach (db_all($sql_ips) as $r_ips) {
-      echo '
+    echo '
   <tr>
     <td class="grey" align = "center">'.$r_ips['ip'].'</td>
     <td class="grey" align = "left">'.gethostbyaddr($r_ips['ip']).'</td>
@@ -68,21 +71,19 @@ echo '
   </tr>';
 
 if (count($q_fakes) == 0) {
-	      echo '
+    echo '
 	  <tr>
 	    <td class="grey" align = "center" colspan="2">No other names found</td>
 	  </tr>';
-}
-else {
-	foreach ($q_fakes as $r_fakes) {
-	      echo '
+} else {
+    foreach ($q_fakes as $r_fakes) {
+        echo '
 	  <tr>
 	    <td class="grey" align = "center">'.$r_fakes['ip'].'</td>
 	    <td class="grey" align = "center">'.$r_fakes['name'].'</td>
 	  </tr>';
-	}
+    }
 }
 echo '
   </tbody>
 </table><br>';
-?>

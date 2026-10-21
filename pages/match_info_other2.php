@@ -1,12 +1,13 @@
 <?php
+
 //include('pages/match_info_killsmatrix.php');
 
 include('includes/weaponstats.php');
 weaponstats($mid, 0, 'Weapons Summary - '.$ass_att.' Attacking');
 
-IF($mid2 != NULL) {
-	echo '<br>';
-	weaponstats($mid2, 0, 'Weapons Summary - '.$ass_att2.' Attacking');
+if ($mid2 != null) {
+    echo '<br>';
+    weaponstats($mid2, 0, 'Weapons Summary - '.$ass_att2.' Attacking');
 }
 
 echo'
@@ -31,13 +32,13 @@ FROM uts_player as p, uts_pinfo AS pi  WHERE p.pid = pi.id AND pi.banned <> 'Y' 
 $q_pickups = db_query($sql_pickups, [$mid]);
 $i = 0;
 while ($r_pickups = zero_out($q_pickups->fetch())) {
-     $i++;
-     $class = ($i % 2) ? 'grey' : 'grey2';
+    $i++;
+    $class = ($i % 2) ? 'grey' : 'grey2';
 
-	  $r_pname = $r_pickups['name'];
-	  $myurl = urlencode($r_pname);
+    $r_pname = $r_pickups['name'];
+    $myurl = urlencode($r_pname);
 
-	  echo'
+    echo'
 	  <tr>
 		<td nowrap class="darkhuman" align="left"><a class="darkhuman" href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_pickups['pid'].'">'.FormatPlayerName($r_pickups['country'], $r_pickups['pid'], $r_pname, $gid, $gamename).'</a></td>
 		<td class="'.$class.'" align="center">'.$r_pickups['pu_pads'].'</td>
@@ -49,9 +50,9 @@ while ($r_pickups = zero_out($q_pickups->fetch())) {
 	  </tr>';
 }
 
-IF($mid2 == NULL) {
+if ($mid2 == null) {
 } else {
-	echo'</tbody></table>
+    echo'</tbody></table>
 	<br>
 	<table class = "zebra box" border="0" cellpadding="0" cellspacing="0" width="720">
 	  <tbody><tr>
@@ -67,19 +68,19 @@ IF($mid2 == NULL) {
 		<td class="smheading" align="center" width="80">Damage Amp</td>
 	  </tr>';
 
-	$sql_pickups = "SELECT p.pid, pi.name, p.country, SUM(p.pu_pads) AS pu_pads, SUM(p.pu_armour) AS pu_armour, SUM(p.pu_keg) AS pu_keg,
+    $sql_pickups = "SELECT p.pid, pi.name, p.country, SUM(p.pu_pads) AS pu_pads, SUM(p.pu_armour) AS pu_armour, SUM(p.pu_keg) AS pu_keg,
 	SUM(p.pu_invis) AS pu_invis, SUM(p.pu_belt) AS pu_belt, SUM(p.pu_amp) AS pu_amp
 	FROM uts_player as p, uts_pinfo AS pi  WHERE p.pid = pi.id AND pi.banned <> 'Y' AND matchid = ? GROUP BY pid ORDER BY name ASC";
-	$q_pickups = db_query($sql_pickups, [$mid2]);
-	$i = 0;
-	while ($r_pickups = zero_out($q_pickups->fetch())) {
-     $i++;
-     $class = ($i % 2) ? 'grey' : 'grey2';
+    $q_pickups = db_query($sql_pickups, [$mid2]);
+    $i = 0;
+    while ($r_pickups = zero_out($q_pickups->fetch())) {
+        $i++;
+        $class = ($i % 2) ? 'grey' : 'grey2';
 
-	  $r_pname = $r_pickups['name'];
-	  $myurl = urlencode($r_pname);
+        $r_pname = $r_pickups['name'];
+        $myurl = urlencode($r_pname);
 
-		  echo'
+        echo'
 		  <tr>
 			<td nowrap align="left"><a href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_pickups['pid'].'">'.FormatPlayerName($r_pickups['country'], $r_pickups['pid'], $r_pname, $gid, $gamename).'</a></td>
 			<td class="'.$class.'" align="center">'.$r_pickups['pu_pads'].'</td>
@@ -89,18 +90,22 @@ IF($mid2 == NULL) {
 			<td class="'.$class.'" align="center">'.$r_pickups['pu_belt'].'</td>
 			<td class="'.$class.'" align="center">'.$r_pickups['pu_amp'].'</td>
 		  </tr>';
-	}
+    }
 }
 
 $sql_firstblood = db_row("SELECT pi.name, pi.country, m.firstblood FROM uts_match AS m, uts_pinfo AS pi WHERE m.firstblood = pi.id AND m.id = ?", [$mid]);
-if (!$sql_firstblood) $sql_firstblood = array('country' => '', 'name' => '(unknown)', 'firstblood' => NULL);
+if (!$sql_firstblood) {
+    $sql_firstblood = ['country' => '', 'name' => '(unknown)', 'firstblood' => null];
+}
 $sql_multis = db_row("SELECT SUM(spree_double) AS spree_double, SUM(spree_multi) AS spree_multi, SUM(spree_ultra) AS spree_ultra, SUM(spree_monster)  AS spree_monster FROM uts_player WHERE matchid = ?", [$mid]);
 
-IF($mid2 == NULL) {
+if ($mid2 == null) {
 } else {
-$sql_firstblood2 = db_row("SELECT pi.name, pi.country, m.firstblood FROM uts_match AS m, uts_pinfo AS pi WHERE m.firstblood = pi.id AND m.id = ?", [$mid2]);
-if (!$sql_firstblood2) $sql_firstblood2 = array('country' => '', 'name' => '(unknown)', 'firstblood' => NULL);
-$sql_multis2 = db_row("SELECT SUM(spree_double) AS spree_double, SUM(spree_multi) AS spree_multi, SUM(spree_ultra) AS spree_ultra, SUM(spree_monster)  AS spree_monster FROM uts_player WHERE matchid = ?", [$mid2]);
+    $sql_firstblood2 = db_row("SELECT pi.name, pi.country, m.firstblood FROM uts_match AS m, uts_pinfo AS pi WHERE m.firstblood = pi.id AND m.id = ?", [$mid2]);
+    if (!$sql_firstblood2) {
+        $sql_firstblood2 = ['country' => '', 'name' => '(unknown)', 'firstblood' => null];
+    }
+    $sql_multis2 = db_row("SELECT SUM(spree_double) AS spree_double, SUM(spree_multi) AS spree_multi, SUM(spree_ultra) AS spree_ultra, SUM(spree_monster)  AS spree_monster FROM uts_player WHERE matchid = ?", [$mid2]);
 }
 echo'</tbody></table>
 <br>
@@ -140,4 +145,3 @@ echo'</tbody></table>
     <td class="grey" align="center">'.$sql_multis2['spree_monster'].'</td>
   </tr>
 </tbody></table>';
-?>

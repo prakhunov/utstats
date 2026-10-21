@@ -1,5 +1,8 @@
 <?php
-if (empty($import_adminkey) or isset($_REQUEST['import_adminkey']) or $import_adminkey != $adminkey) die('bla');
+
+if (empty($import_adminkey) or isset($_REQUEST['import_adminkey']) or $import_adminkey != $adminkey) {
+    die('bla');
+}
 
 $options['title'] = 'Empty the Database';
 $i = 0;
@@ -20,8 +23,8 @@ $i++;
 
 $results = adminselect($options);
 
-IF ($results['sure'] == "Yes" and $results['really'] == "Yes") {
-  echo '<br><table border="0" cellpadding="1" cellspacing="2" width="600">
+if ($results['sure'] == "Yes" and $results['really'] == "Yes") {
+    echo '<br><table border="0" cellpadding="1" cellspacing="2" width="600">
   <tr>
     <td class="smheading" align="center" colspan="2">Empty Database</td>
  </tr>
@@ -51,7 +54,7 @@ IF ($results['sure'] == "Yes" and $results['really'] == "Yes") {
     </td>
   </tr></table>';
 } else {
-  echo '<br><table border="0" cellpadding="1" cellspacing="2" width="600">
+    echo '<br><table border="0" cellpadding="1" cellspacing="2" width="600">
   <tr>
     <td class="smheading" align="center" colspan="2">Empty Database</td>
   </tr>
@@ -63,5 +66,3 @@ IF ($results['sure'] == "Yes" and $results['really'] == "Yes") {
     <td class="smheading" align="center" colspan="2">Database Not Emptied - <a href="./admin.php?key='.$_REQUEST['key'].'">Go Back To Admin Page</a></td>
   </tr></table>';
 }
-
-?>

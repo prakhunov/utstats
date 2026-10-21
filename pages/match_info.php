@@ -1,6 +1,9 @@
 <?php
+
 $r_info = db_row("SELECT teamgame, t0, t1, t2, t3, t0score, t1score, t2score, t3score FROM uts_match WHERE id = ?", [$mid]);
-if (!$r_info) die("Match not found");
+if (!$r_info) {
+    die("Match not found");
+}
 $teamgame = ($r_info['teamgame'] == 'True') ? true : false;
 
 include("pages/match_info_server.php");
@@ -15,73 +18,70 @@ include("pages/match_info_charts.php");
 
 #echo "<script type='text/javascript'>alert('$real_gamename');</script>";
 
-switch($real_gamename) {
-  case "Assault":
-  case "Assault (insta)":
-    include("pages/match_info_ass.php");
-    break;
+switch ($real_gamename) {
+    case "Assault":
+    case "Assault (insta)":
+        include("pages/match_info_ass.php");
+        break;
 
-  case "Capture the Flag":
-  case "Capture the Flag (insta)":
-  case "New Capture the Flag":
-  case "New Capture the Flag (insta)":
-  case "Assigned Teams: New Capture the Flag (insta)":
-  case "Assigned Teams: New Capture the Flag":
-  case "Assigned Teams: Capture the Flag (insta)":
-  case "Assigned Teams: Capture the Flag":
-    include("pages/match_info_ctf.php");
-    teamstats($mid, 'Match Summary');
-      break;
+    case "Capture the Flag":
+    case "Capture the Flag (insta)":
+    case "New Capture the Flag":
+    case "New Capture the Flag (insta)":
+    case "Assigned Teams: New Capture the Flag (insta)":
+    case "Assigned Teams: New Capture the Flag":
+    case "Assigned Teams: Capture the Flag (insta)":
+    case "Assigned Teams: Capture the Flag":
+        include("pages/match_info_ctf.php");
+        teamstats($mid, 'Match Summary');
+        break;
 
-  case "Domination":
-  case "Domination (insta)":
-    teamstats($mid, 'Match Summary', 'dom_cp', 'Dom Pts');
-    break;
+    case "Domination":
+    case "Domination (insta)":
+        teamstats($mid, 'Match Summary', 'dom_cp', 'Dom Pts');
+        break;
 
-  case "JailBreak":
-  case "JailBreak (insta)":
-    teamstats($mid, 'Match Summary', 'ass_obj', 'Team Releases');
-    break;
+    case "JailBreak":
+    case "JailBreak (insta)":
+        teamstats($mid, 'Match Summary', 'ass_obj', 'Team Releases');
+        break;
 
-  case "Bunny Track":
-    include("pages/match_info_bt.php");
-    break;
+    case "Bunny Track":
+        include("pages/match_info_bt.php");
+        break;
 
-  case "Tournament DeathMatch":
-  case "Tournament Team Game":
-  case "Tournament DeathMatch (insta)":
-  case "Tournament Team Game (insta)":
-    teamstats($mid, 'Match Summary');
-    break;
+    case "Tournament DeathMatch":
+    case "Tournament Team Game":
+    case "Tournament DeathMatch (insta)":
+    case "Tournament Team Game (insta)":
+        teamstats($mid, 'Match Summary');
+        break;
 
-  case "Extended Last Man Standing":
-  case "Extended Last Man Standing (insta)":
-  case "Last Man Standing":
-  case "Last Man Standing (insta)":
-  case "Last Man Standing +":
-  case "Last Man Standing + (insta)":
-  case "Last Man Standing++":
-  case "Last Man Standing++ (insta)":
-    include("pages/match_info_lms.php");
-    break;
+    case "Extended Last Man Standing":
+    case "Extended Last Man Standing (insta)":
+    case "Last Man Standing":
+    case "Last Man Standing (insta)":
+    case "Last Man Standing +":
+    case "Last Man Standing + (insta)":
+    case "Last Man Standing++":
+    case "Last Man Standing++ (insta)":
+        include("pages/match_info_lms.php");
+        break;
 
-  default:
-    if ($teamgame) {
-      teamstats($mid, 'Match Summary');
-     } else {
-      teamstats($mid, 'Player Summary');
-    }
+    default:
+        if ($teamgame) {
+            teamstats($mid, 'Match Summary');
+        } else {
+            teamstats($mid, 'Player Summary');
+        }
 }
 
 if ($real_gamename == "Assault" or $real_gamename == "Assault (insta)") {
-  include("pages/match_info_other2.php");
-}
-else if ($real_gamename != "Bunny Track") {
-  include("pages/match_info_other.php");
+    include("pages/match_info_other2.php");
+} elseif ($real_gamename != "Bunny Track") {
+    include("pages/match_info_other.php");
 }
 
 if ($real_gamename == "Capture the Flag" or $real_gamename == "Capture the Flag (insta)" or $real_gamename == "New Capture the Flag" or $real_gamename == "New Capture the Flag (insta)") {
-  include("pages/match_report.php");
+    include("pages/match_report.php");
 }
-
-?>

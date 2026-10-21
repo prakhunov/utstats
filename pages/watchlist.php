@@ -1,4 +1,5 @@
 <?php
+
 global $s_lastvisit;
 
 echo'
@@ -19,10 +20,12 @@ echo'
 
 $watchlist = GetCurrentWatchlist();
 
-if (count($watchlist) > 25) $watchlist = array_slice($watchlist, 0, 25);
+if (count($watchlist) > 25) {
+    $watchlist = array_slice($watchlist, 0, 25);
+}
 
 if (count($watchlist) == 0) {
-  echo '
+    echo '
   <tr>
     <td>
       <p class="pages">
@@ -33,7 +36,7 @@ if (count($watchlist) == 0) {
     </td>
   </tr>
   </tbody></table>';
-  return;
+    return;
 }
 
 echo '
@@ -55,7 +58,7 @@ echo '
 $i = 0;
 
 foreach ($watchlist as $pid) {
-  $sql_players = "SELECT pi.id AS pid,
+    $sql_players = "SELECT pi.id AS pid,
                   pi.name,
                   pi.country,
                   m.time,
@@ -69,7 +72,7 @@ foreach ($watchlist as $pid) {
             ORDER BY m.time DESC
             LIMIT 0,1";
 
-  $sql_pinfo = "  SELECT COUNT(*) AS games,
+    $sql_pinfo = "  SELECT COUNT(*) AS games,
                   SUM(p.gamescore) as gamescore,
                   SUM(p.frags) AS frags,
                   SUM(p.kills) AS kills,
@@ -83,21 +86,26 @@ foreach ($watchlist as $pid) {
             WHERE p.pid = ?
             GROUP BY p.pid";
 
-  $r_pinfo = db_row($sql_pinfo, [$pid]);
+    $r_pinfo = db_row($sql_pinfo, [$pid]);
 
-  foreach (db_all($sql_players, [$pid]) as $r_players) {
-    $i++;
-    $new = (mtimestamp($r_players['time']) > $s_lastvisit) ? true : false;
-    $class = ($i % 2) ? 'grey' : 'grey2';
-    echo '<tr class="clickableRow" href="?p=pinfo&amp;pid='. $r_players['pid'] .'">';
-    echo '<td align="left"><a href="?p=pinfo&amp;pid='. $r_players['pid'] .'">';
-    echo FormatPlayerName($r_players['country'], $r_players['pid'], $r_players['name']);
-    echo '</a></td>';
-    echo '<td align="center"><a href="?p=match&amp;mid='. $r_players['mid'] .'">';;
-    if  ($new) echo "<strong>";
-    echo date("Y-m-d H:i", mtimestamp($r_players['time']));
-    if ($new) echo "</strong>";
-    echo '</a>
+    foreach (db_all($sql_players, [$pid]) as $r_players) {
+        $i++;
+        $new = (mtimestamp($r_players['time']) > $s_lastvisit) ? true : false;
+        $class = ($i % 2) ? 'grey' : 'grey2';
+        echo '<tr class="clickableRow" href="?p=pinfo&amp;pid='. $r_players['pid'] .'">';
+        echo '<td align="left"><a href="?p=pinfo&amp;pid='. $r_players['pid'] .'">';
+        echo FormatPlayerName($r_players['country'], $r_players['pid'], $r_players['name']);
+        echo '</a></td>';
+        echo '<td align="center"><a href="?p=match&amp;mid='. $r_players['mid'] .'">';
+        ;
+        if ($new) {
+            echo "<strong>";
+        }
+        echo date("Y-m-d H:i", mtimestamp($r_players['time']));
+        if ($new) {
+            echo "</strong>";
+        }
+        echo '</a>
     </td>
     <td align="center">'.$r_pinfo['games'].'</td>
     <td align="center">'.$r_pinfo['gamescore'].'</td>
@@ -110,8 +118,7 @@ foreach ($watchlist as $pid) {
     <td align="center">'.GetMinutes($r_pinfo['ttl']).'</td>
     <td align="center">'.sec2hour($r_pinfo['gametime']).'</td>
     </tr>';
-  }
+    }
 }
 
 echo '</tbody></table>';
-?>

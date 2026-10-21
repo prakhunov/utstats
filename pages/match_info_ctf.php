@@ -1,4 +1,5 @@
 <?php
+
 echo'
 <table class = "box zebra" border="0" cellpadding="0" cellspacing="0" width="700">
   <tbody><tr>
@@ -32,31 +33,31 @@ $q_msred = db_query($sql_msred, [$mid]);
 $i = 0;
 
 while ($r_msred = zero_out($q_msred->fetch())) {
-  $i++;
-  $class = ($i % 2) ? 'grey' : 'grey2';
+    $i++;
+    $class = ($i % 2) ? 'grey' : 'grey2';
 
-  $redpname = $r_msred['name'];
-  $myurl = urlencode($r_msred['name']);
+    $redpname = $r_msred['name'];
+    $myurl = urlencode($r_msred['name']);
 
-  echo'<tr class="clickableRow" href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msred['pid'].'">';
+    echo'<tr class="clickableRow" href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msred['pid'].'">';
 
-  if ($r_msred['banned'] != 'Y') {
-    echo '<td nowrap align="left"><a href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msred['pid'].'">'.FormatPlayerName($r_msred['country'], $r_msred['pid'], $redpname, $gid, $gamename, true, $r_msred['rank']).'</a></td>';
-  } else {
-    $r_msred ['gamescore'] = '-';
-    $r_msred ['flag_taken'] = '-';
-    $r_msred ['flag_pickedup'] = '-';
-    $r_msred ['flag_dropped'] = '-';
-    $r_msred ['flag_assist'] = '-';
-    $r_msred ['flag_cover'] = '-';
-    $r_msred ['flag_seal'] = '-';
-    $r_msred ['flag_capture'] = '-';
-    $r_msred ['flag_kill'] = '-';
-    $r_msred ['flag_return'] = '-';
-    echo '<td nowrap align="left"><span style="text-decoration: line-through;">'.FormatPlayerName($r_msred['country'], $r_msred['pid'], $redpname, $gid, $gamename, true, $r_msred['rank']).'</span></td>';
-  }
+    if ($r_msred['banned'] != 'Y') {
+        echo '<td nowrap align="left"><a href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msred['pid'].'">'.FormatPlayerName($r_msred['country'], $r_msred['pid'], $redpname, $gid, $gamename, true, $r_msred['rank']).'</a></td>';
+    } else {
+        $r_msred ['gamescore'] = '-';
+        $r_msred ['flag_taken'] = '-';
+        $r_msred ['flag_pickedup'] = '-';
+        $r_msred ['flag_dropped'] = '-';
+        $r_msred ['flag_assist'] = '-';
+        $r_msred ['flag_cover'] = '-';
+        $r_msred ['flag_seal'] = '-';
+        $r_msred ['flag_capture'] = '-';
+        $r_msred ['flag_kill'] = '-';
+        $r_msred ['flag_return'] = '-';
+        echo '<td nowrap align="left"><span style="text-decoration: line-through;">'.FormatPlayerName($r_msred['country'], $r_msred['pid'], $redpname, $gid, $gamename, true, $r_msred['rank']).'</span></td>';
+    }
 
-  echo '
+    echo '
     <td align="center"></td>
     <td align="center">'.$r_msred['gamescore'].'</td>
     <td align="center">'.$r_msred['flag_taken'].'</td>
@@ -118,30 +119,30 @@ $q_msblue = db_query($sql_msblue, [$mid]);
 $i = 0;
 
 while ($r_msblue = zero_out($q_msblue->fetch())) {
-  $i++;
-  $class = ($i % 2) ? 'grey' : 'grey2';
+    $i++;
+    $class = ($i % 2) ? 'grey' : 'grey2';
 
-  $bluepname = $r_msblue['name'];
-  $myurl = urlencode($r_msblue['name']);
+    $bluepname = $r_msblue['name'];
+    $myurl = urlencode($r_msblue['name']);
 
-  echo'<tr class="clickableRow" href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msblue['pid'].'">';
-  if ($r_msblue['banned'] != 'Y') {
-    echo '<td nowrap align="left"><a href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msblue['pid'].'">'.FormatPlayerName($r_msblue['country'], $r_msblue['pid'], $bluepname, $gid, $gamename, true, $r_msblue['rank']).'</a></td>';
-  } else {
-    $r_msblue ['gamescore'] = '-';
-    $r_msblue ['flag_taken'] = '-';
-    $r_msblue ['flag_pickedup'] = '-';
-    $r_msblue ['flag_dropped'] = '-';
-    $r_msblue ['flag_assist'] = '-';
-    $r_msblue ['flag_cover'] = '-';
-    $r_msblue ['flag_seal'] = '-';
-    $r_msblue ['flag_capture'] = '-';
-    $r_msblue ['flag_kill'] = '-';
-    $r_msblue ['flag_return'] = '-';
-    echo '<td nowrap align="left"><span style="text-decoration: line-through;">'.FormatPlayerName($r_msblue['country'], $r_msblue['pid'], $bluepname, $gid, $gamename, true, $r_msblue['rank']).'</span></td>';
-  }
+    echo'<tr class="clickableRow" href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msblue['pid'].'">';
+    if ($r_msblue['banned'] != 'Y') {
+        echo '<td nowrap align="left"><a href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msblue['pid'].'">'.FormatPlayerName($r_msblue['country'], $r_msblue['pid'], $bluepname, $gid, $gamename, true, $r_msblue['rank']).'</a></td>';
+    } else {
+        $r_msblue ['gamescore'] = '-';
+        $r_msblue ['flag_taken'] = '-';
+        $r_msblue ['flag_pickedup'] = '-';
+        $r_msblue ['flag_dropped'] = '-';
+        $r_msblue ['flag_assist'] = '-';
+        $r_msblue ['flag_cover'] = '-';
+        $r_msblue ['flag_seal'] = '-';
+        $r_msblue ['flag_capture'] = '-';
+        $r_msblue ['flag_kill'] = '-';
+        $r_msblue ['flag_return'] = '-';
+        echo '<td nowrap align="left"><span style="text-decoration: line-through;">'.FormatPlayerName($r_msblue['country'], $r_msblue['pid'], $bluepname, $gid, $gamename, true, $r_msblue['rank']).'</span></td>';
+    }
 
-  echo '
+    echo '
     <td align="center"></td>
     <td align="center">'.$r_msblue['gamescore'].'</td>
     <td align="center">'.$r_msblue['flag_taken'].'</td>
@@ -179,7 +180,7 @@ echo'
 // Check If Green Team Were Used (CTF4 Compatibility)
 $greencheck = db_count("SELECT * FROM uts_player WHERE matchid = ? AND team = 2", [$mid]);
 if ($greencheck > 0) {
-  echo'
+    echo'
   <tr>
     <th class="hlheading" colspan="12" align="center">Team: Green</th>
   </tr>
@@ -200,37 +201,37 @@ if ($greencheck > 0) {
     <th class="smheading" align="center">Player</th>
   </tr>';
 
-  $sql_msgreen = "SELECT p.playerid, pi.name, pi.banned, p.country, p.pid, p.gamescore, p.flag_taken, p.flag_pickedup, p.flag_dropped, p.flag_assist, p.flag_cover, p.flag_seal, p.flag_capture, p.flag_kill, p.flag_return, p.rank
+    $sql_msgreen = "SELECT p.playerid, pi.name, pi.banned, p.country, p.pid, p.gamescore, p.flag_taken, p.flag_pickedup, p.flag_dropped, p.flag_assist, p.flag_cover, p.flag_seal, p.flag_capture, p.flag_kill, p.flag_return, p.rank
     FROM uts_player AS p, uts_pinfo AS pi WHERE p.pid = pi.id AND matchid = ? AND team = 2 ORDER BY gamescore DESC";
 
-  $q_msgreen = db_query($sql_msgreen, [$mid]);
-  $i = 0;
+    $q_msgreen = db_query($sql_msgreen, [$mid]);
+    $i = 0;
 
-  while ($r_msgreen = zero_out($q_msgreen->fetch())) {
-    $i++;
-    $class = ($i % 2) ? 'grey' : 'grey2';
+    while ($r_msgreen = zero_out($q_msgreen->fetch())) {
+        $i++;
+        $class = ($i % 2) ? 'grey' : 'grey2';
 
-    $greenpname = $r_msgreen['name'];
-    $myurl = urlencode($r_msgreen['name']);
+        $greenpname = $r_msgreen['name'];
+        $myurl = urlencode($r_msgreen['name']);
 
-    echo'<tr class="clickableRow" href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msgreen['pid'].'">';
-    if ($r_msgreen['banned'] != 'Y') {
-      echo '<td nowrap align="left"><a  href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msgreen['pid'].'">'.FormatPlayerName($r_msgreen['country'], $r_msgreen['pid'], $greenpname, $gid, $gamename, true, $r_msgreen['rank']).'</a></td>';
-    } else {
-      $r_msgreen ['gamescore'] = '-';
-      $r_msgreen ['flag_taken'] = '-';
-      $r_msgreen ['flag_pickedup'] = '-';
-      $r_msgreen ['flag_dropped'] = '-';
-      $r_msgreen ['flag_assist'] = '-';
-      $r_msgreen ['flag_cover'] = '-';
-      $r_msgreen ['flag_seal'] = '-';
-      $r_msgreen ['flag_capture'] = '-';
-      $r_msgreen ['flag_kill'] = '-';
-      $r_msgreen ['flag_return'] = '-';
-      echo '<td nowrap align="left"><span style="text-decoration: line-through;">'.FormatPlayerName($r_msgreen['country'], $r_msgreen['pid'], $greenpname, $gid, $gamename, true, $r_msgreen['rank']).'</span></td>';
-    }
+        echo'<tr class="clickableRow" href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msgreen['pid'].'">';
+        if ($r_msgreen['banned'] != 'Y') {
+            echo '<td nowrap align="left"><a  href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msgreen['pid'].'">'.FormatPlayerName($r_msgreen['country'], $r_msgreen['pid'], $greenpname, $gid, $gamename, true, $r_msgreen['rank']).'</a></td>';
+        } else {
+            $r_msgreen ['gamescore'] = '-';
+            $r_msgreen ['flag_taken'] = '-';
+            $r_msgreen ['flag_pickedup'] = '-';
+            $r_msgreen ['flag_dropped'] = '-';
+            $r_msgreen ['flag_assist'] = '-';
+            $r_msgreen ['flag_cover'] = '-';
+            $r_msgreen ['flag_seal'] = '-';
+            $r_msgreen ['flag_capture'] = '-';
+            $r_msgreen ['flag_kill'] = '-';
+            $r_msgreen ['flag_return'] = '-';
+            echo '<td nowrap align="left"><span style="text-decoration: line-through;">'.FormatPlayerName($r_msgreen['country'], $r_msgreen['pid'], $greenpname, $gid, $gamename, true, $r_msgreen['rank']).'</span></td>';
+        }
 
-    echo '
+        echo '
       <td class="'.$class.'" align="center"></td>
       <td class="'.$class.'" align="center">'.$r_msgreen['gamescore'].'</td>
       <td class="'.$class.'" align="center">'.$r_msgreen['flag_taken'].'</td>
@@ -243,13 +244,13 @@ if ($greencheck > 0) {
       <td class="'.$class.'" align="center">'.$r_msgreen['flag_kill'].'</td>
       <td class="'.$class.'" align="center">'.$r_msgreen['flag_return'].'</td>
     </tr>';
-  }
+    }
 
-  $teamscore = db_row("SELECT t1score AS teamscore FROM uts_match WHERE id = ?", [$mid]);
-  $msgreentot = db_row("SELECT SUM(gamescore) AS gamescore, SUM(flag_taken) AS flag_taken, SUM(flag_pickedup) AS flag_pickedup, SUM(flag_dropped) AS flag_dropped, SUM(flag_assist) AS flag_assist, SUM(flag_cover) AS flag_cover, SUM(flag_seal) AS flag_seal, SUM(flag_capture) AS flag_capture, SUM(flag_kill)as flag_kill, SUM(flag_return) AS flag_return
+    $teamscore = db_row("SELECT t1score AS teamscore FROM uts_match WHERE id = ?", [$mid]);
+    $msgreentot = db_row("SELECT SUM(gamescore) AS gamescore, SUM(flag_taken) AS flag_taken, SUM(flag_pickedup) AS flag_pickedup, SUM(flag_dropped) AS flag_dropped, SUM(flag_assist) AS flag_assist, SUM(flag_cover) AS flag_cover, SUM(flag_seal) AS flag_seal, SUM(flag_capture) AS flag_capture, SUM(flag_kill)as flag_kill, SUM(flag_return) AS flag_return
     FROM uts_player WHERE matchid = ? AND team = 2 ORDER BY gamescore DESC", [$mid]);
 
-  echo '
+    echo '
   <tr>
   <td class="totals" align="center">Totals</td>
     <td class="totals" align="center">'.$teamscore['teamscore'].'</td>
@@ -269,7 +270,7 @@ if ($greencheck > 0) {
 // Check If Gold Team Were Used (CTF4 Compatibility)
 $goldcheck = db_count("SELECT * FROM uts_player WHERE matchid = ? AND team = 3", [$mid]);
 if ($goldcheck > 0) {
-  echo '
+    echo '
   <tr>
     <th class="hlheading" colspan="12" align="center">Team: Gold</th>
   </tr>
@@ -291,36 +292,36 @@ if ($goldcheck > 0) {
     <th class="smheading" align="center">Player</th>
   </tr>';
 
-  $sql_msgold = "SELECT p.playerid, pi.name, pi.banned, p.country, p.pid, p.gamescore, p.flag_taken, p.flag_pickedup, p.flag_dropped, p.flag_assist, p.flag_cover, p.flag_seal, p.flag_capture, p.flag_kill, p.flag_return, p.rank
+    $sql_msgold = "SELECT p.playerid, pi.name, pi.banned, p.country, p.pid, p.gamescore, p.flag_taken, p.flag_pickedup, p.flag_dropped, p.flag_assist, p.flag_cover, p.flag_seal, p.flag_capture, p.flag_kill, p.flag_return, p.rank
     FROM uts_player AS p, uts_pinfo AS pi WHERE p.pid = pi.id AND matchid = ? AND team = 3 ORDER BY gamescore DESC";
-  $q_msgold = db_query($sql_msgold, [$mid]);
-  $i = 0;
+    $q_msgold = db_query($sql_msgold, [$mid]);
+    $i = 0;
 
-  while ($r_msgold = zero_out($q_msgold->fetch())) {
-    $i++;
-    $class = ($i % 2) ? 'grey' : 'grey2';
+    while ($r_msgold = zero_out($q_msgold->fetch())) {
+        $i++;
+        $class = ($i % 2) ? 'grey' : 'grey2';
 
-    $goldpname = $r_msgold['name'];
-    $myurl = urlencode($r_msgold['name']);
+        $goldpname = $r_msgold['name'];
+        $myurl = urlencode($r_msgold['name']);
 
-    echo'<tr class="clickableRow" href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msgreen['pid'].'">';
-    if ($r_msgold['banned'] != 'Y') {
-      echo '<td nowrap class="darkhuman" align="left"><a class="darkhuman" href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msgold['pid'].'">'.FormatPlayerName($r_msgold['country'], $r_msgold['pid'], $goldpname, $gid, $gamename, true, $r_msgold['rank']).'</a></td>';
-    } else {
-      $r_msgold ['gamescore'] = '-';
-      $r_msgold ['flag_taken'] = '-';
-      $r_msgold ['flag_pickedup'] = '-';
-      $r_msgold ['flag_dropped'] = '-';
-      $r_msgold ['flag_assist'] = '-';
-      $r_msgold ['flag_cover'] = '-';
-      $r_msgold ['flag_seal'] = '-';
-      $r_msgold ['flag_capture'] = '-';
-      $r_msgold ['flag_kill'] = '-';
-      $r_msgold ['flag_return'] = '-';
-      echo '<td nowrap class="darkhuman" align="left"><span style="text-decoration: line-through;">'.FormatPlayerName($r_msgold['country'], $r_msgold['pid'], $goldpname, $gid, $gamename, true, $r_msgold['rank']).'</span></td>';
-    }
+        echo'<tr class="clickableRow" href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msgreen['pid'].'">';
+        if ($r_msgold['banned'] != 'Y') {
+            echo '<td nowrap class="darkhuman" align="left"><a class="darkhuman" href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_msgold['pid'].'">'.FormatPlayerName($r_msgold['country'], $r_msgold['pid'], $goldpname, $gid, $gamename, true, $r_msgold['rank']).'</a></td>';
+        } else {
+            $r_msgold ['gamescore'] = '-';
+            $r_msgold ['flag_taken'] = '-';
+            $r_msgold ['flag_pickedup'] = '-';
+            $r_msgold ['flag_dropped'] = '-';
+            $r_msgold ['flag_assist'] = '-';
+            $r_msgold ['flag_cover'] = '-';
+            $r_msgold ['flag_seal'] = '-';
+            $r_msgold ['flag_capture'] = '-';
+            $r_msgold ['flag_kill'] = '-';
+            $r_msgold ['flag_return'] = '-';
+            echo '<td nowrap class="darkhuman" align="left"><span style="text-decoration: line-through;">'.FormatPlayerName($r_msgold['country'], $r_msgold['pid'], $goldpname, $gid, $gamename, true, $r_msgold['rank']).'</span></td>';
+        }
 
-    echo '
+        echo '
       <td class="'.$class.'" align="center"></td>
       <td class="'.$class.'" align="center">'.$r_msgold['gamescore'].'</td>
       <td class="'.$class.'" align="center">'.$r_msgold['flag_taken'].'</td>
@@ -333,13 +334,13 @@ if ($goldcheck > 0) {
       <td class="'.$class.'" align="center">'.$r_msgold['flag_kill'].'</td>
       <td class="'.$class.'" align="center">'.$r_msgold['flag_return'].'</td>
     </tr>';
-  }
+    }
 
-  $teamscore = db_row("SELECT t1score AS teamscore FROM uts_match WHERE id = ?", [$mid]);
-  $msgoldtot = db_row("SELECT SUM(gamescore) AS gamescore, SUM(flag_taken) AS flag_taken, SUM(flag_pickedup) AS flag_pickedup, SUM(flag_dropped) AS flag_dropped, SUM(flag_assist) AS flag_assist, SUM(flag_cover) AS flag_cover, SUM(flag_seal) AS flag_seal, SUM(flag_capture) AS flag_capture, SUM(flag_kill)as flag_kill, SUM(flag_return) AS flag_return
+    $teamscore = db_row("SELECT t1score AS teamscore FROM uts_match WHERE id = ?", [$mid]);
+    $msgoldtot = db_row("SELECT SUM(gamescore) AS gamescore, SUM(flag_taken) AS flag_taken, SUM(flag_pickedup) AS flag_pickedup, SUM(flag_dropped) AS flag_dropped, SUM(flag_assist) AS flag_assist, SUM(flag_cover) AS flag_cover, SUM(flag_seal) AS flag_seal, SUM(flag_capture) AS flag_capture, SUM(flag_kill)as flag_kill, SUM(flag_return) AS flag_return
     FROM uts_player WHERE matchid = ? AND team = 3 ORDER BY gamescore DESC", [$mid]);
 
-  echo '
+    echo '
   <tr>
   <td class="totals" align="center">Totals</td>
     <td class="totals" align="center">'.$teamscore['teamscore'].'</td>
@@ -358,5 +359,3 @@ if ($goldcheck > 0) {
 
 echo '</tbody></table>
 <br>';
-
-?>

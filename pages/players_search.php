@@ -1,22 +1,32 @@
 <?php
 
-function InvertSort($curr_field, $filter, $sort) {
-	if ($curr_field != $filter) return(($curr_field == "name") ? "ASC" : "DESC");
-	if ($sort == 'ASC') return('DESC');
-	return('ASC');
+function InvertSort($curr_field, $filter, $sort)
+{
+    if ($curr_field != $filter) {
+        return(($curr_field == "name") ? "ASC" : "DESC");
+    }
+    if ($sort == 'ASC') {
+        return('DESC');
+    }
+    return('ASC');
 }
 
-function SortPic($curr_field, $filter, $sort) {
-	if ($curr_field != $filter) return;
-	$fname = 'images/s_'. strtolower($sort) .'.png';
-	if (!file_exists($fname)) return;
-	return('&nbsp;<img src="'. $fname .'" border="0" width="11" height="9" alt="" title="('.strtolower($sort).'ending)">');
+function SortPic($curr_field, $filter, $sort)
+{
+    if ($curr_field != $filter) {
+        return;
+    }
+    $fname = 'images/s_'. strtolower($sort) .'.png';
+    if (!file_exists($fname)) {
+        return;
+    }
+    return('&nbsp;<img src="'. $fname .'" border="0" width="11" height="9" alt="" title="('.strtolower($sort).'ending)">');
 }
 
 // Get filter and set sorting
 $playername = (string) ($_REQUEST['name'] ?? '');
-$filter = db_pick(strtolower($_GET['filter'] ?? ''), array("name", "games", "gamescore", "frags", "kills", "deaths", "suicides", "eff", "accuracy", "ttl", "gametime"), "name");
-$sort = db_pick($_GET['sort'] ?? '', array('ASC', 'DESC'), ($filter == "name") ? "ASC" : "DESC");
+$filter = db_pick(strtolower($_GET['filter'] ?? ''), ["name", "games", "gamescore", "frags", "kills", "deaths", "suicides", "eff", "accuracy", "ttl", "gametime"], "name");
+$sort = db_pick($_GET['sort'] ?? '', ['ASC', 'DESC'], ($filter == "name") ? "ASC" : "DESC");
 
 echo'
 <form NAME="playersearch" METHOD="post" ACTION="./?p=psearch">
@@ -50,12 +60,12 @@ FROM uts_player AS p, uts_pinfo AS pi WHERE p.pid = pi.id AND pi.name LIKE ? AND
 
 foreach (db_all($sql_plist, ['%' . $playername . '%']) as $r_plist) {
 
-	  $gametime = sec2hour($r_plist['gametime']);
-	  $eff = get_dp($r_plist['eff']);
-	  $acc = get_dp($r_plist['accuracy']);
-	  $ttl = GetMinutes($r_plist['ttl']);
-	  
-	  echo'
+    $gametime = sec2hour($r_plist['gametime']);
+    $eff = get_dp($r_plist['eff']);
+    $acc = get_dp($r_plist['accuracy']);
+    $ttl = GetMinutes($r_plist['ttl']);
+
+    echo'
 	  <tr>
 		<td nowrap class="dark" align="left"><a class="darkhuman" href="./?p=pinfo&amp;pid='.$r_plist['pid'].'">'.FormatPlayerName($r_plist['country'], $r_plist['pid'], $r_plist['name']).'</a></td>
 		<td class="grey" align="center">'.$r_plist['games'].'</td>
@@ -72,4 +82,3 @@ foreach (db_all($sql_plist, ['%' . $playername . '%']) as $r_plist) {
 }
 echo'
 </tbody></table></form>';
-?>

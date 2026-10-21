@@ -11,13 +11,13 @@ $lastMapScore0 = $qlastMaps['t0score'];
 $lastMapScore1 = $qlastMaps['t1score'];
 $lastMapScore2 = $qlastMaps['t2score'];
 $lastMapScore3 = $qlastMaps['t3score'];
-$moreThan2Teams = ($lastMapScore2!=0);
+$moreThan2Teams = ($lastMapScore2 != 0);
 
 $mappic = getMapImageName($lastMapFileName);
 
 // quick hack to show empty one at front page if no map
 if (!file_exists($mappic) || $mappic == "assets/images/maps/blank_large.png") {
-  $mappic = "assets/images/maps/emptyfront.jpg";
+    $mappic = "assets/images/maps/emptyfront.jpg";
 }
 
 echo '
@@ -33,32 +33,32 @@ echo '
       </tr>
 			<tr>
 				<td class="carousel-red';
-				if ($moreThan2Teams) {
-					echo '-small';
-				}
-				echo '">'.$lastMapScore0.'</td>
+if ($moreThan2Teams) {
+    echo '-small';
+}
+echo '">'.$lastMapScore0.'</td>
 				<td ';
-				if ($moreThan2Teams) {
-					echo 'rowspan=2 ';
-				}
-				echo '
+if ($moreThan2Teams) {
+    echo 'rowspan=2 ';
+}
+echo '
 				class="carousel-text" style="width:30%;">'.mdate($lastMapTime).' </td>
 				<td class="carousel-blue';
-				if  ($moreThan2Teams) {
-					echo '-small';
-				}
-				echo '">'.$lastMapScore1.'</td>
+if ($moreThan2Teams) {
+    echo '-small';
+}
+echo '">'.$lastMapScore1.'</td>
 			</tr>';
 
-			if ($moreThan2Teams) {
-  			echo '
+if ($moreThan2Teams) {
+    echo '
   			<tr>
 					<td class="carousel-green-small">'.$lastMapScore2.'</td>
 					<td class="carousel-gold-small">'.$lastMapScore3.'</td>
 				</tr>';
-			}
+}
 
-		echo '</table>
+echo '</table>
     <p></p>
     <a class="navCTA" href="?p=match&mid='.$lastMapId.'" role="button">View stats</a>
   </div>
@@ -80,29 +80,26 @@ echo '
 
 $sql_recent = "SELECT m.id, m.time, g.name AS gamename, m.mapfile, m.gametime, t0score, t1score, t2score, t3score, (SELECT count(p.id) FROM uts_player AS p WHERE m.id = p.matchid) as players FROM uts_match AS m, uts_games AS g WHERE g.id = m.gid ORDER BY m.id DESC LIMIT 10";
 foreach (db_all($sql_recent) as $r_recent) {
-  $r_time = mdate($r_recent['time']);
-  $r_mapfile = un_ut($r_recent['mapfile']);
-  $r_gametime = GetMinutes($r_recent['gametime']);
-  $winner = max($r_recent['t0score'], $r_recent['t1score'], $r_recent['t2score'], $r_recent['t3score']);
+    $r_time = mdate($r_recent['time']);
+    $r_mapfile = un_ut($r_recent['mapfile']);
+    $r_gametime = GetMinutes($r_recent['gametime']);
+    $winner = max($r_recent['t0score'], $r_recent['t1score'], $r_recent['t2score'], $r_recent['t3score']);
 
-  if ($winner == $r_recent['t0score']) {
-    $winnercolor = "red";
-    $winmsg = "Red is the winner!";
-  }
-  elseif ($winner == $r_recent['t1score']) {
-    $winnercolor = "blue";
-    $winmsg = "Blue is the winner!";
-  }
-  elseif ($winner == $r_recent['t2score']) {
-    $winnercolor = "green";
-    $winmsg = "Green is the winner!";
-  }
-  else {
-    $winnercolor = "gold";
-    $winmsg = "Gold is the winner!";
-  };
+    if ($winner == $r_recent['t0score']) {
+        $winnercolor = "red";
+        $winmsg = "Red is the winner!";
+    } elseif ($winner == $r_recent['t1score']) {
+        $winnercolor = "blue";
+        $winmsg = "Blue is the winner!";
+    } elseif ($winner == $r_recent['t2score']) {
+        $winnercolor = "green";
+        $winmsg = "Green is the winner!";
+    } else {
+        $winnercolor = "gold";
+        $winmsg = "Gold is the winner!";
+    };
 
-  echo'
+    echo'
   <tr class="clickableRow" href="./?p=match&amp;mid='.$r_recent['id'].'">
   	<td align="center">'.$r_recent['id'].'</td>
   	<td nowrap align="center"><a href="./?p=match&amp;mid='.$r_recent['id'].'">'.$r_time.'</a></td>
@@ -111,11 +108,11 @@ foreach (db_all($sql_recent) as $r_recent) {
   	<td class="tooltip" title="'.$winmsg.'" align="center">
       <span class="redbox">'.$r_recent['t0score'].'</span><span class="bluebox">'.$r_recent['t1score'].'</span>';
 
-    	if ($moreThan2Teams) {
-      	echo '<span class="greenbox">'.$r_recent['t2score'].' </span> <span class="goldbox">'.$r_recent['t3score'].'</span>';
-    	}
+    if ($moreThan2Teams) {
+        echo '<span class="greenbox">'.$r_recent['t2score'].' </span> <span class="goldbox">'.$r_recent['t3score'].'</span>';
+    }
 
-	  echo '</td>
+    echo '</td>
   </tr>';
 }
 
@@ -151,7 +148,7 @@ $playercount = $r_playercount['result'];
 $servercount = db_count("SELECT DISTINCT servername FROM uts_match");
 $mapcount = db_count("SELECT COUNT(mapfile) AS result FROM uts_match GROUP BY mapfile");
 $r_matchcount = db_row("SELECT COUNT(*) AS result FROM uts_match");
-$matchcount= $r_matchcount['result'];
+$matchcount = $r_matchcount['result'];
 $hourscount = db_row("SELECT SUM(gametime) AS result FROM uts_player");
 $gametime = sec2hour($hourscount['result']);
 
@@ -211,12 +208,12 @@ $sql_gamesummary = "SELECT
 // ORDER BY gamename ASC";
 
 foreach (db_all($sql_gamesummary) as $r_gamesummary) {
-	$gid = $r_gamesummary['gid'];
+    $gid = $r_gamesummary['gid'];
 
-	$q_gametime = db_row("SELECT SUM(gametime) AS gametime FROM uts_match WHERE gid = ?", [$gid]);
-	$gametime = sec2hour($q_gametime['gametime']);
+    $q_gametime = db_row("SELECT SUM(gametime) AS gametime FROM uts_match WHERE gid = ?", [$gid]);
+    $gametime = sec2hour($q_gametime['gametime']);
 
-	echo '
+    echo '
   <tr>
     <td align="center">'.$r_gamesummary['gamename'].'</td>
 		<td align="center">'.$r_gamesummary['frags'].'</td>
@@ -253,5 +250,3 @@ echo '
 $gtitle = "Across All Servers";
 $bgwhere = "id >= 0";
 include("pages/graph_mbreakdown.php");
-
-?>

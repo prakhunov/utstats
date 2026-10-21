@@ -1,4 +1,5 @@
-<?php 
+<?php
+
 
 DeBugMessage("Execute: includes/ftp.php");
 
@@ -10,30 +11,35 @@ $g_ftp_error = false;
 
 
 
-function ftp_error($message) {
+function ftp_error($message)
+{
 
-	global $html, $g_ftp_error, $ftp;
-
-	
-
-	$g_ftp_error = true;
-
-	tablerow('ERROR:', $message, true);
-
-	while(($err = $ftp->PopError()) !== false) {
-
-		$fctname = $err['fctname'];
-
-		$msg = $err['msg'];
-
-		$desc = $err['desc'];
-
-		if($desc) $tmp=' ('.$desc.')'; else $tmp='';
+    global $html, $g_ftp_error, $ftp;
 
 
-		tablerow('Error details:', $fctname.': '.$msg.$tmp, true);
 
-	}
+    $g_ftp_error = true;
+
+    tablerow('ERROR:', $message, true);
+
+    while (($err = $ftp->PopError()) !== false) {
+
+        $fctname = $err['fctname'];
+
+        $msg = $err['msg'];
+
+        $desc = $err['desc'];
+
+        if ($desc) {
+            $tmp = ' ('.$desc.')';
+        } else {
+            $tmp = '';
+        }
+
+
+        tablerow('Error details:', $fctname.': '.$msg.$tmp, true);
+
+    }
 
 
 
@@ -41,286 +47,316 @@ function ftp_error($message) {
 
 
 
-function tablerow($left, $right, $error=false) {
+function tablerow($left, $right, $error = false)
+{
 
-	global $html, $ftp_debug;
+    global $html, $ftp_debug;
 
-	if ($ftp_debug) return;
+    if ($ftp_debug) {
+        return;
+    }
 
-	$space = ($html) ? '&nbsp;' : ' ';
+    $space = ($html) ? '&nbsp;' : ' ';
 
-	$left = (empty($left)) ? $space : (($html) ? htmlentities($left) : $left);
+    $left = (empty($left)) ? $space : (($html) ? htmlentities($left) : $left);
 
-	$right = (empty($right)) ? $space : (($html) ? nl2br(htmlentities($right)) : $right);
+    $right = (empty($right)) ? $space : (($html) ? nl2br(htmlentities($right)) : $right);
 
-	$style = ($error) ? 'style="background-color: red;"' : '';
+    $style = ($error) ? 'style="background-color: red;"' : '';
 
-	if ($html) {
+    if ($html) {
 
-		echo '<tr>';
+        echo '<tr>';
 
-		echo '<td class="smheading" '. $style .' align="left" width="170">'. $left .'</td>';
+        echo '<td class="smheading" '. $style .' align="left" width="170">'. $left .'</td>';
 
-		echo '<td class="grey" '. $style .' align="left" width="380">'. $right .'</td>';
+        echo '<td class="grey" '. $style .' align="left" width="380">'. $right .'</td>';
 
-		echo '</tr>';
+        echo '</tr>';
 
-	} else {
+    } else {
 
-		if (strlen($left) < 30) $left .= str_repeat(" ", 30 - strlen($left));
+        if (strlen($left) < 30) {
+            $left .= str_repeat(" ", 30 - strlen($left));
+        }
 
-		echo "$left $right\n";
+        echo "$left $right\n";
 
-	}
+    }
 
-	flush();
+    flush();
 
 }
 
 
 
 function ftpupdate()
-
 {
 
-	global  $html, $ftp, $ftp_uname, $ftp_upass, $ftp_hostname, $ftp_port, $g_ftp_error, $ftp_debug,
+    global  $html, $ftp, $ftp_uname, $ftp_upass, $ftp_hostname, $ftp_port, $g_ftp_error, $ftp_debug,
 
-		$ftp_delete, $ftp_movedir, $ftp_dir, $ftp_passive, $import_log_start, $import_log_extension,
+    $ftp_delete, $ftp_movedir, $ftp_dir, $ftp_passive, $import_log_start, $import_log_extension,
 
-		$import_utdc_download_enable, $import_utdc_log_start, $import_utdc_log_extension, $import_utdc_screenshot_start, $import_utdc_screenshot_extension,
-		$import_ac_download_enable, $import_ac_log_start, $import_ac_log_extension,
-		$import_ace_download_enable, $import_ace_log_start, $import_ace_log_extension, $import_ace_screenshot_start, $import_ace_screenshot_extension;
+    $import_utdc_download_enable, $import_utdc_log_start, $import_utdc_log_extension, $import_utdc_screenshot_start, $import_utdc_screenshot_extension,
+    $import_ac_download_enable, $import_ac_log_start, $import_ac_log_extension,
+    $import_ace_download_enable, $import_ace_log_start, $import_ace_log_extension, $import_ace_screenshot_start, $import_ace_screenshot_extension;
 
 
 
-	if (!$ftp_debug) {
+    if (!$ftp_debug) {
 
-		if ($html) echo'<table class="zebra box" border="0" cellpadding="0" cellspacing="0" style="table-layout:fixed"><tr><td class="smheading" align="center" height="25" width="550" colspan="2">';
+        if ($html) {
+            echo'<table class="zebra box" border="0" cellpadding="0" cellspacing="0" style="table-layout:fixed"><tr><td class="smheading" align="center" height="25" width="550" colspan="2">';
+        }
 
-		echo "FTP Transferring Log Files...\n";
+        echo "FTP Transferring Log Files...\n";
 
-		if ($html) echo '</td></tr>';
+        if ($html) {
+            echo '</td></tr>';
+        }
 
-	}
+    }
 
 
 
-	// Update, from here on were going to be doing multiple FTP sessions.
+    // Update, from here on were going to be doing multiple FTP sessions.
 
-	for ($i = 0; $i < count($ftp_hostname); $i++) {
+    for ($i = 0; $i < count($ftp_hostname); $i++) {
 
-		if ($i != 0) {
+        if ($i != 0) {
 
-			if ($html and !$ftp_debug) echo '<tr><td class="" align="center" height="25" width="550" colspan="2"></td></tr>';
+            if ($html and !$ftp_debug) {
+                echo '<tr><td class="" align="center" height="25" width="550" colspan="2"></td></tr>';
+            }
 
-			echo "\n";
+            echo "\n";
 
-		}
+        }
 
 
 
-		tablerow('Connecting to server:', $ftp_hostname[$i] .':'. $ftp_port[$i]);
+        tablerow('Connecting to server:', $ftp_hostname[$i] .':'. $ftp_port[$i]);
 
-		if (!$ftp->SetServer($ftp_hostname[$i], $ftp_port[$i])) {
+        if (!$ftp->SetServer($ftp_hostname[$i], $ftp_port[$i])) {
 
-			ftp_error("Unable to set server: ". $ftp->lastmsg); $ftp->quit(true); continue;
+            ftp_error("Unable to set server: ". $ftp->lastmsg);
+            $ftp->quit(true);
+            continue;
 
-		}
+        }
 
-		if (!$ftp->connect()) {
+        if (!$ftp->connect()) {
 
-			ftp_error("Unable to connect to server: ". $ftp->lastmsg); $ftp->quit(true); continue;
+            ftp_error("Unable to connect to server: ". $ftp->lastmsg);
+            $ftp->quit(true);
+            continue;
 
-		}
+        }
 
 
 
-		tablerow('', "Connected, now logging in...");
+        tablerow('', "Connected, now logging in...");
 
-		if (!$ftp->login($ftp_uname[$i], $ftp_upass[$i])) {
+        if (!$ftp->login($ftp_uname[$i], $ftp_upass[$i])) {
 
-			ftp_error("Login failed!\nBad username/password?"); $ftp->quit(true); continue;
+            ftp_error("Login failed!\nBad username/password?");
+            $ftp->quit(true);
+            continue;
 
-		}
+        }
 
-		tablerow('', "Logged in!");
+        tablerow('', "Logged in!");
 
 
 
-		if (!$ftp->SetType(FTP_BINARY)) {
+        if (!$ftp->SetType(FTP_BINARY)) {
 
-			ftp_error("Could not set type: ". $ftp->lastmsg); $ftp->quit(true); continue;
+            ftp_error("Could not set type: ". $ftp->lastmsg);
+            $ftp->quit(true);
+            continue;
 
-		}
+        }
 
-		if (!isset($ftp_passive[$i]) or $ftp_passive[$i]) {
+        if (!isset($ftp_passive[$i]) or $ftp_passive[$i]) {
 
-			tablerow("", "Setting passive mode");
+            tablerow("", "Setting passive mode");
 
-			if(!$ftp->Passive(true)) {
+            if (!$ftp->Passive(true)) {
 
-				ftp_error("Could not set passive mode: ". $ftp->lastmsg); $ftp->quit(true); continue;
+                ftp_error("Could not set passive mode: ". $ftp->lastmsg);
+                $ftp->quit(true);
+                continue;
 
-			}
+            }
 
-		} else {
+        } else {
 
-			tablerow("", "Setting active mode");
+            tablerow("", "Setting active mode");
 
-			if(!$ftp->Passive(false)) {
+            if (!$ftp->Passive(false)) {
 
-				ftp_error("Could not set active mode: ". $ftp->lastmsg); $ftp->quit(true); continue;
+                ftp_error("Could not set active mode: ". $ftp->lastmsg);
+                $ftp->quit(true);
+                continue;
 
-			}
+            }
 
-		}
+        }
 
-		if (($pwd = $ftp->pwd()) === false) {
+        if (($pwd = $ftp->pwd()) === false) {
 
-			ftp_error("Unable to retrieve current working directory"); $ftp->quit(true); continue;
+            ftp_error("Unable to retrieve current working directory");
+            $ftp->quit(true);
+            continue;
 
-		}
+        }
 
-		tablerow("Current directory is:", $pwd);
+        tablerow("Current directory is:", $pwd);
 
 
 
-		$dl_start = time();
+        $dl_start = time();
 
-		$dl_files = 0;
+        $dl_files = 0;
 
-		$dl_bytes = 0;
+        $dl_bytes = 0;
 
-		$error = false;
+        $error = false;
 
-		foreach($ftp_dir[$i] as $dir) {
+        foreach ($ftp_dir[$i] as $dir) {
 
-			if (!empty($dir)) {
+            if (!empty($dir)) {
 
-				if (!$ftp->chdir($dir)) {
+                if (!$ftp->chdir($dir)) {
 
-					ftp_error("Unable to change directory to: $dir"); $ftp->quit(true); continue;
+                    ftp_error("Unable to change directory to: $dir");
+                    $ftp->quit(true);
+                    continue;
 
-				}
+                }
 
-				tablerow('', "Changing directory to: $dir");
+                tablerow('', "Changing directory to: $dir");
 
-				if (($pwd = $ftp->pwd()) === false) {
+                if (($pwd = $ftp->pwd()) === false) {
 
-					ftp_error("Unable to retrieve current working directory"); $ftp->quit(true); continue;
+                    ftp_error("Unable to retrieve current working directory");
+                    $ftp->quit(true);
+                    continue;
 
-				}
+                }
 
-				tablerow("New directory is:", $pwd);
+                tablerow("New directory is:", $pwd);
 
-			}
+            }
 
-			
 
-			if (($filelist = $ftp->nlist()) === false) {
 
-				ftp_error("Unable to retrieve file list"); continue;
+            if (($filelist = $ftp->nlist()) === false) {
 
-			}
+                ftp_error("Unable to retrieve file list");
+                continue;
 
-			
+            }
 
-			tablerow("Directory contains:", count($filelist) ." ". ((count($filelist) == 1) ? 'file' : 'files'));
 
-			if (count($filelist) == 0) {
 
-				continue;
+            tablerow("Directory contains:", count($filelist) ." ". ((count($filelist) == 1) ? 'file' : 'files'));
 
-			}
+            if (count($filelist) == 0) {
 
-			foreach ($filelist as $filename) {
+                continue;
 
-				if (((substr($filename, 0, strlen($import_log_start)) == $import_log_start) and (substr($filename, strlen($filename) - strlen($import_log_extension)) == $import_log_extension))
+            }
 
-				or ($import_utdc_download_enable and (substr($filename, 0, strlen($import_utdc_log_start)) == $import_utdc_log_start) and (substr($filename, strlen($filename) - strlen($import_utdc_log_extension)) == $import_utdc_log_extension))
+            foreach ($filelist as $filename) {
 
-				or ($import_utdc_download_enable and (substr($filename, 0, strlen($import_utdc_screenshot_start)) == $import_utdc_screenshot_start) and (substr($filename, strlen($filename) - strlen($import_utdc_screenshot_extension)) == $import_utdc_screenshot_extension))
-	
-				or ($import_ac_download_enable and (substr($filename, 0, strlen($import_ac_log_start)) == $import_ac_log_start) and (substr($filename, strlen($filename) - strlen($import_ac_log_extension)) == $import_ac_log_extension)) 
+                if (((substr($filename, 0, strlen($import_log_start)) == $import_log_start) and (substr($filename, strlen($filename) - strlen($import_log_extension)) == $import_log_extension))
 
-				or ($import_ace_download_enable and (substr($filename, 0, strlen($import_ace_log_start)) == $import_ace_log_start) and (substr($filename, strlen($filename) - strlen($import_ace_log_extension)) == $import_ace_log_extension)) 
+                or ($import_utdc_download_enable and (substr($filename, 0, strlen($import_utdc_log_start)) == $import_utdc_log_start) and (substr($filename, strlen($filename) - strlen($import_utdc_log_extension)) == $import_utdc_log_extension))
 
-				or ($import_ace_download_enable and (substr($filename, 0, strlen($import_ace_screenshot_start)) == $import_ace_screenshot_start) and (substr($filename, strlen($filename) - strlen($import_ace_screenshot_extension)) == $import_ace_screenshot_extension))) {
-				} else {
-					continue;
-				}
+                or ($import_utdc_download_enable and (substr($filename, 0, strlen($import_utdc_screenshot_start)) == $import_utdc_screenshot_start) and (substr($filename, strlen($filename) - strlen($import_utdc_screenshot_extension)) == $import_utdc_screenshot_extension))
 
-				$size = $ftp->get($filename, 'logs/' . $filename);
+                or ($import_ac_download_enable and (substr($filename, 0, strlen($import_ac_log_start)) == $import_ac_log_start) and (substr($filename, strlen($filename) - strlen($import_ac_log_extension)) == $import_ac_log_extension))
 
-				if ($size === FALSE) {
+                or ($import_ace_download_enable and (substr($filename, 0, strlen($import_ace_log_start)) == $import_ace_log_start) and (substr($filename, strlen($filename) - strlen($import_ace_log_extension)) == $import_ace_log_extension))
 
-					$result = 'ERROR!';
+                or ($import_ace_download_enable and (substr($filename, 0, strlen($import_ace_screenshot_start)) == $import_ace_screenshot_start) and (substr($filename, strlen($filename) - strlen($import_ace_screenshot_extension)) == $import_ace_screenshot_extension))) {
+                } else {
+                    continue;
+                }
 
-					$error = true;
+                $size = $ftp->get($filename, 'logs/' . $filename);
 
-					if (file_exists('logs/' . $filename)) {
-						unlink('logs/' . $filename);
-					}
+                if ($size === false) {
 
-				} else {
+                    $result = 'ERROR!';
 
-					$result = "OK (". number_format(round(($size / 1024), 0)) ." KB)";
+                    $error = true;
 
-					$dl_files++;
+                    if (file_exists('logs/' . $filename)) {
+                        unlink('logs/' . $filename);
+                    }
 
-					$dl_bytes += $size;
+                } else {
 
-				}
+                    $result = "OK (". number_format(round(($size / 1024), 0)) ." KB)";
 
-				tablerow(($dl_files == 1) ? 'Downloading...' : '', "$filename -> $result");
+                    $dl_files++;
 
-				if ((!isset($ftp_delete[$i]) or $ftp_delete[$i]) and !$error) {
-					$ftp->delete($filename);
-				}
-				else {
-					// rename the file to prevent reimporting
-					$ftp->rename($filename, "~" . $filename);
-				}
+                    $dl_bytes += $size;
 
-			}
+                }
 
-		}	
+                tablerow(($dl_files == 1) ? 'Downloading...' : '', "$filename -> $result");
 
-		$dl_kb = number_format(round(($dl_bytes / 1024), 0));
+                if ((!isset($ftp_delete[$i]) or $ftp_delete[$i]) and !$error) {
+                    $ftp->delete($filename);
+                } else {
+                    // rename the file to prevent reimporting
+                    $ftp->rename($filename, "~" . $filename);
+                }
 
-		$dl_time = time() - $dl_start;
+            }
 
-		tablerow("Downloaded:", "$dl_files ". ((count($filelist) == 1) ? 'file' : 'files') ." ($dl_kb KB) in $dl_time seconds");
+        }
 
+        $dl_kb = number_format(round(($dl_bytes / 1024), 0));
 
+        $dl_time = time() - $dl_start;
 
-		if ($error) {
+        tablerow("Downloaded:", "$dl_files ". ((count($filelist) == 1) ? 'file' : 'files') ." ($dl_kb KB) in $dl_time seconds");
 
-			ftp_error('There were errors when downoading (some) files!');
 
-		}
 
+        if ($error) {
 
+            ftp_error('There were errors when downoading (some) files!');
 
-		tablerow("Disconnecting...", "done!");
+        }
 
-		$ftp->quit(true);
 
-	}
 
-	if (!$ftp_debug and $html) echo '</table><br />';
+        tablerow("Disconnecting...", "done!");
 
-	echo "\n\n";
+        $ftp->quit(true);
 
+    }
 
+    if (!$ftp_debug and $html) {
+        echo '</table><br />';
+    }
 
-	//update timestamp
+    echo "\n\n";
 
-	
 
-	if (!$g_ftp_error) {
-		file_put_contents(FTP_TIMESTAMP_FILE, (string) time());
-	}
+
+    //update timestamp
+
+
+
+    if (!$g_ftp_error) {
+        file_put_contents(FTP_TIMESTAMP_FILE, (string) time());
+    }
 
 }
 
@@ -333,44 +369,54 @@ $timestamp = is_file(FTP_TIMESTAMP_FILE) ? (int) trim(file_get_contents(FTP_TIME
 
 
 
-if(!$timestamp || (time() - $timestamp) > $ftp_interval*60) {
+if (!$timestamp || (time() - $timestamp) > $ftp_interval * 60) {
 
-	if ($timestamp) {
+    if ($timestamp) {
 
-		if ($html) echo '<p class="pages">';
+        if ($html) {
+            echo '<p class="pages">';
+        }
 
-		echo "Last FTP update more than $ftp_interval minutes ago, starting update: \n";
+        echo "Last FTP update more than $ftp_interval minutes ago, starting update: \n";
 
-		if ($html) echo '</p>';
+        if ($html) {
+            echo '</p>';
+        }
 
-	}
+    }
 
-	if ($ftp_debug) {
+    if ($ftp_debug) {
 
-		if ($html) echo '<table class="box" border="0"><tr><td class="smheading" width="550">';
+        if ($html) {
+            echo '<table class="box" border="0"><tr><td class="smheading" width="550">';
+        }
 
-		echo "FTP Debugging Output:\n";
+        echo "FTP Debugging Output:\n";
 
-		if ($html) echo '</td></tr><tr><td width="550" align="left"><pre>';
+        if ($html) {
+            echo '</td></tr><tr><td width="550" align="left"><pre>';
+        }
 
-	}
+    }
 
-	$ftp = new ftp();
+    $ftp = new ftp();
 
-	ftpupdate();
+    ftpupdate();
 
-	if ($ftp_debug and $html) echo '</pre></td></tr></table><br />';
+    if ($ftp_debug and $html) {
+        echo '</pre></td></tr></table><br />';
+    }
 
 } else {
 
-	if ($html) echo '<p class="pages">';
+    if ($html) {
+        echo '<p class="pages">';
+    }
 
-	echo "Last FTP update was ". round(((time() - $timestamp) / 60), 0) ." minutes ago, no update necessary\n";
+    echo "Last FTP update was ". round(((time() - $timestamp) / 60), 0) ." minutes ago, no update necessary\n";
 
-	if ($html) echo '</p>';
+    if ($html) {
+        echo '</p>';
+    }
 
 }
-
-
-
-?>
