@@ -2,17 +2,21 @@
 //Return if no variables are set (exit)
 if (isset($_GET['serverip']) != 1) return;
 
-// Get server IP info
-list($serverip, $serverport) = explode(":", (string) $_GET['serverip'], 2) + array('', '');
-$queryport = (int) preg_replace('/\D/', '', $serverport)+1;
-
-// check for valid ip address, no ipv6 support
-if (!preg_match('/(\w{1,3}\.){3}\w{1,3}/', $serverip)) {
+// Only query game servers we have matches from: the address comes from the request, so
+// anything else would let visitors probe arbitrary (including internal) UDP endpoints.
+$requested = (string) $_GET['serverip'];
+if (db_value('SELECT 1 FROM uts_match WHERE serverip = ? LIMIT 1', [$requested]) === null) {
   die('bla');
 }
 
-//If there is no IP, return (exit)
-if (strlen($serverip) == 0) return;
+// Get server IP info
+list($serverip, $serverport) = explode(":", $requested, 2) + array('', '');
+$queryport = (int) preg_replace('/\D/', '', $serverport)+1;
+
+// Public IPv4 only (defense in depth against a bad serverip row)
+if (filter_var($serverip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+  die('bla');
+}
 
 //Open UDP socket to server
 $sock = fsockopen("udp://" . $serverip, $queryport, $errno, $errstr,4);
