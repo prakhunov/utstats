@@ -432,6 +432,7 @@ function compress_file($method, $in, $out, $stripx00) {
 }
 
 function backup_logfile($method, $filename, $backupfilename, $stripx00) {
+  error_clear_last(); // so a FAILED message reports this backup's error, not an older warning
   switch ($method) {
     case 'compress':
       if (!check_extension('bz2') or !compress_file('bz2', $filename, $backupfilename, $stripx00)) {
