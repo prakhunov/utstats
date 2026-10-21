@@ -7,16 +7,16 @@
 								OR		col1 = 'teamkill'
 							GROUP BY col2, col4";
 						
-	$q_killmatrix = mysql_query($sql_killmatrix) or die(mysql_error());
-	while ($r_killmatrix = mysql_fetch_array($q_killmatrix)) {
+	$q_killmatrix = db_all($sql_killmatrix);
+	foreach ($q_killmatrix as $r_killmatrix) {
 		
 		$sql =	"	INSERT
 						INTO		uts_killsmatrix
-						SET		matchid 	=	'$matchid',
-									killer	=	'". $r_killmatrix['killer'] ."',
-									victim	=	'". $r_killmatrix['killed'] ."',
-									kills		=	'". $r_killmatrix['kills'] ."';";
-		mysql_query($sql) or die(mysql_error());
+						SET		matchid 	=	?,
+									killer	=	?,
+									victim	=	?,
+									kills		=	?;";
+		db_exec($sql, [$matchid, $r_killmatrix['killer'], $r_killmatrix['killed'], $r_killmatrix['kills']]);
 
 	}
 ?>

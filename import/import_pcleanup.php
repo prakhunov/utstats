@@ -1,83 +1,84 @@
 <?php
-$sql_tgame = small_query("SELECT teamgame FROM uts_match WHERE id = $matchid");
+$sql_tgame = db_row("SELECT teamgame FROM uts_match WHERE id = ?", [$matchid]);
 IF($sql_tgame == "True") {
-	$rem_srecord = "DELETE FROM uts_player WHERE matchid = $matchid AND team > 3";
-	mysql_query($rem_srecord);
+	$rem_srecord = "DELETE FROM uts_player WHERE matchid = ? AND team > 3";
+	db_exec($rem_srecord, [$matchid]);
 }
 
 $cleaned = false;
 // Get list of players
-$sql_pname = "SELECT pid, name FROM uts_player, uts_pinfo AS pi WHERE matchid = $matchid AND pid = pi.id";
-$q_pname = mysql_query($sql_pname);
-while ($r_pname = mysql_fetch_array($q_pname)) {
-	$playername = addslashes($r_pname[name]);
+$sql_pname = "SELECT pid, name FROM uts_player, uts_pinfo AS pi WHERE matchid = ? AND pid = pi.id";
+$q_pname = db_all($sql_pname, [$matchid]);
+foreach ($q_pname as $r_pname) {
+	$playername = $r_pname['name'];
 	$pid = $r_pname['pid'];
 
 
 	// Check if player has more than 1 record
-	$q_ids = mysql_query("SELECT playerid FROM uts_player WHERE pid = '$pid' AND matchid = $matchid");
+	$q_ids = db_all("SELECT playerid FROM uts_player WHERE pid = ? AND matchid = ?", [$pid, $matchid]);
 	
-	IF (mysql_num_rows($q_ids) > 1) {
-		$numrecords = mysql_num_rows($q_ids);
-		echo $r_pname[name] .' ';
+	IF (count($q_ids) > 1) {
+		$numrecords = count($q_ids);
+		echo (($html) ? htmlspecialchars($r_pname['name']) : $r_pname['name']) .' ';
 		// get all the ids this player had
 		$playerids	= array();
-		while ($r_ids = mysql_fetch_array($q_ids)) {
+		foreach ($q_ids as $r_ids) {
 			$playerids[] = $r_ids['playerid'];
 		}
+		$playerids_in = implode(",", array_fill(0, count($playerids), '?'));
 		
-		$r_newplayerid = small_query("SELECT (MAX(playerid) + 1) AS newplayerid FROM uts_player WHERE matchid = $matchid");
+		$r_newplayerid = db_row("SELECT (MAX(playerid) + 1) AS newplayerid FROM uts_player WHERE matchid = ?", [$matchid]);
 		$newplayerid = $r_newplayerid['newplayerid'];
 			
 		// Fix the events table
 		foreach ($playerids as $i => $oldplayerid) {
-			mysql_query("UPDATE uts_events SET playerid = $newplayerid WHERE playerid = $oldplayerid AND matchid = $matchid");
+			db_exec("UPDATE uts_events SET playerid = ? WHERE playerid = ? AND matchid = ?", [$newplayerid, $oldplayerid, $matchid]);
 		}
 
 		// Fix matchcount in ranking table
-		// mysql_query("UPDATE uts_rank SET matches = matches - ". ($numrecords - 1) ." WHERE pid = '$pid' AND gid = '$gid'") or die(mysql_error());
+		// db_exec("UPDATE uts_rank SET matches = matches - ? WHERE pid = ? AND gid = ?", [$numrecords - 1, $pid, $gid]);
 		
 		// ***********************
 		// UPDATE THE KILLS MATRIX
 		$sql_kmupdate = "	SELECT 	victim, 
 											SUM(kills) AS kills 
 								FROM 		uts_killsmatrix 
-								WHERE 	matchid = $matchid 
-									AND 	killer IN (". implode(",", $playerids) .") 
+								WHERE 	matchid = ? 
+									AND 	killer IN (". $playerids_in .") 
 								GROUP BY	victim;";
 								
-		$q_kmupdate = mysql_query($sql_kmupdate);
-		while ($r_kmupdate = mysql_fetch_array($q_kmupdate)) {
-			mysql_query("	INSERT 	
+		$q_kmupdate = db_all($sql_kmupdate, array_merge([$matchid], $playerids));
+		foreach ($q_kmupdate as $r_kmupdate) {
+			db_exec("	INSERT 	
 								INTO 		uts_killsmatrix 
-								SET 		matchid = $matchid, 
-											killer = $newplayerid, 
-											victim = ${r_kmupdate['victim']},
-											kills	= ${r_kmupdate['kills']};");
+								SET 		matchid = ?, 
+											killer = ?, 
+											victim = ?,
+											kills	= ?;", [$matchid, $newplayerid, $r_kmupdate['victim'], $r_kmupdate['kills']]);
 		}
 		
 		$sql_kmupdate = "	SELECT 	killer, 
 											SUM(kills) AS kills 
 								FROM 		uts_killsmatrix 
-								WHERE 	matchid = $matchid 
-									AND 	victim IN (". implode(",", $playerids) .") 
+								WHERE 	matchid = ? 
+									AND 	victim IN (". $playerids_in .") 
 								GROUP BY	killer;";
 								
-		$q_kmupdate = mysql_query($sql_kmupdate);
-		while ($r_kmupdate = mysql_fetch_array($q_kmupdate)) {
-			mysql_query("	INSERT 	
+		$q_kmupdate = db_all($sql_kmupdate, array_merge([$matchid], $playerids));
+		foreach ($q_kmupdate as $r_kmupdate) {
+			db_exec("	INSERT 	
 								INTO 		uts_killsmatrix 
-								SET 		matchid = $matchid, 
-											killer = ${r_kmupdate['killer']}, 
-											victim = $newplayerid,
-											kills	= ${r_kmupdate['kills']};");
+								SET 		matchid = ?, 
+											killer = ?, 
+											victim = ?,
+											kills	= ?;", [$matchid, $r_kmupdate['killer'], $newplayerid, $r_kmupdate['kills']]);
 		}
 		
-		mysql_query("	DELETE
+		db_exec("	DELETE
 							FROM		uts_killsmatrix
-							WHERE 	matchid = $matchid 
-								AND 	(killer IN (". implode(",", $playerids) .")
-								OR		 victim IN (". implode(",", $playerids) ."));");
+							WHERE 	matchid = ? 
+								AND 	(killer IN (". $playerids_in .")
+								OR		 victim IN (". $playerids_in ."));", array_merge([$matchid], $playerids, $playerids));
 		
 				
 		// FINISHED UPDATING THE KILLS MATRiX
@@ -86,10 +87,11 @@ while ($r_pname = mysql_fetch_array($q_pname)) {
 		
 		// Get non summed information
 		
-		$r_truepinfo1 = small_query("SELECT insta, pid, team, isabot, country, ip, gid FROM uts_player WHERE pid = '$pid' AND matchid = $matchid LIMIT 0,1");
+		$r_truepinfo1 = db_row("SELECT insta, pid, team, isabot, country, ip, gid FROM uts_player WHERE pid = ? AND matchid = ? LIMIT 0,1", [$pid, $matchid]);
 		// fix rejoin as spec
-		if ($r_treupinfo1['team'] == 255) {
-		    $r_trueteam = small_query("SELECT team FROM uts_player WHERE pid = '$pid' AND matchid = $matchid AND team != 255 LIMIT 0,1");
+		// sic: $r_treupinfo1 is a typo that was never set, so this block has never run (behavior kept)
+		if (($r_treupinfo1['team'] ?? null) == 255) {
+		    $r_trueteam = db_row("SELECT team FROM uts_player WHERE pid = ? AND matchid = ? AND team != 255 LIMIT 0,1", [$pid, $matchid]);
 		    if ($r_trueteam['team'] < 255) {
 			    $r_truepinfo1['team'] = $r_trueteam['team'];
 		    }
@@ -98,7 +100,7 @@ while ($r_pname = mysql_fetch_array($q_pname)) {
 		// Group Player Stuff so we only have 1 player record per match
 		if ($gamename == "Bunny Track") {
 			// In bunnytrack the gamescore is 2000 - fastest time in seconds so use MAX gamescore rather then SUM
-			$r_truepinfo2 = small_query("SELECT
+			$r_truepinfo2 = db_row("SELECT
 			SUM(gametime) AS gametime,
 			MAX(gamescore) AS gamescore,
 			AVG(lowping) AS lowping,
@@ -141,10 +143,10 @@ while ($r_pname = mysql_fetch_array($q_pname)) {
 			SUM(pu_belt) AS pu_belt,
 			SUM(pu_amp) AS pu_amp,
 			SUM(rank) AS rank
-			FROM uts_player WHERE matchid = $matchid AND pid = '$pid'");
+			FROM uts_player WHERE matchid = ? AND pid = ?", [$matchid, $pid]);
 		}
 		else {
-			$r_truepinfo2 = small_query("SELECT
+			$r_truepinfo2 = db_row("SELECT
 			SUM(gametime) AS gametime,
 			SUM(gamescore) AS gamescore,
 			AVG(lowping) AS lowping,
@@ -187,68 +189,82 @@ while ($r_pname = mysql_fetch_array($q_pname)) {
 			SUM(pu_belt) AS pu_belt,
 			SUM(pu_amp) AS pu_amp,
 			SUM(rank) AS rank
-			FROM uts_player WHERE matchid = $matchid AND pid = '$pid'");
+			FROM uts_player WHERE matchid = ? AND pid = ?", [$matchid, $pid]);
 		}
 
 		// Remove all of this player's records
-		$rem_precord = "DELETE FROM uts_player WHERE matchid = $matchid AND pid = '$pid'";
-		mysql_query($rem_precord);
+		$rem_precord = "DELETE FROM uts_player WHERE matchid = ? AND pid = ?";
+		db_exec($rem_precord, [$matchid, $pid]);
 		
 		// Add this new record to match
 		$upd_precord = "	INSERT 
 								INTO 		uts_player 
-								SET		matchid = $matchid,
-											insta = '$r_truepinfo1[insta]',
-											playerid = '$newplayerid',
-											pid = '$pid',
-											team = '$r_truepinfo1[team]',
-											isabot = '$r_truepinfo1[isabot]',
-											country = '$r_truepinfo1[country]',
-											ip = '$r_truepinfo1[ip]',
-											gid = '$r_truepinfo1[gid]',
-											gametime = '$r_truepinfo2[gametime]',
-											gamescore = '$r_truepinfo2[gamescore]',
-											lowping = '".(int)$r_truepinfo2[lowping]."',
-											highping = '".(int)$r_truepinfo2[highping]."',
-											avgping = '".(int)$r_truepinfo2[avgping]."',  
-											frags = '$r_truepinfo2[frags]',
-											deaths = '$r_truepinfo2[deaths]',
-											kills = '$r_truepinfo2[kills]',
-											suicides = '$r_truepinfo2[suicides]',
-											teamkills = '$r_truepinfo2[teamkills]',
-											eff = '$r_truepinfo2[eff]',
-											accuracy = '$r_truepinfo2[accuracy]',
-											ttl = '$r_truepinfo2[ttl]',
-											flag_taken = '$r_truepinfo2[flag_taken]',
-											flag_dropped = '$r_truepinfo2[flag_dropped]',
-											flag_return = '$r_truepinfo2[flag_return]',
-											flag_capture = '$r_truepinfo2[flag_capture]',
-											flag_cover = '$r_truepinfo2[flag_cover]',
-											flag_seal = '$r_truepinfo2[flag_seal]',
-											flag_assist = '$r_truepinfo2[flag_assist]',
-											flag_kill = '$r_truepinfo2[flag_kill]',
-											flag_pickedup = '$r_truepinfo2[flag_pickedup]',
-											dom_cp = '$r_truepinfo2[dom_cp]',
-											ass_obj = '$r_truepinfo2[ass_obj]',
-											spree_double = '$r_truepinfo2[spree_double]',
-											spree_triple = '$r_truepinfo2[spree_triple]',
-											spree_multi = '$r_truepinfo2[spree_multi]',
-											spree_mega = '$r_truepinfo2[spree_mega]',
-											spree_ultra = '$r_truepinfo2[spree_ultra]',
-											spree_monster = '$r_truepinfo2[spree_monster]',
-											spree_kill = '$r_truepinfo2[spree_kill]',
-											spree_rampage = '$r_truepinfo2[spree_rampage]',
-											spree_dom = '$r_truepinfo2[spree_dom]',
-											spree_uns = '$r_truepinfo2[spree_uns]',
-											spree_god = '$r_truepinfo2[spree_god]',
-											pu_pads = '$r_truepinfo2[pu_pads]',
-											pu_armour = '$r_truepinfo2[pu_armour]',
-											pu_keg = '$r_truepinfo2[pu_keg]',
-											pu_invis = '$r_truepinfo2[pu_invis]',
-											pu_belt = '$r_truepinfo2[pu_belt]',
-											pu_amp = '$r_truepinfo2[pu_amp]',
-											rank = '$r_truepinfo2[rank]';";
-		mysql_query($upd_precord) or die(mysql_error());
+								SET		matchid = :matchid,
+											insta = :insta,
+											playerid = :playerid,
+											pid = :pid,
+											team = :team,
+											isabot = :isabot,
+											country = :country,
+											ip = :ip,
+											gid = :gid,
+											gametime = :gametime,
+											gamescore = :gamescore,
+											lowping = :lowping,
+											highping = :highping,
+											avgping = :avgping,  
+											frags = :frags,
+											deaths = :deaths,
+											kills = :kills,
+											suicides = :suicides,
+											teamkills = :teamkills,
+											eff = :eff,
+											accuracy = :accuracy,
+											ttl = :ttl,
+											flag_taken = :flag_taken,
+											flag_dropped = :flag_dropped,
+											flag_return = :flag_return,
+											flag_capture = :flag_capture,
+											flag_cover = :flag_cover,
+											flag_seal = :flag_seal,
+											flag_assist = :flag_assist,
+											flag_kill = :flag_kill,
+											flag_pickedup = :flag_pickedup,
+											dom_cp = :dom_cp,
+											ass_obj = :ass_obj,
+											spree_double = :spree_double,
+											spree_triple = :spree_triple,
+											spree_multi = :spree_multi,
+											spree_mega = :spree_mega,
+											spree_ultra = :spree_ultra,
+											spree_monster = :spree_monster,
+											spree_kill = :spree_kill,
+											spree_rampage = :spree_rampage,
+											spree_dom = :spree_dom,
+											spree_uns = :spree_uns,
+											spree_god = :spree_god,
+											pu_pads = :pu_pads,
+											pu_armour = :pu_armour,
+											pu_keg = :pu_keg,
+											pu_invis = :pu_invis,
+											pu_belt = :pu_belt,
+											pu_amp = :pu_amp,
+											rank = :rank;";
+		$precord = array('matchid' => $matchid, 'playerid' => $newplayerid, 'pid' => $pid);
+		foreach (array('insta', 'team', 'isabot', 'country', 'ip', 'gid') as $field) {
+			$precord[$field] = $r_truepinfo1[$field];
+		}
+		foreach (array('gametime', 'gamescore', 'frags', 'deaths', 'kills', 'suicides', 'teamkills', 'eff', 'accuracy', 'ttl',
+			'flag_taken', 'flag_dropped', 'flag_return', 'flag_capture', 'flag_cover', 'flag_seal', 'flag_assist', 'flag_kill', 'flag_pickedup',
+			'dom_cp', 'ass_obj', 'spree_double', 'spree_triple', 'spree_multi', 'spree_mega', 'spree_ultra', 'spree_monster', 'spree_kill',
+			'spree_rampage', 'spree_dom', 'spree_uns', 'spree_god', 'pu_pads', 'pu_armour', 'pu_keg', 'pu_invis', 'pu_belt', 'pu_amp', 'rank') as $field) {
+			$precord[$field] = $r_truepinfo2[$field];
+		}
+		foreach (array('lowping', 'highping', 'avgping') as $field) {
+			$precord[$field] = (int)$r_truepinfo2[$field];
+		}
+		// Values were quoted strings before (NULL became ''), so bind them as strings
+		db_exec($upd_precord, array_map('strval', $precord));
 		$cleaned = true;
 	}
 }
