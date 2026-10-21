@@ -20,8 +20,10 @@ function db(): PDO {
 		[
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 			PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_BOTH,
-			// Client-side prepares return every value as a string (as ext/mysql did) and stay
-			// injection-safe because the connection charset is fixed in the DSN above.
+			// Return every value as a string, as ext/mysql did (pdo_mysql on 8.1+ returns native
+			// ints/floats even with emulation). Client-side prepares stay injection-safe because
+			// the connection charset is fixed in the DSN above.
+			PDO::ATTR_STRINGIFY_FETCHES => true,
 			PDO::ATTR_EMULATE_PREPARES => true,
 			Pdo\Mysql::ATTR_MULTI_STATEMENTS => false,
 			// The schema and queries were written for MySQL 5.5's permissive mode.
