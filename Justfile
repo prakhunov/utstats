@@ -59,3 +59,13 @@ import *args:
 baseline-up:
     scripts/baseline-setup.sh
     {{compose}} --profile baseline up -d --build baseline
+
+# --- Verification ---------------------------------------------------------
+
+# Regenerate .verify/routes.txt from the loaded DB
+crawl-routes:
+    scripts/crawl_diff.py routes
+
+# Diff 5.5 baseline vs 8.5 port (`just crawl --grep p=match -v`)
+crawl *args:
+    scripts/crawl_diff.py {{args}}
