@@ -1,6 +1,6 @@
 <?php
 if (isset($_REQUEST['rememberkey'])) setcookie('uts_adminkey', $_REQUEST['key'], time()+60*60*24*30*365);
-if (isset($_COOKIE['uts_adminkey'])) $adminkey = $_REQUEST['uts_adminkey'];
+if (isset($_COOKIE['uts_adminkey'])) $adminkey = $_COOKIE['uts_adminkey'];
 
 include ("includes/config.php");
 include ("includes/functions.php");

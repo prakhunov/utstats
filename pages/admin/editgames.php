@@ -5,13 +5,13 @@ if (isset($_REQUEST['submit'])) {
 	foreach($_REQUEST['name'] as $id => $bla) {
 		if ($id == 0) {
 			if (empty($_REQUEST['name'][$id])) continue;
-			mysql_query("	INSERT	INTO	uts_games
-									SET	name = '". my_addslashes($_REQUEST['name'][$id]) ."',
-											gamename = '(user defined)';") or die(mysql_error());
+			db_exec("	INSERT	INTO	uts_games
+									SET	name = ?,
+											gamename = '(user defined)';", [$_REQUEST['name'][$id]]);
 		} else {
-			mysql_query("	UPDATE	uts_games
-									SET	name = '". my_addslashes($_REQUEST['name'][$id]) ."'
-									WHERE	id =  '$id';") or die(mysql_error());
+			db_exec("	UPDATE	uts_games
+									SET	name = ?
+									WHERE	id =  ?;", [$_REQUEST['name'][$id], $id]);
 		}
 	}
 }
@@ -24,16 +24,15 @@ echo'<br><table border="0" cellpadding="0" cellspacing="0" width="600">
 	<td class="smheading">GameName</td>
 	<td class="smheading">DisplayName</td>
 </tr>
-<form action="'.$_SERVER['PHP_SELF'].'" method="POST">
-<input type="hidden" name="key" value="'.$adminkey.'">
-<input type="hidden" name="action" value="'.$action.'">
+<form action="'.htmlspecialchars($_SERVER['PHP_SELF']).'" method="POST">
+<input type="hidden" name="key" value="'.htmlspecialchars($adminkey).'">
+<input type="hidden" name="action" value="'.htmlspecialchars($action).'">
 ';
 
 
 $sql_games = "SELECT id, gamename, name FROM uts_games ORDER BY gamename ASC;";
-$q_games = mysql_query($sql_games) or die(mysql_error());
 $i = 0;
-while ($r_games = mysql_fetch_array($q_games)) {
+foreach (db_all($sql_games) as $r_games) {
 	$i++;
 	$class = ($i%2) ? 'grey' : 'grey2';
 	echo '<tr>';
@@ -67,7 +66,7 @@ echo '</tr>';
 
 echo'</form>
 	<tr>
-	<td class="smheading" align="center" colspan="4"><a class="grey" href="./admin.php?key='.$_REQUEST[key].'">Go Back To Admin Page</a></td>
+	<td class="smheading" align="center" colspan="4"><a class="grey" href="./admin.php?key='.$_REQUEST['key'].'">Go Back To Admin Page</a></td>
 </tr>
 </table>';
 	

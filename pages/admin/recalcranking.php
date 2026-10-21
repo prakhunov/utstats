@@ -30,7 +30,7 @@ echo'<br><table border="0" cellpadding="0" cellspacing="0" width="600">
 echo'<tr>
 	<td class="smheading" align="left" width="200">Deleting rankings</td>';
 
-	mysql_query("TRUNCATE uts_rank") or die(mysql_error());	
+	db_exec("TRUNCATE uts_rank");	
 
 	echo'<td class="grey" align="left" width="400">Done</td>';
 
@@ -39,7 +39,7 @@ echo'</tr>
 	<td class="smheading" align="left">Recalculating Rankings:</td>';
 	echo'<td class="grey" align="left">';
 	$playerbanned = false;
-	$q_pm = mysql_query(	"	SELECT 	p.id, 
+	$q_pm = db_query(	"	SELECT 	p.id, 
 												p.matchid, 
 												p.pid, 
 												p.gid,
@@ -53,7 +53,7 @@ echo'</tr>
 									ORDER BY p.matchid ASC, 
 												p.playerid ASC");
 	$i = 0;
-	while ($r_pm = mysql_fetch_array($q_pm)) {
+	while ($r_pm = $q_pm->fetch()) {
 		$i++;
 		if ($i%50 == 0) {
 			echo '. ';
@@ -71,7 +71,7 @@ echo'</tr>
 </tr>
 
 <tr>
-	<td class="smheading" align="center" colspan="2">Rankings recalculated - <a href="./admin.php?key='.$_REQUEST[key].'">Go Back To Admin Page</a></td>
+	<td class="smheading" align="center" colspan="2">Rankings recalculated - <a href="./admin.php?key='.$_REQUEST['key'].'">Go Back To Admin Page</a></td>
 </tr></table>';
 
 ?>

@@ -1,6 +1,16 @@
 <?php
 if (empty($import_adminkey) or isset($_REQUEST['import_adminkey']) or $import_adminkey != $adminkey) die('bla');
 
+// mysql_query() returned false on error; PDO throws instead.
+function check_exec($query) {
+	try {
+		db_exec($query);
+		return true;
+	} catch (PDOException $e) {
+		return false;
+	}
+}
+
 echo '
 	<center>
 	<table class = "box" border="0" cellpadding="1" cellspacing="2" width="720">
@@ -52,7 +62,7 @@ foreach (array("logs", "logs/ac", "logs/backup", "logs/utdc", "logs/ace") as $di
 }
 
 // files:
-foreach (array("includes/ftptimestamp.php") as $file)
+foreach (array("logs/ftptimestamp.txt") as $file)
 {
 	echo '
 	<tr>
@@ -331,13 +341,13 @@ foreach ($create_table as $table => $query) {
 	echo '
 	<tr>
 		<td class="smheading" align="left" width="350">', $table, '</td>';
-	if (small_count("SHOW TABLES LIKE '$table'") == 1) {
+	if (db_count("SHOW TABLES LIKE ?", [$table]) == 1) {
 		// database exists, check columns
 		echo '
 		      <td class="grey" align="left" width="200">OK</td></tr>';
 	}
 	else {
-		if (mysql_query($query)) {
+		if (check_exec($query)) {
 			echo '
 		      <td class="grey" align="left" width="200">Created</td></tr>';
 		}
@@ -373,7 +383,7 @@ echo '
 	<tr>
 		<td class="smheading" align="center" height="25" width="550" colspan="2">Checking all graphs types are in database</td>
 	</tr>';
-if (small_count("SHOW TABLES LIKE 'uts_charttypes'") != 1) {
+if (db_count("SHOW TABLES LIKE 'uts_charttypes'") != 1) {
 	// database exists, check columns
 	echo '
 	      <td class="warn" align="left" width="550" colspan = "2">Table uts_charttypes does not exist!</td></tr>';
@@ -383,13 +393,13 @@ else {
 		echo '
 		<tr>
 			<td class="smheading" align="left" width="350">', $charttype, '</td>';
-		if (small_count("SELECT id FROM uts_charttypes WHERE id = '$charttype' LIMIT 0,1") == 1) {
+		if (db_count("SELECT id FROM uts_charttypes WHERE id = ? LIMIT 0,1", [$charttype]) == 1) {
 			// database exists, check columns
 			echo '
 			      <td class="grey" align="left" width="200">OK</td></tr>';
 		}
 		else {
-			if (mysql_query($query)) {
+			if (check_exec($query)) {
 				echo '
 			      <td class="grey" align="left" width="200">Added</td></tr>';
 			}
@@ -426,7 +436,7 @@ echo '
 	<tr>
 		<td class="smheading" align="center" height="25" width="550" colspan="2">Checking supported weapons</td>
 	</tr>';
-if (small_count("SHOW TABLES LIKE 'uts_weapons'") != 1) {
+if (db_count("SHOW TABLES LIKE 'uts_weapons'") != 1) {
 	// database exists, check columns
 	echo '
 	      <td class="warn" align="left" width="550" colspan = "2">Table uts_weapons does not exist!</td></tr>';
@@ -436,13 +446,13 @@ else {
 		echo '
 		<tr>
 			<td class="smheading" align="left" width="350">', $weapon, '</td>';
-		if (small_count("SELECT id FROM uts_weapons WHERE name = '$weapon' LIMIT 0,1") == 1) {
+		if (db_count("SELECT id FROM uts_weapons WHERE name = ? LIMIT 0,1", [$weapon]) == 1) {
 			// database exists, check columns
 			echo '
 			      <td class="grey" align="left" width="200">OK</td></tr>';
 		}
 		else {
-			if (mysql_query($query)) {
+			if (check_exec($query)) {
 				echo '
 			      <td class="grey" align="left" width="200">Added</td></tr>';
 			}
@@ -466,8 +476,11 @@ echo '
 	<tr>
 		<td class="smheading" align="left" width="350">Fix BT cap times</td>';
 
-	$q = mysql_query("UPDATE uts_events SET col3 = ROUND(CEILING((col3-1)*100/1.1) / 100, 2), col1 = 'btcap' WHERE col1 = 'cap'");
-	$affected = mysql_affected_rows();
+	try {
+		$affected = db_exec("UPDATE uts_events SET col3 = ROUND(CEILING((col3-1)*100/1.1) / 100, 2), col1 = 'btcap' WHERE col1 = 'cap'");
+	} catch (PDOException $e) {
+		$affected = -1;
+	}
 
 	if ($affected == -1) {
 	echo '
@@ -483,7 +496,7 @@ echo '
 echo '
 	<table class = "box" border="0" cellpadding="1" cellspacing="2" width="720">
 	<tbody>';
-echo '<tr><td class="smheading" align="center" colspan="4"><a class="grey" href="./admin.php?key='.$_REQUEST[key].'">Go Back To Admin Page</a></td></tr>';
+echo '<tr><td class="smheading" align="center" colspan="4"><a class="grey" href="./admin.php?key='.htmlspecialchars($_REQUEST['key']).'">Go Back To Admin Page</a></td></tr>';
 echo '</tbody></table>';
 
 ?>

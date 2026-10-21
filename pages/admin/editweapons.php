@@ -3,11 +3,11 @@ if (empty($import_adminkey) or isset($_REQUEST['import_adminkey']) or $import_ad
 
 if (isset($_REQUEST['submit'])) {
 	foreach($_REQUEST['image'] as $id => $bla) {
-		mysql_query("	UPDATE	uts_weapons
-								SET	image = '". my_addslashes($_REQUEST['image'][$id]) ."',
-										sequence = '". my_addslashes($_REQUEST['sequence'][$id]) ."',
-										hide = '". (isset($_REQUEST['hide'][$id]) ? 'Y' : 'N') ."'
-								WHERE	id =  '$id';") or die(mysql_error());
+		db_exec("	UPDATE	uts_weapons
+								SET	image = ?,
+										sequence = ?,
+										hide = ?
+								WHERE	id =  ?;", [$_REQUEST['image'][$id], $_REQUEST['sequence'][$id] ?? '', (isset($_REQUEST['hide'][$id]) ? 'Y' : 'N'), $id]);
 	}
 }
 
@@ -21,16 +21,15 @@ echo'<br><table border="0" cellpadding="0" cellspacing="0" width="600">
 	<td class="smheading" '.OverlibPrintHint('', 'Use this number to set the weapons order to your liking').'>Order</td>
 	<td class="smheading" '.OverlibPrintHint('', 'If checked, this weapon won\'t be shown (including kills, shots, acc, ...)').'>Hide</td>
 </tr>
-<form action="'.$_SERVER['PHP_SELF'].'" method="POST">
-<input type="hidden" name="key" value="'.$adminkey.'">
-<input type="hidden" name="action" value="'.$action.'">
+<form action="'.htmlspecialchars($_SERVER['PHP_SELF']).'" method="POST">
+<input type="hidden" name="key" value="'.htmlspecialchars($adminkey).'">
+<input type="hidden" name="action" value="'.htmlspecialchars($action).'">
 ';
 
 
 $sql_weapons = "SELECT id, name, image, sequence, hide FROM uts_weapons ORDER BY sequence ASC;";
-$q_weapons = mysql_query($sql_weapons) or die(mysql_error());
 $i = 0;
-while ($r_weapons = mysql_fetch_array($q_weapons)) {
+foreach (db_all($sql_weapons) as $r_weapons) {
 	$i++;
 	$class = ($i%2) ? 'grey' : 'grey2';
 	echo '<tr>';
@@ -52,7 +51,7 @@ echo '</tr>';
 
 echo'</form>
 	<tr>
-	<td class="smheading" align="center" colspan="4"><a class="grey" href="./admin.php?key='.$_REQUEST[key].'">Go Back To Admin Page</a></td>
+	<td class="smheading" align="center" colspan="4"><a class="grey" href="./admin.php?key='.$_REQUEST['key'].'">Go Back To Admin Page</a></td>
 </tr></table>';
 
 ?>

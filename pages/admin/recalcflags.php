@@ -21,10 +21,7 @@ if ($results['start'] != 'Yes') {
 @ignore_user_abort(true);
 @set_time_limit(0);
 
-include("includes/geoip.inc");
-
-/* Opens the database file */
-$gi = geoip_open("GeoIP.dat",GEOIP_STANDARD);
+require_once("includes/geoip.php");
 
 
 echo'<br><table border="0" cellpadding="0" cellspacing="0" width="600">
@@ -39,34 +36,34 @@ echo'</tr>
 
 	echo'Recalculating pinfo table...<br>';
 	/* update pinfo table */
-	$sql_pids = mysql_query("SELECT uts_pinfo.id as pid, uts_pinfo.country as country, uts_player.ip as ip FROM uts_pinfo, uts_player WHERE uts_pinfo.id = uts_player.pid GROUP BY uts_player.pid;") or die(mysql_error());
-		while($sql_pid = mysql_fetch_array($sql_pids))
+	$sql_pids = db_query("SELECT uts_pinfo.id as pid, uts_pinfo.country as country, uts_player.ip as ip FROM uts_pinfo, uts_player WHERE uts_pinfo.id = uts_player.pid GROUP BY uts_player.pid;");
+		while($sql_pid = $sql_pids->fetch())
 		{
-			$playercountry = strtolower(geoip_country_code_by_addr($gi,long2ip($sql_pid['ip'])));
+			$playercountry = geoip_country_code(long2ip((int)$sql_pid['ip']));
 
 			if ($playercountry != $sql_pid['country'] )
 			{
-				mysql_query("UPDATE uts_pinfo SET country = '$playercountry' WHERE id = '".$sql_pid['pid']."'") or die(mysql_error());
+				db_exec("UPDATE uts_pinfo SET country = ? WHERE id = ?", [$playercountry, $sql_pid['pid']]);
 			}
 		}
 
 	echo'Recalculating player table...<br>';
 	/* update player table */
-	$sql_pids = mysql_query("SELECT pid, ip, country FROM uts_player");
-		while ($sql_pid = mysql_fetch_array($sql_pids))
+	$sql_pids = db_query("SELECT pid, ip, country FROM uts_player");
+		while ($sql_pid = $sql_pids->fetch())
 		{
-			$playercountry = strtolower(geoip_country_code_by_addr($gi,long2ip($sql_pid['ip'])));
+			$playercountry = geoip_country_code(long2ip((int)$sql_pid['ip']));
 
 			if ($playercountry != $sql_pid['country'])
 			{
-				mysql_query("UPDATE uts_player SET country = '$playercountry' WHERE pid = '".$sql_pid['pid']."'") or die(mysql_error());
+				db_exec("UPDATE uts_player SET country = ? WHERE pid = ?", [$playercountry, $sql_pid['pid']]);
 			}
 		}
 	echo 'Done</td>
 </tr>
 
 <tr>
-	<td class="smheading" align="center" colspan="2">Countryflags recalculated - <a href="./admin.php?key='.$_REQUEST[key].'">Go Back To Admin Page</a></td>
+	<td class="smheading" align="center" colspan="2">Countryflags recalculated - <a href="./admin.php?key='.$_REQUEST['key'].'">Go Back To Admin Page</a></td>
 </tr></table>';
 
 ?>
