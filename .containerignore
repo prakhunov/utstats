@@ -10,3 +10,11 @@ flake.nix
 flake.lock
 docker/baseline
 *.mmdb
+Justfile
+scripts
+compose.yaml
+phpcs.xml
+phpstan.neon
+.containerignore
+.gitignore
+.env.example
