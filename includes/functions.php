@@ -81,22 +81,6 @@ function my_fclose($fp, $compression) {
   }
 }
 
-// Small query
-function small_query($query) {
-  $sql_small = "$query";
-  $q_small = mysql_query($sql_small) or die(mysql_error());
-  $r_small = mysql_fetch_array($q_small);
-  return $r_small;
-}
-
-// Small query count
-function small_count($query) {
-  $sql_small = "$query";
-  $q_small = mysql_query($sql_small) or die(mysql_error());
-  $r_small = mysql_num_rows($q_small);
-  return $r_small;
-}
-
 // uid generator
 function str_rand($length = 8, $seeds = 'abcdefghijklmnopqrstuvwxyz0123456789') {
   $str = '';
@@ -105,11 +89,11 @@ function str_rand($length = 8, $seeds = 'abcdefghijklmnopqrstuvwxyz0123456789') 
   // Seed
   list($usec, $sec) = explode(' ', microtime());
   $seed = (float) $sec + ((float) $usec * 100000);
-  mt_srand($seed);
+  mt_srand((int) $seed);
 
   // Generate
   for ($i = 0; $length > $i; $i++) {
-      $str .= $seeds{mt_rand(0, $seeds_count - 1)};
+      $str .= $seeds[mt_rand(0, $seeds_count - 1)];
   }
 
   return $str;
@@ -305,10 +289,10 @@ function RankImageOrText($pid, $name, $rank, $gid, $gamename, $mini = true, $for
   $points = 0;
 
   if (empty($rank)) {
-    $r_rank = small_query("SELECT rank FROM uts_rank WHERE pid = '$pid' AND gid= '$gid';");
+    $r_rank = db_row("SELECT rank FROM uts_rank WHERE pid = ? AND gid= ?;", [(string) $pid, (string) $gid]);
     if (!$r_rank) return('');
     $points = get_dp($r_rank['rank']);
-    $r_no = small_query("SELECT (COUNT(*) + 1) AS no FROM uts_rank WHERE gid = '$gid' and rank > ${points}9");
+    $r_no = db_row("SELECT (COUNT(*) + 1) AS no FROM uts_rank WHERE gid = ? and rank > ?", [(string) $gid, "{$points}9"]);
     $rank = $r_no['no'];
   }
 
@@ -391,10 +375,7 @@ function debug_output($desc, $data) {
 }
 
 function check_extension($name) {
-  if (extension_loaded($name)) return(true);
-  if( !(bool)ini_get("enable_dl") or (bool)ini_get( "safe_mode" )) return(false);
-  $prefix = (PHP_SHLIB_SUFFIX == 'dll') ? 'php_' : '';
-  return(@dl($prefix . $name . PHP_SHLIB_SUFFIX));
+  return(extension_loaded($name));
 }
 
 function compress_file($method, $in, $out, $stripx00) {
@@ -467,13 +448,13 @@ function backup_logfile($method, $filename, $backupfilename, $stripx00) {
         if (compress_file('none', $filename, $backupfilename, $stripx00)) {
           return('Succeeded (uncompressed)');
         } else {
-          return('FAILED' . (!empty($php_errormsg) ? ': '. $php_errormsg : ''));
+          return('FAILED' . ((($php_errormsg = error_get_last()['message'] ?? '') !== '') ? ': '. $php_errormsg : ''));
         }
       }
       if (@copy($filename, $backupfilename)) {
         return('Succeeded (uncompressed)');
       } else {
-        return('FAILED' . (!empty($php_errormsg) ? ': '. $php_errormsg : ''));
+        return('FAILED' . ((($php_errormsg = error_get_last()['message'] ?? '') !== '') ? ': '. $php_errormsg : ''));
       }
   }
 }
@@ -513,9 +494,9 @@ function GetCurrentWatchlist() {
   $watchlist = @explode(',', $_COOKIE['uts_watchlist']);
   if (!$watchlist or !is_array($watchlist)) return(array());
   foreach($watchlist as $key => $value) {
-    $watchlist[$key] = addslashes($value);
+    if (!ctype_digit($value)) unset($watchlist[$key]);
   }
-  return $watchlist;
+  return array_values($watchlist);
 }
 
 function PlayerOnWatchlist($pid) {

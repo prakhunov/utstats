@@ -1,7 +1,7 @@
 <?php
-$ogmeta_title = $_GET["title"];
-$ogmeta_desc = $_GET["desc"];
-$ogmeta_imageurl = $_GET["image"];
+$ogmeta_title = htmlspecialchars($_GET["title"] ?? '');
+$ogmeta_desc = htmlspecialchars($_GET["desc"] ?? '');
+$ogmeta_imageurl = htmlspecialchars($_GET["image"] ?? '');
 // Start buffering
 ob_start();
 
@@ -34,9 +34,9 @@ setcookie('uts_lastvisit', time(), time()+60*60*24*30*365);
 echo '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-  <meta property="og:title" content="'.${ogmeta_title}.'" />
-  <meta property="og:description" content="'.${ogmeta_desc}.'" />
-  <meta property="og:image" content="'.${ogmeta_imageurl}.'">
+  <meta property="og:title" content="'.$ogmeta_title.'" />
+  <meta property="og:description" content="'.$ogmeta_desc.'" />
+  <meta property="og:image" content="'.$ogmeta_imageurl.'">
   <title>Unreal Tournament Stats - Powered by UTStats</title>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
   <link rel="icon" href="assets/images/favicon.ico" type="image/ico">
