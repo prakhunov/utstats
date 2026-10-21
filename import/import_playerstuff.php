@@ -31,8 +31,10 @@
 	$playerip = ($q_playerip) ? $q_playerip['ip'] : 0;
 	if (empty($playerip)) $playerip = 0;
 
-	// Map the IP to a country
+	// Map the IP to a country. A failed lookup (no GeoIP database, private/unknown IP)
+	// keeps the country we already know instead of wiping the player's flag.
 	$playercountry = geoip_country_code(long2ip((int) $playerip));
+	if ($playercountry === '' && $pid_country) $playercountry = $pid_country;
 
 	if ($playercountry != $pid_country)
 	{
