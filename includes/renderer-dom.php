@@ -378,7 +378,7 @@ function renderNamesCP($tempTableName,$cp) {
 			if(strlen($labels[$teamid] ?? '')>0)
 				$labels[$teamid] .= " + ";
 			
-			$labels[$teamid] .= $playerName;					
+			$labels[$teamid] = ($labels[$teamid] ?? '') . $playerName;					
 		}
 		
 	}
