@@ -108,18 +108,24 @@ function zero_out($data) {
 }
 
 function get_dp($number) {
+  // PHP 5 semantics: null counts as 0, leading-numeric strings are truncated, other strings give null
+  if ($number === null) $number = 0;
+  if (!is_numeric($number)) {
+    if (!is_string($number) or !preg_match('/^\s*[+-]?(\d|\.\d)/', $number)) return null;
+    $number = (float) $number;
+  }
   $dp = number_format($number, 2, '.', '');
   return ($dp);
 }
 
 function sec2min($number) {
-  $dp = $number/60;
+  $dp = (float) $number/60;
   $dp = number_format($dp, 2, '.', '');
   return ($dp);
 }
 
 function sec2hour($number) {
-  $dp = $number/3600;
+  $dp = (float) $number/3600;
   $dp = number_format($dp, 2, '.', '');
   return ($dp);
 }
