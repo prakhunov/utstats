@@ -3,8 +3,8 @@
 if (isset($_GET['serverip']) != 1) return;
 
 // Get server IP info
-list($serverip, $serverport) = split(":", addslashes($_GET[serverip]));
-$queryport = preg_replace('/\D/', '', $serverport)+1;
+list($serverip, $serverport) = explode(":", (string) $_GET['serverip'], 2) + array('', '');
+$queryport = (int) preg_replace('/\D/', '', $serverport)+1;
 
 // check for valid ip address, no ipv6 support
 if (!preg_match('/(\w{1,3}\.){3}\w{1,3}/', $serverip)) {
@@ -59,9 +59,9 @@ fclose ($sock);
 
 
 //Split chunks by \
-$chunks = split('[\]', $data);
+$chunks = explode('\\', $data);
 
-$mappic = strtolower("assets/images/maps/".$map.".jpg");
+$mappic = strtolower("assets/images/maps/".($map ?? '').".jpg");
 
 if (file_exists($mappic)) {
 } else {
@@ -104,7 +104,7 @@ echo'
   </tr>
   <tr>
     <td class="dark" align="center" width="110">Server IP</td>
-    <td class="grey" align="center" width="350"><a class="grey" href="unreal://'.$serverip.':'.$serverport.'">'.$serverip.':'.$serverport.'</a></td>
+    <td class="grey" align="center" width="350"><a class="grey" href="unreal://'.htmlspecialchars($serverip).':'.htmlspecialchars($serverport).'">'.htmlspecialchars($serverip).':'.htmlspecialchars($serverport).'</a></td>
     <td class="tooltip" align="center" rowspan="5" colspan="2"><img border="0" alt="'.$mapname.'" title="'.$mapname.'" src="'.$mappic.'"></td>
   </tr>
   <tr>
@@ -153,7 +153,7 @@ echo'
   </tr>';
 
 //Loop through all players
-for ($i = 0; $i < $r_numplayers; $i++) {
+for ($i = 0; $i < (int) $r_numplayers; $i++) {
 	$actualid = $i;
 	$itemx = $i+1;
 
