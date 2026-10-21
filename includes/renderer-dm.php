@@ -21,25 +21,22 @@ function renderFragBarsTeams($datafragsteam,$derivfragsteam,$topTeams,$counter) 
 		}
 				
 		// Save net frags in db for first 2 teams
-		mysql_query("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (".$matchid.", ".RENDERER_CHART_FRAGS_TEAMDERIV.", 
-		'".mysql_real_escape_string(gzencode(serialize(array($netfragsteam,$datafragsteam))))."', 
-		'".mysql_real_escape_string(gzencode(serialize($teamLabels)))."')") or die(mysql_error());
+		db_exec("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (?, ?, ?, ?)",
+			[$matchid, RENDERER_CHART_FRAGS_TEAMDERIV, gzencode(serialize(array($netfragsteam,$datafragsteam))), gzencode(serialize($teamLabels))]);
 	
 	} else {
 		
 		// Save team score over team for teams
-		mysql_query("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (".$matchid.", ".RENDERER_CHART_FRAGS_TEAMSCORE.", 
-		'".mysql_real_escape_string(gzencode(serialize($datafragsteam)))."', 
-		'".mysql_real_escape_string(gzencode(serialize($teamLabels)))."')") or die(mysql_error());
+		db_exec("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (?, ?, ?, ?)",
+			[$matchid, RENDERER_CHART_FRAGS_TEAMSCORE, gzencode(serialize($datafragsteam)), gzencode(serialize($teamLabels))]);
 
 	}
 	
 	// Generate normalized data (vs #2) & store it
 	$normalfragsteam = normalizeDMdata($datafragsteam,$topTeams,$counter);
 	
-	mysql_query("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (".$matchid.", ".RENDERER_CHART_FRAGS_TEAMNORMAL.", 
-	'".mysql_real_escape_string(gzencode(serialize($normalfragsteam)))."', 
-	'".mysql_real_escape_string(gzencode(serialize($teamLabels)))."')") or die(mysql_error());
+	db_exec("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (?, ?, ?, ?)",
+		[$matchid, RENDERER_CHART_FRAGS_TEAMNORMAL, gzencode(serialize($normalfragsteam)), gzencode(serialize($teamLabels))]);
 	
 }
 
@@ -57,7 +54,7 @@ function renderFragBars($datafrags, $derivfrags, $topFraggers,$counter) {
 	$datafragschunks = array_chunk(sortDMdata($datafrags,$topFraggers),4);
 		
 	// Only do something if there are frags & players
-	if($countPlayers > 1 && count($datafrags[$topFraggers[0]])>0 && count($derivfrags[$topFraggers[0]])>0) {
+	if($countPlayers > 1 && count($datafrags[$topFraggers[0]] ?? [])>0 && count($derivfrags[$topFraggers[0]] ?? [])>0) {
 		
 		// In duel, show bar chart like DOM
 		if($countPlayers == 2) {
@@ -71,16 +68,14 @@ function renderFragBars($datafrags, $derivfrags, $topFraggers,$counter) {
 				$netfrags[1][$i] = $netfrags[1][$i]>0 ? $netfrags[1][$i] : 0;
 			}
 			
-			mysql_query("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (".$matchid.", ".RENDERER_CHART_FRAGS_PLAYERDERIV.", 
-			'".mysql_real_escape_string(gzencode(serialize(array($netfrags,$datafragschunks[0]))))."', 
-			'".mysql_real_escape_string(gzencode(serialize($topFraggersLabels[0])))."')") or die(mysql_error());	
+			db_exec("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (?, ?, ?, ?)",
+				[$matchid, RENDERER_CHART_FRAGS_PLAYERDERIV, gzencode(serialize(array($netfrags,$datafragschunks[0]))), gzencode(serialize($topFraggersLabels[0]))]);
 		
 		} else {
 				
 			// Generate graph for player 1 to 4
-			mysql_query("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (".$matchid.", ".RENDERER_CHART_FRAGS_PLAYERSCORE.", 
-			'".mysql_real_escape_string(gzencode(serialize($datafragschunks[0])))."', 
-			'".mysql_real_escape_string(gzencode(serialize($topFraggersLabels[0])))."')") or die(mysql_error());
+			db_exec("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (?, ?, ?, ?)",
+				[$matchid, RENDERER_CHART_FRAGS_PLAYERSCORE, gzencode(serialize($datafragschunks[0])), gzencode(serialize($topFraggersLabels[0]))]);
 			
 		}
 		
@@ -88,18 +83,16 @@ function renderFragBars($datafrags, $derivfrags, $topFraggers,$counter) {
 		$normalfrags = normalizeDMdata($datafrags,$topFraggers,$counter);
 		$normalfragschunks = array_chunk(sortDMdata($normalfrags,$topFraggers),4);
 		
-		mysql_query("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (".$matchid.", ".RENDERER_CHART_FRAGS_PLAYERNORMAL.", 
-		'".mysql_real_escape_string(gzencode(serialize($normalfragschunks[0])))."', '".mysql_real_escape_string(gzencode(serialize($topFraggersLabels[0])))."')") or die(mysql_error());
+		db_exec("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (?, ?, ?, ?)",
+			[$matchid, RENDERER_CHART_FRAGS_PLAYERNORMAL, gzencode(serialize($normalfragschunks[0])), gzencode(serialize($topFraggersLabels[0]))]);
 	
 		// If at least 8 players, also great second graph for 5 to 8
 		if($countPlayers >= 8) {
-			mysql_query("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (".$matchid.", ".RENDERER_CHART_FRAGS_PLAYERSCORE5.", 
-			'".mysql_real_escape_string(gzencode(serialize($datafragschunks[1])))."', 
-			'".mysql_real_escape_string(gzencode(serialize($topFraggersLabels[1])))."')") or die(mysql_error());
+			db_exec("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (?, ?, ?, ?)",
+				[$matchid, RENDERER_CHART_FRAGS_PLAYERSCORE5, gzencode(serialize($datafragschunks[1])), gzencode(serialize($topFraggersLabels[1]))]);
 		
-			mysql_query("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (".$matchid.", ".RENDERER_CHART_FRAGS_PLAYERNORMAL5.", 
-			'".mysql_real_escape_string(gzencode(serialize($normalfragschunks[1])))."', 
-			'".mysql_real_escape_string(gzencode(serialize($topFraggersLabels[1])))."')") or die(mysql_error());		
+			db_exec("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (?, ?, ?, ?)",
+				[$matchid, RENDERER_CHART_FRAGS_PLAYERNORMAL5, gzencode(serialize($normalfragschunks[1])), gzencode(serialize($topFraggersLabels[1]))]);
 		}
 		
 		
@@ -126,8 +119,8 @@ Normalize data vs #2 in rank to show gap over time
 function normalizeDMdata($datafrags, $topFraggers,$counter) {
 	// base frags based on amount of players
 	$countPlayers = count($topFraggers);
-	$player3hasData = (count($datafrags[$topFraggers[2]])>0);
-	$player4hasData = (count($datafrags[$topFraggers[3]])>0);
+	$player3hasData = (count($datafrags[$topFraggers[2] ?? ''] ?? [])>0);
+	$player4hasData = (count($datafrags[$topFraggers[3] ?? ''] ?? [])>0);
 	
 	// Generate normalized data for players
 	for($i=0;$i<$counter;$i++) {
@@ -164,14 +157,12 @@ function parseDMdata($uid) {
 	global $playernumberofteams;
 	global $playerteams;
 	
-	$uid = mysql_real_escape_string($uid);
-	
 	// Get all frags related events + start & end
-	$q_frags = mysql_query("SELECT * FROM `uts_temp_$uid` WHERE col0>=".mysql_real_escape_string($time_gamestart)." ORDER BY id ASC") or die(mysql_error());
+	$q_frags = db_query("SELECT * FROM `uts_temp_$uid` WHERE col0>=(? + 0) ORDER BY id ASC", [(string) $time_gamestart]);
 	
 	// Get all unique player id's
-	$q_ids = mysql_query("SELECT DISTINCT col2 FROM `uts_temp_$uid` WHERE col1='kill'");
-	while($data = mysql_fetch_array($q_ids)) {
+	$q_ids = db_query("SELECT DISTINCT col2 FROM `uts_temp_$uid` WHERE col1='kill'");
+	while($data = $q_ids->fetch()) {
 		$ids[] = $data[0];
 	}
 		
@@ -179,11 +170,15 @@ function parseDMdata($uid) {
 	$prevx = 0;
 	$prevfrags = array();
 	$prevfragsteam = array();
+	$frags = array();
+	$fragsteam = array();
 	$counter = 1;
 	$firstrun = true;
 	$realTimeEnd = ($time_gameend-$time_gamestart)/$time_ratio_correction/60;
+	// Never assigned in this function, so the timelimit rounding below never applies
+	$r_capper = null;
 	
-	while($data = mysql_fetch_array($q_frags)) {
+	while($data = $q_frags->fetch()) {
 	
 		// Collect data from utstats own table
 		$r_time = ($data[1]-$time_gamestart)/$time_ratio_correction/60;	// Transform UT time to real time
@@ -194,13 +189,13 @@ function parseDMdata($uid) {
 		if($r_type == "game_end" && $r_capper == "timelimit")
 			$r_time = floor($r_time);
 		
-		// Add frag if kill event, deduct if suicide
+		// Add frag if kill event, deduct if suicide (unknown players count for team '', as null did before)
 		if($r_type == "kill") {
 			$frags[$r_killer]++;
-			$fragsteam[$playerteams[$r_killer]]++;
+			$fragsteam[$playerteams[$r_killer] ?? '']++;
 		} else if($r_type == "suicide" || $r_type == "teamkill") {
 			$frags[$r_killer]--;
-			$fragsteam[$playerteams[$r_killer]]--;
+			$fragsteam[$playerteams[$r_killer] ?? '']--;
 		}
 		
 		// Only save the data each minute. Added game_start & game_end for first & last tick

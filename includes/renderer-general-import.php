@@ -11,13 +11,11 @@ function getPlayerTeam() {
 	$playernames = array();
 	$playerteams = array();
 
-	$uid = mysql_real_escape_string($uid);
-
 	// Get List of Player IDs and Process What They Have Done
-	$sql_player = "SELECT p.playerid,p.team,i.name FROM uts_player p JOIN uts_pinfo i ON p.pid = i.id WHERE p.matchid=$matchid";
-	$q_player = mysql_query($sql_player) or die(mysql_error());
+	$sql_player = "SELECT p.playerid,p.team,i.name FROM uts_player p JOIN uts_pinfo i ON p.pid = i.id WHERE p.matchid=?";
+	$q_player = db_all($sql_player, [$matchid]);
 
-	while ($r_player = mysql_fetch_array($q_player)) {
+	foreach ($q_player as $r_player) {
 		$playerid = $r_player['playerid'];
 		$playername = $r_player['name'];
 		$playerteam = $r_player['team'];
@@ -26,7 +24,7 @@ function getPlayerTeam() {
 		$playerteams[$playerid] = $playerteam;
 	}
 
-	$r_team = small_query("SELECT COUNT(DISTINCT team) FROM uts_player WHERE matchid=$matchid");
+	$r_team = db_row("SELECT COUNT(DISTINCT team) FROM uts_player WHERE matchid=?", [$matchid]);
 	$teams = $r_team[0];
 
 	return array($playernames,$playerteams,$teams);
@@ -38,10 +36,11 @@ Get time game starts, game ends, and ratio compared to real time
 */
 function getGameStartEndRatio($uid) {
 	// gather game start & end time
-	$q_logdom = mysql_query("SELECT col0 FROM uts_temp_$uid WHERE col1='game_start' OR col1='game_end' ORDER BY id ASC")or die(mysql_error());
+	$q_logdom = db_query("SELECT col0 FROM uts_temp_$uid WHERE col1='game_start' OR col1='game_end' ORDER BY id ASC")->fetchAll(PDO::FETCH_COLUMN);
 
-	$time_gamestart = mysql_result($q_logdom,0);
-	$time_gameend = mysql_result($q_logdom,1);
+	// A missing row used to give false
+	$time_gamestart = $q_logdom[0] ?? false;
+	$time_gameend = $q_logdom[1] ?? false;
 	//$time_ratio_correction = ($time_gameend-$time_gamestart)/1200;
 	$time_ratio_correction = TIMERATIO; // based on hardcore mode
 
@@ -55,18 +54,16 @@ function generateTeamLabels() {
 /*
 Generate the chart with pickups
 */
-function renderDataPickups($uid,$team=true,$playerRedWins=true,$topFraggers) {
+function renderDataPickups($uid,$team=true,$playerRedWins=true,$topFraggers=null) {
 	global $matchid;
 	global $renderer_color;
 	global $renderer_folder;
 	global $renderer_width;
 	global $renderer_heigth;
 
-	$uid = mysql_real_escape_string($uid);
+	$q_pickups = db_query("SELECT SUM(pu_belt), SUM(pu_keg), SUM(pu_pads), SUM(pu_armour), SUM(pu_amp) FROM uts_player as p WHERE matchid = ? GROUP BY team", [$matchid]);
 
-	$q_pickups = mysql_query("SELECT SUM(pu_belt), SUM(pu_keg), SUM(pu_pads), SUM(pu_armour), SUM(pu_amp) FROM uts_player as p WHERE matchid = ".mysql_real_escape_string($matchid)." GROUP BY team") or die(mysql_error());
-
-	while($r_pickups = mysql_fetch_row($q_pickups)) {
+	while($r_pickups = $q_pickups->fetch(PDO::FETCH_NUM)) {
 		$preData[] = $r_pickups;
 	}
 
@@ -107,10 +104,8 @@ function renderDataPickups($uid,$team=true,$playerRedWins=true,$topFraggers) {
 		$charttype = $team?RENDERER_CHART_ITEMS_TEAMPICKUPS:RENDERER_CHART_ITEMS_PLAYERPICKUPS;
 
 		// Save team score over team for teams
-		mysql_query("INSERT INTO uts_chartdata (mid,chartid,data,labels,categories) VALUES (".$matchid.", ".$charttype.",
-			'".mysql_real_escape_string(gzencode(serialize($data)))."',
-			'".mysql_real_escape_string(gzencode(serialize($labels)))."',
-			'".mysql_real_escape_string(gzencode(serialize($itemsPickedUp)))."')") or die(mysql_error());
+		db_exec("INSERT INTO uts_chartdata (mid,chartid,data,labels,categories) VALUES (?, ?, ?, ?, ?)",
+			[$matchid, $charttype, gzencode(serialize($data)), gzencode(serialize($labels)), gzencode(serialize($itemsPickedUp))]);
 	}
 }
 
@@ -123,7 +118,9 @@ function generateLabelsFraggers($topFraggers) {
 	$labels = array();
 
 	foreach($topFraggers as $fragger) {
-		$labels[] = substr($playernames[$fragger],0,18);
+		// PHP 5's substr() returned false for '' (unknown/merged player); keep that label value
+		$name = $playernames[$fragger] ?? '';
+		$labels[] = ($name === '') ? false : substr($name,0,18);
 	}
 
 	return $labels;

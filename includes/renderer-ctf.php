@@ -13,10 +13,8 @@ function renderScoreGraph($uid) {
 	global $playernumberofteams;
 	global $playerteams;
 	
-	$uid = mysql_real_escape_string($uid);
-	
 	// Get all frags related events + start & end
-	$q_frags = mysql_query("SELECT * FROM `uts_temp_$uid` WHERE col0>=".mysql_real_escape_string($time_gamestart)." ORDER BY id ASC") or die(mysql_error());
+	$q_frags = db_query("SELECT * FROM `uts_temp_$uid` WHERE col0>=(? + 0) ORDER BY id ASC", [(string) $time_gamestart]);
 	
 	// init caps/grabs array
 	$caps = array();
@@ -41,25 +39,26 @@ function renderScoreGraph($uid) {
 	}
 	
 	$counter = 1;
-	while($data = mysql_fetch_array($q_frags)) {
+	while($data = $q_frags->fetch()) {
 	
 		// Collect data from utstats own table
 		$r_id = $data[0];
 		$r_time = round(($data[1]-$time_gamestart)/$time_ratio_correction/60,2);	// Transform UT time to real time		
 		$r_type = $data[2];
 		$r_capper = $data[3];
-		$r_team = $playerteams[$r_capper];
+		$r_team = $playerteams[$r_capper] ?? null;
 		
 		// Try to get team directly from data if possible, in case not found in playerteam db
-		if(!($r_team >=0 && strlen($r_team)>0)) {
-			if($data[4] == 0 || $data[4] == 20)
+		// (float): PHP 5 compared non-numeric strings like '' as 0
+		if(!($r_team >=0 && strlen((string) $r_team)>0)) {
+			if((float) $data[4] == 0 || (float) $data[4] == 20)
 				$r_team = 1;
-			if($data[4] == 1 || $data[4] == 14)
+			if((float) $data[4] == 1 || (float) $data[4] == 14)
 				$r_team = 0;
 		}
 
 		// Only collect team stats if team was found - sometimes this is bugged
-		if($r_team >=0 && strlen($r_team)>0) {
+		if($r_team >=0 && strlen((string) $r_team)>0) {
 			
 			// If flag is captured, save this datapoint
 			if($r_type == "flag_captured") {		
@@ -125,16 +124,14 @@ function renderScoreGraph($uid) {
 	}
 	
 	// Save team score over team for teams
-	mysql_query("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (".$matchid.", ".RENDERER_CHART_CTF_TEAMSCORE.", 
-		'".mysql_real_escape_string(gzencode(serialize(array($grabs,$caps))))."', 
-		'".mysql_real_escape_string(gzencode(serialize($teamLabels)))."')") or die(mysql_error());
+	db_exec("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (?, ?, ?, ?)",
+		[$matchid, RENDERER_CHART_CTF_TEAMSCORE, gzencode(serialize(array($grabs,$caps))), gzencode(serialize($teamLabels))]);
 
 	$labelsBreakdown = array('caps','close','base','mid','enemy base');
 		
 	// Save team score over team for teams
-	mysql_query("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (".$matchid.", ".RENDERER_CHART_CTF_GRABBREAKDOWN.", 
-		'".mysql_real_escape_string(gzencode(serialize(array($flagcap,$flagclose,$flagbase,$flagmid,$flagnmybase))))."', 
-		'".mysql_real_escape_string(gzencode(serialize($labelsBreakdown)))."')") or die(mysql_error());
+	db_exec("INSERT INTO uts_chartdata (mid,chartid,data,labels) VALUES (?, ?, ?, ?)",
+		[$matchid, RENDERER_CHART_CTF_GRABBREAKDOWN, gzencode(serialize(array($flagcap,$flagclose,$flagbase,$flagmid,$flagnmybase))), gzencode(serialize($labelsBreakdown))]);
 	
 }
 
@@ -163,22 +160,23 @@ function analyseCap($uid, $capTime, $capPlayer,$capTeam, $capId) {
 	$event[1]['flag_captured'] = array('id' => 0, 'time' => 0, 'player' => '');
 			
 	// Get grab time for both teams related to this cap. Query of the month award.
-	$q_grabs = mysql_query("SELECT f.id AS id, f.col0 AS gtime, f.col1 AS event, f.col2 AS player, f.col3 AS team 
+	$q_grabs = db_all("SELECT f.id AS id, f.col0 AS gtime, f.col1 AS event, f.col2 AS player, f.col3 AS team 
 	FROM (	
-		SELECT col3, col1, MAX( col0 ) AS xgtime FROM `uts_temp_$uid` WHERE (col1 = 'flag_taken' OR col1 = 'flag_returned' OR col1 = 'flag_captured') AND id<".mysql_real_escape_string($capId)." GROUP BY col3,col1 ORDER BY col3 DESC	 
+		SELECT col3, col1, MAX( col0 ) AS xgtime FROM `uts_temp_$uid` WHERE (col1 = 'flag_taken' OR col1 = 'flag_returned' OR col1 = 'flag_captured') AND id<? GROUP BY col3,col1 ORDER BY col3 DESC	 
 	) AS x INNER JOIN `uts_temp_$uid` AS f 
-	on f.col3 = x.col3 AND f.col1 = x.col1 AND f.col0 = x.xgtime") or die(mysql_error());
+	on f.col3 = x.col3 AND f.col1 = x.col1 AND f.col0 = x.xgtime", [$capId]);
 	
 	// Only continue if you have at least one event (should be at least flag_taken for this cap)
-	if(mysql_num_rows($q_grabs) >0) {
+	if(count($q_grabs) >0) {
 	
-		while($r_grabs = mysql_fetch_array($q_grabs)) {		
+		foreach($q_grabs as $r_grabs) {		
 			// Ugly code to fix bug where sometimes 20 or 14 is imported instead of 0 and 1 respectively
 			$fixedteam = ($r_grabs['team']==20)?0:$r_grabs['team'];
 			$fixedteam = ($fixedteam==14)?1:$fixedteam;
 			
 			// Swap team around since ut logs which flag has been taken, thus opposite team actually took it
-			$event[1-$fixedteam][$r_grabs['event']] = array('id' => $r_grabs['id'],'time' => $r_grabs['gtime'],'player' => $r_grabs['player']);
+			// (int): PHP 5 treated a non-numeric team as 0
+			$event[1-(int)$fixedteam][$r_grabs['event']] = array('id' => $r_grabs['id'],'time' => $r_grabs['gtime'],'player' => $r_grabs['player']);
 		}			
 				
 		// Determine how long flags were holded
@@ -190,7 +188,7 @@ function analyseCap($uid, $capTime, $capPlayer,$capTeam, $capId) {
 		// Only register as cherry pick if previous run was at least 10 sec, otherwise it's not really a hcerry pick but just a subsequent grab
 		if($event[$capTeam]['flag_returned']['time']>0 && ($event[$capTeam]['flag_taken']['time']-$event[$capTeam]['flag_returned']['time'])<4) {
 				
-			$prevRunTime = small_query("SELECT MAX( col0 ) as gtime FROM `uts_temp_$uid` WHERE id<".mysql_real_escape_string($event[$capTeam]['flag_returned']['id'])." AND col1='flag_taken' AND col3='".(1-$capTeam)."'") or die(mysql_error());
+			$prevRunTime = db_row("SELECT MAX( col0 ) as gtime FROM `uts_temp_$uid` WHERE id<? AND col1='flag_taken' AND col3=?", [$event[$capTeam]['flag_returned']['id'], (string) (1-$capTeam)]);
 				
 			if(($event[$capTeam]['flag_returned']['time'] - $prevRunTime[0]) > 10)
 				$cherrypickDone = true;
@@ -207,7 +205,7 @@ function analyseCap($uid, $capTime, $capPlayer,$capTeam, $capId) {
 		if($event[$capTeam]['flag_taken']['player'] == $capPlayer) {
 		
 			// Second check is to see no pickups were done during this run
-			if(small_count("SELECT * FROM `uts_temp_$uid` WHERE col1 = 'flag_pickedup' AND col3 = '".(1-$capTeam)."' AND id<".mysql_real_escape_string($capId)." AND id>".mysql_real_escape_string($event[$capTeam]['flag_taken']['id'])) == 0) {
+			if(db_count("SELECT * FROM `uts_temp_$uid` WHERE col1 = 'flag_pickedup' AND col3 = ? AND id<? AND id>?", [(string) (1-$capTeam), $capId, $event[$capTeam]['flag_taken']['id']]) == 0) {
 			
 				$solocap = "<br>Solo cap";
 								
@@ -216,8 +214,8 @@ function analyseCap($uid, $capTime, $capPlayer,$capTeam, $capId) {
 		}		
 		
 		// If taken for more than 30 seconds for both teams, this is a long standoff
-		// Add who did the return
-		if($flagHolded[$capTeam] > 30 && $flagHolded[1-$capTeam] > 30 && $event[1-$capTeam]['flag_returned']['player'] >= 0) 
+		// Add who did the return ((float): PHP 5 compared a missing player '' as 0)
+		if($flagHolded[$capTeam] > 30 && $flagHolded[1-$capTeam] > 30 && (float) $event[1-$capTeam]['flag_returned']['player'] >= 0) 
 			$standoff = "<br>Standoff return by ".renderPlayernameForTooltip($event[1-$capTeam]['flag_returned']['player']);		
 		
 		$tooltip = "Capped by : ".renderPlayernameForTooltip($capPlayer)." (".renderTimeForTooltip($flagHolded[$capTeam]/$time_ratio_correction).")";		
@@ -236,18 +234,19 @@ Prep temporary database for CTF parsing
 function prepCTFdata($safe_uid) {
 	
 	// Replace time-out return by normal return
-	mysql_query("UPDATE `uts_temp_$safe_uid` SET col1='flag_returned', col2=(@temp:=col2),col2='-1',col3=@temp WHERE col1='flag_returned_timeout'") or die(mysql_error());
+	db_exec("UPDATE `uts_temp_$safe_uid` SET col1='flag_returned', col2=(@temp:=col2),col2='-1',col3=@temp WHERE col1='flag_returned_timeout'");
 
 }
 
 function renderPlayernameForTooltip($pid) {
 	global $playernames;
 
-	return substr($playernames[$pid],0,25);
+	return substr($playernames[$pid] ?? '',0,25);
 }
 
 function renderTimeForTooltip($time) {
 
+	$strtime = '';
 	$minutes = floor($time/60);	
 	if($minutes > 0) {
 		$strtime = $minutes."min ";

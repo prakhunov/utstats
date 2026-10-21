@@ -1,7 +1,7 @@
 <?php
 	require_once 'includes/renderer-general-import.php';
 
-	$safe_uid = mysql_real_escape_string($uid);
+	$safe_uid = $uid;
 
 	// Get relevant info
 	$playerinfo = getPlayerTeam($uid);

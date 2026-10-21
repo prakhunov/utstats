@@ -20,13 +20,14 @@
 			list($datafrags, $derivfrags, $topFraggers,$counter,$datafragsteam,$derivfragsteam,$topTeams) = parseDMdata($safe_uid);
 			renderFragBarsTeams($datafragsteam,$derivfragsteam,$topTeams,$counter);
 			
-		} catch (Exception $e) {
+		} catch (Throwable $e) {
 			
-			// Do nothing, but simply do not block import
+			// Do not block import (PHP 8 throws where PHP 5 only warned), but keep a trace
+			error_log("UTStats: DOM graphs for match $matchid failed: $e");
 			
 		}
 		
 		// drop table
-		mysql_query("DROP TABLE $tableTempIdom") or die(mysql_error());
+		db_exec("DROP TABLE $tableTempIdom");
 	}
 ?>

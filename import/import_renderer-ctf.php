@@ -7,7 +7,7 @@
 	if(($time_gameend-$time_gamestart)>300 && count(array_unique($playernames))>=2) {
 
 		try {
-			$safe_uid = mysql_real_escape_string($uid);
+			$safe_uid = $uid;
 			
 			prepCTFdata($safe_uid);
 			
@@ -21,9 +21,10 @@
 			if($playernumberofteams == 2)
 					renderDataPickups($safe_uid);			
 			
-		} catch (Exception $e) {
+		} catch (Throwable $e) {
 			
-			// Do nothing, but simply do not block import
+			// Do not block import (PHP 8 throws where PHP 5 only warned), but keep a trace
+			error_log("UTStats: CTF graphs for match $matchid failed: $e");
 
 		}
 	}
