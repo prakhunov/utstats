@@ -1,7 +1,7 @@
 <?php
 if (empty($import_adminkey) or isset($_REQUEST['import_adminkey']) or $import_adminkey != $adminkey) die('Access denied');
 
-$filename = (!empty($_REQUEST['filename'])) ? my_stripslashes($_REQUEST['filename']) : '';
+$filename = (!empty($_REQUEST['filename'])) ? $_REQUEST['filename'] : '';
 $filename = str_replace(array('..', '/', '\\', '<', ':'), array(), $filename);
 
 function InvertSort($curr_field, $order, $sort) {
@@ -18,45 +18,45 @@ function SortPic($curr_field, $order, $sort) {
 }
 
 // Get filter, order and set sorting
-if (isset($_GET[order])) {
-	$order = my_addslashes($_GET[order]);
+if (isset($_GET['order'])) {
+	$order = $_GET['order'];
 	setcookie('uts_ace_order', $_GET['order'], time()+60*60*24*30*365);
 }
 else if (isset($_COOKIE['uts_ace_order'])){
-	$order = $_REQUEST['uts_ace_order'];
+	$order = $_COOKIE['uts_ace_order'];
 }
 else {
 	$order = "time";
 }
 
-if (isset($_GET[sort])) {
-	$sort = my_addslashes($_GET[sort]);
+if (isset($_GET['sort'])) {
+	$sort = $_GET['sort'];
 	setcookie('uts_ace_sort', $_GET['sort'], time()+60*60*24*30*365);
 }
 else if (isset($_COOKIE['uts_ace_sort'])){
-	$sort = $_REQUEST['uts_ace_sort'];
+	$sort = $_COOKIE['uts_ace_sort'];
 }
 else {
 	$sort = ($order == "time") ? "DESC" : "ASC";
 }
 
-if (isset($_GET[timeout])) {
-	$timeout = my_addslashes($_GET[timeout]);
+if (isset($_GET['timeout'])) {
+	$timeout = $_GET['timeout'];
 	setcookie('uts_ace_timeout', $_GET['timeout'], time()+60*60*24*30*365);
 }
 else if (isset($_COOKIE['uts_ace_timeout'])){
-	$timeout = $_REQUEST['uts_ace_timeout'];
+	$timeout = $_COOKIE['uts_ace_timeout'];
 }
 else {
 	$timeout = 0;
 }
 
-if (isset($_GET[show])) {
-	$show = my_addslashes($_GET[show]);
+if (isset($_GET['show'])) {
+	$show = $_GET['show'];
 	setcookie('uts_ace_show', $_GET['show'], time()+60*60*24*30*365);
 }
 else if (isset($_COOKIE['uts_ace_show'])){
-	$show = $_REQUEST['uts_ace_show'];
+	$show = $_COOKIE['uts_ace_show'];
 }
 else {
 	$show = "week";
@@ -118,7 +118,7 @@ if (empty($filename)) {
 		if (!is_file('logs/ace/'. $filename)) continue;
 		if ($filename == '.htaccess' or $filename == 'index.htm') continue;
 
-		preg_match('/\d{4}\.\d{2}.\d{2}.\d{2}.\d{2}.\d{2}/', $filename, &$date);
+		preg_match('/\d{4}\.\d{2}.\d{2}.\d{2}.\d{2}.\d{2}/', $filename, $date);
 		$adate = preg_split('/\./', $date[0]);
 		// filter on days
 		if ($show != "all") {
@@ -145,7 +145,8 @@ if (empty($filename)) {
 		else {
 			// logfile
 
-			$fp = my_fopen('logs/ace/'.$filename, 'rb', $compression = NULL);
+			$compression = NULL;
+			$fp = my_fopen('logs/ace/'.$filename, 'rb', $compression);
 			if (!$fp) die("Error opening file");
 
 			while (($line = my_fgets($fp, 5000, $compression)) !== FALSE) {
@@ -222,7 +223,7 @@ if (empty($filename)) {
 			$TimeStamp = $logs[$id][1];
 			$PlayerName = $logs[$id][2];
 			$KickReason = $logs[$id][3];
-			$Screenshot = $logs[$id][4];
+			$Screenshot = $logs[$id][4] ?? null;
 			$extra = 0;
 			if (substr($log, -4) == '.bz2') $extra = 4;
 			if (substr($log, -3) == '.gz') $extra = 3;
@@ -267,7 +268,8 @@ if (!empty($filename)) {
 		echo '</span></td></tr>';
 	}
 	else {
-		$fp = my_fopen('logs/ace/'.$filename, 'rb', $compression = NULL);
+		$compression = NULL;
+		$fp = my_fopen('logs/ace/'.$filename, 'rb', $compression);
 		if (!$fp) die("Error opening file");
 
 		$i = 0;
@@ -311,8 +313,8 @@ if (!empty($filename)) {
 }
 
 echo '</tr>';
-if (!empty($filename)) echo'<tr><td class="smheading" align="center" colspan="5"><a class="grey" href="./admin.php?key='.$_REQUEST[key].'&amp;action='.$action.'">Go Back To Logfile Overview</a></td></tr>';
-echo'<tr><td class="smheading" align="center" colspan="5"><a class="grey" href="./admin.php?key='.$_REQUEST[key].'">Go Back To Admin Page</a></td></tr>';
+if (!empty($filename)) echo'<tr><td class="smheading" align="center" colspan="5"><a class="grey" href="./admin.php?key='.$_REQUEST['key'].'&amp;action='.$action.'">Go Back To Logfile Overview</a></td></tr>';
+echo'<tr><td class="smheading" align="center" colspan="5"><a class="grey" href="./admin.php?key='.$_REQUEST['key'].'">Go Back To Admin Page</a></td></tr>';
 echo '</table>';
 
 ?>

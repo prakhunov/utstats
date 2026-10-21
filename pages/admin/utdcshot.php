@@ -10,6 +10,8 @@ if (!empty($filename)) {
  
 	$fp_in = fopen('../../logs/utdc/'. $filename, 'rb') or die("Can't open file");
 	$blocksize = 1024;
+	$buffer = '';
+	$bytes = null;
 	while (!feof($fp_in)) {
 		$buffer .= @fread($fp_in, $blocksize);
 		if ($buffer === false) return(false);

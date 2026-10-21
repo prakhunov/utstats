@@ -2,7 +2,7 @@
 
 if (empty($import_adminkey) or isset($_REQUEST['import_adminkey']) or $import_adminkey != $adminkey) die('bla');
 
-$filename = (!empty($_REQUEST['filename'])) ? my_stripslashes($_REQUEST['filename']) : '';
+$filename = (!empty($_REQUEST['filename'])) ? $_REQUEST['filename'] : '';
 $filename = str_replace(array('..', '/', '\\', '<', ':'), array(), $filename);
 
 if (!empty($filename)) {
@@ -87,7 +87,8 @@ if (!empty($filename)) {
 		echo '</td>
 	</tr>';
 
-	$fp = my_fopen('logs/ac/'.$filename, 'rb', $compression = NULL);
+	$compression = NULL;
+	$fp = my_fopen('logs/ac/'.$filename, 'rb', $compression);
 	if (!$fp) die("Error opening file");
 	$i = 0;
 	echo '<tr><td class="grey" colspan="4"><span style="font-family: monospace;">';
@@ -112,9 +113,9 @@ if (!empty($filename)) {
 
 echo '</tr>';
 
-if (!empty($filename)) echo'<tr><td class="smheading" align="center" colspan="4"><a class="grey" href="./admin.php?key='.$_REQUEST[key].'&amp;action='.$action.'">Go Back To Logfile Overview</a></td></tr>';
+if (!empty($filename)) echo'<tr><td class="smheading" align="center" colspan="4"><a class="grey" href="./admin.php?key='.$_REQUEST['key'].'&amp;action='.$action.'">Go Back To Logfile Overview</a></td></tr>';
 
-echo'<tr><td class="smheading" align="center" colspan="4"><a class="grey" href="./admin.php?key='.$_REQUEST[key].'">Go Back To Admin Page</a></td></tr>';
+echo'<tr><td class="smheading" align="center" colspan="4"><a class="grey" href="./admin.php?key='.$_REQUEST['key'].'">Go Back To Admin Page</a></td></tr>';
 echo '</table>';
 
 ?>
