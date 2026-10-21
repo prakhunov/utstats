@@ -141,6 +141,7 @@ function un_ut($name) {
 }
 
 function mtimestamp($date) {
+  $date = (string) $date;
   $hour = substr($date, 8, 2);
   $minute = substr($date, 10, 2);
   $second = 00;
@@ -148,11 +149,12 @@ function mtimestamp($date) {
   $month = substr($date, 4, 2);
   $year = substr($date, 0, 4);
 
-  return(mktime($hour,$minute,$second,$month,$day,$year));
+  // PHP 5's mktime() took empty parts as 0; PHP 8 throws on non-numeric strings
+  return(mktime((int) $hour,(int) $minute,$second,(int) $month,(int) $day,(int) $year));
 }
 
 function mdate($date) {
-  $ourdate = date('D, M j Y \a\t g:i a', mtimestamp($date));
+  $ourdate = date('D, M j Y \a\t g:i a', (int) mtimestamp($date));
   return ($ourdate);
 }
 
@@ -164,9 +166,9 @@ function mdate2($date) {
   $month = substr("$date", 4, 2);
   $year = substr("$date", 0, 4);
 
-  $ourdate = mktime($hour,$minute,$second,$month,$day,$year);
+  $ourdate = mtimestamp($date);
 
-  $ourdate = date('Y-m-d g:i a', $ourdate);
+  $ourdate = date('Y-m-d g:i a', (int) $ourdate);
   return ($ourdate);
 }
 
