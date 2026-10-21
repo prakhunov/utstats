@@ -18,11 +18,10 @@
 		Referrer-Policy strict-origin-when-cross-origin
 	}
 
-	# Only these PHP entrypoints are public; everything else under the app tree is internal.
+	# Allowlist: only the public entrypoints and static assets are reachable. Everything
+	# else in the app tree (includes/, pages/, import.php, admin.php, config, scripts) is 403.
 	@internal {
-		path /includes/* /import/* /pages/* /logs/* /renderings/*.php /vendor/* /docker/*
-		path /import.php /admin.php
-		path /composer.* /*.neon /*.xml /*.md /.*
+		not path / /index.php /pic.php /pic.php/* /api/*.php /assets/* /robots.txt /favicon.ico
 	}
 	respond @internal 403
 
