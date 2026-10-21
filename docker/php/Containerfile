@@ -24,7 +24,7 @@ WORKDIR /var/www/html
 COPY --from=vendor /app/vendor ./vendor
 COPY --chown=root:root . .
 # Runtime state lives on the /data volume (logs, renderings, ftp timestamp).
-RUN mkdir -p /data/logs /data/renderings \
+RUN mkdir -p /data/logs/backup /data/logs/ac /data/logs/ace /data/logs/utdc /data/renderings \
  && ln -sfn /data/logs logs && ln -sfn /data/renderings renderings \
  && chown -R www-data:www-data /data
 VOLUME /data

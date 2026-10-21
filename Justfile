@@ -1,5 +1,7 @@
 # UTStats task runner. `just` lists recipes.
 
+set shell := ["bash", "-cu"]
+
 compose := "podman compose"
 dump := env_var_or_default("UTSTATS_DUMP", env_var("HOME") / "workspace/fragmath/backtesting/sources/2026-03-07/stats.sql")
 
@@ -34,7 +36,7 @@ lint: lint-syntax lint-compat lint-stan
 
 # Build and start db + php + caddy (http://localhost:8080)
 up:
-    mkdir -p .verify/data/logs .verify/data/renderings
+    mkdir -p .verify/data/logs/{backup,ac,ace,utdc} .verify/data/renderings
     {{compose}} up -d --build db php caddy
 
 down:
