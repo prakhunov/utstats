@@ -158,18 +158,14 @@ class Encoding {
       }
       return $text;
     } elseif(is_string($text)) {
-      if ( function_exists('mb_strlen') && ((int) ini_get('mbstring.func_overload')) & 2) {
-         $max = mb_strlen($text,'8bit');
-      } else {
-         $max = strlen($text);
-      }
+      $max = strlen($text);
       $buf = "";
       for($i = 0; $i < $max; $i++){
-          $c1 = $text{$i};
+          $c1 = $text[$i];
           if($c1>="\xc0"){ //Should be converted to UTF8, if it's not UTF8 already
-            $c2 = $i+1 >= $max? "\x00" : $text{$i+1};
-            $c3 = $i+2 >= $max? "\x00" : $text{$i+2};
-            $c4 = $i+3 >= $max? "\x00" : $text{$i+3};
+            $c2 = $i+1 >= $max? "\x00" : $text[$i+1];
+            $c3 = $i+2 >= $max? "\x00" : $text[$i+2];
+            $c4 = $i+3 >= $max? "\x00" : $text[$i+3];
               if($c1 >= "\xc0" & $c1 <= "\xdf"){ //looks like 2 bytes UTF8
                   if($c2 >= "\x80" && $c2 <= "\xbf"){ //yeah, almost sure it's UTF8 already
                       $buf .= $c1 . $c2;
@@ -293,8 +289,9 @@ class Encoding {
   protected static function utf8_decode($text, $option)
   {
     if ($option == self::WITHOUT_ICONV || !function_exists('iconv')) {
-       $o = utf8_decode(
-         str_replace(array_keys(self::$utf8ToWin1252), array_values(self::$utf8ToWin1252), self::toUTF8($text))
+       $o = mb_convert_encoding(
+         str_replace(array_keys(self::$utf8ToWin1252), array_values(self::$utf8ToWin1252), self::toUTF8($text)),
+         'ISO-8859-1', 'UTF-8'
        );
     } else {
        $o = iconv("UTF-8", "Windows-1252" . ($option == self::ICONV_TRANSLIT ? '//TRANSLIT' : ($option == self::ICONV_IGNORE ? '//IGNORE' : '')), $text);
