@@ -355,7 +355,7 @@ if(!$timestamp || (time() - $timestamp) > $ftp_interval*60) {
 
 	}
 
-	$ftp = new ftp($ftp_debug, $ftp_debug);
+	$ftp = new ftp();
 
 	ftpupdate();
 

@@ -19,7 +19,7 @@ class ftp {
 			if(!$ip) $ip = $host;
 			if(!$dns) $dns = $host;
 			if(ip2long($ip) === -1) {
-				$this->lastmsg("Wrong host name/address \"".$host."\"");
+				$this->lastmsg = "Wrong host name/address \"".$host."\"";
 				return(false);
 			}
 		$this->host = $ip;
@@ -30,23 +30,23 @@ class ftp {
 	}
 	
 	function connect() {
-		$php_erormsg = '';
+		error_clear_last();
 		if (!check_extension('ftp') or true) {
 			$this->lastmsg = "No FTP support in this php build!";
 			return(false);
 		}
 		$this->fp = @ftp_connect($this->host, $this->port, 30);
 		if (!$this->fp) {
-			$this->lastmsg = $php_errormsg;
+			$this->lastmsg = error_get_last()['message'] ?? '';
 			return(false);
 		}
 		return(true);
 	}
 	
 	function login($user, $pass) {
-		$php_errormsg = '';
+		error_clear_last();
 		if (!@ftp_login($this->fp, $user, $pass)) {
-			$this->lastmsg = $php_errormsg;
+			$this->lastmsg = error_get_last()['message'] ?? '';
 			return(false);
 		}
 		return(true);
@@ -58,55 +58,55 @@ class ftp {
 	}
 	
 	function Passive($pasv) {
-		$php_errormsg = '';
+		error_clear_last();
 		if (!@ftp_pasv($this->fp, $pasv)) {
-			$this->lastmsg = $php_errormsg;
+			$this->lastmsg = error_get_last()['message'] ?? '';
 			return(false);
 		}
 		return(true);
 	}
 	
 	function pwd() {
-		$php_errormsg = '';
+		error_clear_last();
 		if (!($res = @ftp_pwd($this->fp))) {
-			$this->lastmsg = $php_errormsg;
+			$this->lastmsg = error_get_last()['message'] ?? '';
 			return(false);
 		}
 		return($res);
 	}
 	
 	function chdir($dir) {
-		$php_errormsg = '';
+		error_clear_last();
 		if (!@ftp_chdir($this->fp, $dir)) {
-			$this->lastmsg = $php_errormsg;
+			$this->lastmsg = error_get_last()['message'] ?? '';
 			return(false);
 		}
 		return(true);
 	}
 	
 	function nlist() {
-		$php_errormsg = '';
+		error_clear_last();
 		if (!($res = @ftp_nlist($this->fp, '.'))) {
-			$this->lastmsg = $php_errormsg;
+			$this->lastmsg = error_get_last()['message'] ?? '';
 			return(false);
 		}
 		return($res);
 	}
 	
 	function get($remotefile, $localfile) {
-		$php_errormsg = '';
+		error_clear_last();
 		if (!@ftp_get($this->fp, $localfile, $remotefile, $this->transfertype)) {
-			$this->lastmsg = $php_errormsg;
-			$this->PushError('get', "Unable to download $remotefile", $php_errormsg);
+			$this->lastmsg = error_get_last()['message'] ?? '';
+			$this->PushError('get', "Unable to download $remotefile", $this->lastmsg);
 			return(false);
 		}
 		return(filesize($localfile));
 	}
 
 	function delete($remotefile) {
-		$php_errormsg = '';
+		error_clear_last();
 		if (!@ftp_delete($this->fp, $remotefile)) {
-			$this->lastmsg = $php_errormsg;
+			$this->lastmsg = error_get_last()['message'] ?? '';
 			return(false);
 		}
 		return(true);
@@ -133,7 +133,7 @@ class ftp {
 	}
 	
 	function PopError(){
-		if(count($this->errors)) return(array_pop($this->_error_array));
+		if(count($this->errors)) return(array_pop($this->errors));
 			else return(false);
 	}
 
