@@ -20,10 +20,12 @@ VERIFY = ROOT / ".verify"
 ROUTES = VERIFY / "routes.txt"
 OLD, NEW = "http://127.0.0.1:8055", "http://127.0.0.1:8080"
 
-# Per-request noise: random header art, timers, "last visit" cookies.
+# Per-request noise (random header art, timers) and accepted PHP 8 differences
+# (htmlspecialchars now escapes single quotes by default).
 NOISE = [
     (re.compile(r"char\d+\.jpg"), "charN.jpg"),
     (re.compile(r"(?i)(generated|processed) in [\d.]+ ?(seconds|sec|s)"), r"\1 in N"),
+    (re.compile(r"&#039;"), "'"),
 ]
 
 
