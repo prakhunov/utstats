@@ -1,8 +1,9 @@
 <?php
-$serverip = mysql_real_escape_string($_GET[serverip]);
+$serverip = (string) ($_GET['serverip'] ?? '');
+$serverip_html = htmlspecialchars($serverip);
  
 // Firstly we need to work out First Last Next Prev pages
-$scount = small_count("SELECT id FROM uts_match WHERE serverip = '$serverip'");
+$scount = db_count("SELECT id FROM uts_match WHERE serverip = ?", [$serverip]);
  
 $ecount = $scount/25;
 $ecount2 = number_format($ecount, 0, '.', '');
@@ -15,7 +16,7 @@ $fpage = 0;
 IF($ecount < 1) { $lpage = 0; }
 else { $lpage = $ecount2-1; }
  
-$cpage = mysql_real_escape_string($_GET["page"]);
+$cpage = preg_replace('/\D/', '', (string) ($_GET["page"] ?? ''));
 IF ($cpage == "") { $cpage = "0"; }
 $qpage = $cpage*25;
  
@@ -23,29 +24,29 @@ $tfpage = $cpage+1;
 $tlpage = $lpage+1;
  
 $ppage = $cpage-1;
-$ppageurl = "<a class=\"pages\" href=\"./?p=sinfo&amp;serverip=$serverip&amp;page=$ppage\">[Previous]</a>";
+$ppageurl = "<a class=\"pages\" href=\"./?p=sinfo&amp;serverip=$serverip_html&amp;page=$ppage\">[Previous]</a>";
 IF ($ppage < "0") { $ppageurl = "[Previous]"; }
  
 $npage = $cpage+1;
-$npageurl = "<a class=\"pages\" href=\"./?p=sinfo&amp;serverip=$serverip&amp;page=$npage\">[Next]</a>";
+$npageurl = "<a class=\"pages\" href=\"./?p=sinfo&amp;serverip=$serverip_html&amp;page=$npage\">[Next]</a>";
 IF ($npage >= "$ecount") { $npageurl = "[Next]"; }
  
-$fpageurl = "<a class=\"pages\" href=\"./?p=sinfo&amp;serverip=$serverip&amp;page=$fpage\">[First]</a>";
+$fpageurl = "<a class=\"pages\" href=\"./?p=sinfo&amp;serverip=$serverip_html&amp;page=$fpage\">[First]</a>";
 IF ($cpage == "0") { $fpageurl = "[First]"; }
  
-$lpageurl = "<a class=\"pages\" href=\"./?p=sinfo&amp;serverip=$serverip&amp;page=$lpage\">[Last]</a>";
+$lpageurl = "<a class=\"pages\" href=\"./?p=sinfo&amp;serverip=$serverip_html&amp;page=$lpage\">[Last]</a>";
 IF ($cpage == "$lpage") { $lpageurl = "[Last]"; }
  
  
 // Get the last match entry for this server
  
-$serverinfo = small_query("SELECT time, servername, serverinfo, gameinfo, mutators FROM uts_match WHERE serverip = '$serverip' ORDER BY time DESC LIMIT 0,1");
-$matchdate = mdate($serverinfo[time]);
+$serverinfo = db_row("SELECT time, servername, serverinfo, gameinfo, mutators FROM uts_match WHERE serverip = ? ORDER BY time DESC LIMIT 0,1", [$serverip]);
+$matchdate = mdate($serverinfo['time']);
  
 echo'
 <table class = "zebra box" border="0" cellpadding="0" cellspacing="0" width="700">
   <tbody><tr>
-    <th class="heading" align="center" colspan="2">'.$serverinfo[servername].'</th>
+    <th class="heading" align="center" colspan="2">'.$serverinfo['servername'].'</th>
   </tr>
   <tr>
     <th align="center" width="110">Last Match</th>
@@ -53,21 +54,22 @@ echo'
   </tr>
   <tr>
     <th align="center">Server Info</th>
-    <td align="center">'.$serverinfo[serverinfo].'</td>
+    <td align="center">'.$serverinfo['serverinfo'].'</td>
   </tr>
   <tr>
     <th align="center">Mutators</td>
-    <td align="center">'.$serverinfo[mutators].'</th>
+    <td align="center">'.$serverinfo['mutators'].'</th>
   </tr>
   <tr>
     <th align="center">Game Info</td>
-    <td align="center">'.$serverinfo[gameinfo].'</td>
+    <td align="center">'.$serverinfo['gameinfo'].'</td>
   </tr>
 </tbody></table>
 <br>';
  
 // Do graph stuff
-$bgwhere = "serverip = '$serverip'";
+$bgwhere = "serverip = ?";
+$bgparams = [$serverip];
 include("pages/graph_mbreakdown.php");
  
 echo'<div class="pages">Page ['.$tfpage.'/'.$tlpage.'] Selection: '.$fpageurl.' / '.$ppageurl.' / '.$npageurl.' / '.$lpageurl.'</div>
@@ -82,19 +84,18 @@ echo'<div class="pages">Page ['.$tfpage.'/'.$tlpage.'] Selection: '.$fpageurl.' 
     <th class="smheading" align="center" width="40">Time</th>
   </tr>';
  
-$sql_recent = "SELECT m.id, m.time, g.name AS gamename, m.mapfile, m.gametime FROM uts_match AS m, uts_games AS g  WHERE g.id = m.gid AND m.serverip = '$serverip' ORDER BY m.time DESC LIMIT $qpage,25";
-$q_recent = mysql_query($sql_recent) or die(mysql_error());
-while ($r_recent = mysql_fetch_array($q_recent)) {
+$sql_recent = "SELECT m.id, m.time, g.name AS gamename, m.mapfile, m.gametime FROM uts_match AS m, uts_games AS g  WHERE g.id = m.gid AND m.serverip = ? ORDER BY m.time DESC LIMIT ?,25";
+foreach (db_all($sql_recent, [$serverip, (int) $qpage]) as $r_recent) {
  
-          $r_time = mdate($r_recent[time]);
-          $r_mapfile = un_ut($r_recent[mapfile]);
-          $r_gametime = sec2min($r_recent[gametime]);
+          $r_time = mdate($r_recent['time']);
+          $r_mapfile = un_ut($r_recent['mapfile']);
+          $r_gametime = sec2min($r_recent['gametime']);
           $myurl = urlencode($r_mapfile);
  
           echo'
-          <tr class="clickableRow" href="./?p=match&amp;mid='.$r_recent[id].'">
-                <td align="center"><a href="./?p=match&amp;mid='.$r_recent[id].'">'.$r_time.'</a></td>
-                <td align="center">'.$r_recent[gamename].'</td>
+          <tr class="clickableRow" href="./?p=match&amp;mid='.$r_recent['id'].'">
+                <td align="center"><a href="./?p=match&amp;mid='.$r_recent['id'].'">'.$r_time.'</a></td>
+                <td align="center">'.$r_recent['gamename'].'</td>
                 <td align="center"><a href="./?p=minfo&amp;map='.$myurl.'">'.$r_mapfile.'</a></td>
                 <td align="center">'.$r_gametime.'</td>
           </tr>';

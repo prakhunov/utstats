@@ -13,21 +13,19 @@ function SortPic($curr_field, $filter, $sort) {
 }
 
 // Get filter and set sorting
-$filter = my_addslashes($_GET[filter]);
-$sort = my_addslashes($_GET[sort]);
-$q = my_addslashes($_GET[q]);
-$gid = preg_replace('/\D/', '', $_GET[gid]);
-
-if (empty($filter) or (!in_array(strtolower($filter), array("mapfile", "matchcount", "frags", "matchscore", "gametime")))) {
-	$filter = "mapfile";
-}
-
-if (empty($sort) or ($sort != 'ASC' and $sort != 'DESC')) $sort = ($filter == "mapfile") ? "ASC" : "DESC";
+$filter = db_pick(strtolower($_GET['filter'] ?? ''), array("mapfile", "matchcount", "frags", "matchscore", "gametime"), "mapfile");
+$sort = db_pick($_GET['sort'] ?? '', array('ASC', 'DESC'), ($filter == "mapfile") ? "ASC" : "DESC");
+$q = (string) ($_GET['q'] ?? '');
+$gid = (int) preg_replace('/\D/', '', (string) ($_GET['gid'] ?? ''));
+$url_condition = '';
+$sql_condition = '';
+$sql_params = array();
 
 if (isset($gid)) {
 	if ($gid != 0) {
 		$url_condition .= "&amp;gid=".urlencode($gid);
-		$sql_condition = " WHERE gid = $gid";
+		$sql_condition = " WHERE gid = ?";
+		$sql_params[] = $gid;
 	}
 }
 else {
@@ -36,16 +34,17 @@ else {
 
 if (isset($q)) {
 	if ($gid != 0) {
-		$sql_condition .= ' AND mapfile LIKE "%' . $q . '%" ';
+		$sql_condition .= ' AND mapfile LIKE ? ';
 	}
 	else {
-		$sql_condition .= ' WHERE mapfile LIKE "%' . $q . '%" ';
+		$sql_condition .= ' WHERE mapfile LIKE ? ';
 	}
+	$sql_params[] = '%' . $q . '%';
 	$url_condition .= "&amp;q=".urlencode($q);
 }
 
 // Firstly we need to work out First Last Next Prev pages
-$mcount = small_count("SELECT mapfile FROM uts_match" . $sql_condition . " GROUP BY mapfile");
+$mcount = db_count("SELECT mapfile FROM uts_match" . $sql_condition . " GROUP BY mapfile", $sql_params);
 $ecount = $mcount / 25;
 $ecount2 = number_format($ecount, 0, '.', '');
 
@@ -57,7 +56,7 @@ $fpage = 0;
 if ($ecount < 1) { $lpage = 0; }
 else { $lpage = $ecount2-1; }
 
-$cpage = preg_replace('/\D/', '', $_GET["page"]);
+$cpage = preg_replace('/\D/', '', (string) ($_GET["page"] ?? ''));
 if ($cpage == "") { $cpage = "0"; }
 $qpage = $cpage*25;
 
@@ -95,8 +94,7 @@ echo'
 				<option value="0">*</option>';
 
 				$sql_game = "SELECT DISTINCT(p.gid), g.name FROM uts_player AS p, uts_games AS g WHERE p.gid = g.id ORDER BY g.name ASC";
-				$q_game = mysql_query($sql_game) or die(mysql_error());
-				while ($r_game = mysql_fetch_array($q_game)) {
+				foreach (db_all($sql_game) as $r_game) {
 					$selected = ($r_game['gid'] == $gid) ? 'selected' : '';
 					echo '<option '.$selected.' value="'.$r_game['gid'].'">'. $r_game['name'] .'</option>';
 				}
@@ -119,20 +117,19 @@ echo '</select>
   </tr>';
 
 $sql_maps = "SELECT IF(RIGHT(mapfile,4) LIKE '.unr', mapfile, CONCAT(mapfile, '.unr')) as mapfile, COUNT(id) AS matchcount, AVG(frags) AS frags, AVG(t0score+t1score+t2score+t3score) AS matchscore, SUM(gametime) AS gametime
-	FROM uts_match" . $sql_condition . " GROUP BY mapfile ORDER BY $filter $sort LIMIT $qpage,25";
-$q_maps = mysql_query($sql_maps) or die(mysql_error());
+	FROM uts_match" . $sql_condition . " GROUP BY mapfile ORDER BY $filter $sort LIMIT ?,25";
 
-while ($r_maps = mysql_fetch_array($q_maps)) {
-	  $r_mapfile = un_ut($r_maps[mapfile]);
+foreach (db_all($sql_maps, array_merge($sql_params, array((int) $qpage))) as $r_maps) {
+	  $r_mapfile = un_ut($r_maps['mapfile']);
 	  $myurl = urlencode($r_mapfile);
-	  $r_gametime = GetMinutes($r_maps[gametime]);
+	  $r_gametime = GetMinutes($r_maps['gametime']);
 
 	  echo '
 	  <tr class="clickableRow" href="./?p=minfo&amp;map='.$myurl.'">
 			<td align="center"><a href="./?p=minfo&amp;map='.$myurl.'">'.$r_mapfile.'</a></td>
-			<td align="center">'.$r_maps[matchcount].'</td>
-			<td align="center">'.get_dp($r_maps[frags]).'</td>
-			<td align="center">'.get_dp($r_maps[matchscore]).'</td>
+			<td align="center">'.$r_maps['matchcount'].'</td>
+			<td align="center">'.get_dp($r_maps['frags']).'</td>
+			<td align="center">'.get_dp($r_maps['matchscore']).'</td>
 			<td align="center">'.$r_gametime.'</td>
 	  </tr>';
 }

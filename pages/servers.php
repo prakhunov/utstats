@@ -1,7 +1,7 @@
 <?php
 
 // Firstly we need to work out First Last Next Prev pages
-$scount = small_count("SELECT servername, serverip FROM uts_match GROUP BY servername, serverip");
+$scount = db_count("SELECT servername, serverip FROM uts_match GROUP BY servername, serverip");
 $ecount = $scount/25;
 $ecount2 = number_format($ecount, 0, '.', '');
 
@@ -13,7 +13,7 @@ $fpage = 0;
 if($ecount < 1) { $lpage = 0; }
 else { $lpage = $ecount2-1; }
 
-$cpage = preg_replace('/\D/', '', $_GET["page"]);
+$cpage = preg_replace('/\D/', '', (string) ($_GET["page"] ?? ''));
 if ($cpage == "") { $cpage = "0"; }
 $qpage = $cpage*25;
 
@@ -51,25 +51,24 @@ echo '
   </tr>';
 
 $sql_servers = "SELECT servername, serverip, COUNT(*) AS matchcount, SUM(frags) AS frags, SUM(t0score+t1score+t2score+t3score) AS matchscore, SUM(gametime) AS gametime
-  FROM uts_match GROUP BY servername, serverip ORDER BY servername ASC LIMIT $qpage,25";
-$q_servers = mysql_query($sql_servers) or die(mysql_error());
+  FROM uts_match GROUP BY servername, serverip ORDER BY servername ASC LIMIT ?,25";
 
-while ($r_servers = mysql_fetch_array($q_servers)) {
-    $r_gametime = sec2hour($r_servers[gametime]);
+foreach (db_all($sql_servers, [(int) $qpage]) as $r_servers) {
+    $r_gametime = sec2hour($r_servers['gametime']);
 
     echo '
     <tr>
       <td align="center">
-				<a href="./?p=sinfo&amp;serverip='.$r_servers[serverip].'">'.$r_servers[servername].'</a>
+				<a href="./?p=sinfo&amp;serverip='.$r_servers['serverip'].'">'.$r_servers['servername'].'</a>
 			</td>
       <td align="center">
-				<a href="./?p=squery&amp;serverip='.$r_servers[serverip].'">
+				<a href="./?p=squery&amp;serverip='.$r_servers['serverip'].'">
 					<img border="0" alt="Server Status" src="assets/images/search.png">
 				</a>
 			</td>
-      <td align="center">'.$r_servers[matchcount].'</td>
-      <td align="center">'.$r_servers[frags].'</td>
-      <td align="center">'.$r_servers[matchscore].'</td>
+      <td align="center">'.$r_servers['matchcount'].'</td>
+      <td align="center">'.$r_servers['frags'].'</td>
+      <td align="center">'.$r_servers['matchscore'].'</td>
       <td align="center">'.$r_gametime.'</td>
     </tr>';
 }

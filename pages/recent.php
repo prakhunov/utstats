@@ -2,16 +2,17 @@
 
 // Firstly we need to work out First Last Next Prev pages
 $where = ' ';
-$year = !empty($_REQUEST['year']) ? my_addslashes(sprintf("%04d", $_REQUEST['year'])) : 0;
-$month = !empty($_REQUEST['month']) ? my_addslashes(sprintf("%02d", $_REQUEST['month'])) : 0;
-$day = !empty($_REQUEST['day']) ? my_addslashes(sprintf("%02d", $_REQUEST['day'])) : 0;
-$gid  = !empty($_REQUEST['gid']) ?  my_addslashes($_REQUEST['gid']) : 0;
+$where_params = array();
+$year = !empty($_REQUEST['year']) ? sprintf("%04d", (int) $_REQUEST['year']) : 0;
+$month = !empty($_REQUEST['month']) ? sprintf("%02d", (int) $_REQUEST['month']) : 0;
+$day = !empty($_REQUEST['day']) ? sprintf("%02d", (int) $_REQUEST['day']) : 0;
+$gid  = !empty($_REQUEST['gid']) ?  preg_replace('/\D/', '', (string) $_REQUEST['gid']) : 0;
 
-if (!empty($year) and empty($month) and empty($day)) $where .= " AND m.time LIKE '$year%'";
-if (!empty($year) and !empty($month) and empty($day)) $where .= " AND m.time LIKE '$year$month%'";
-if (!empty($year) and !empty($month) and !empty($day)) $where .= " AND m.time LIKE '$year$month$day%'";
-if (!empty($gid)) $where .= " AND m.gid = '$gid'";
-$r_mcount = small_query("SELECT COUNT(*) AS result FROM uts_match m WHERE 1 $where");
+if (!empty($year) and empty($month) and empty($day)) { $where .= " AND m.time LIKE ?"; $where_params[] = "$year%"; }
+if (!empty($year) and !empty($month) and empty($day)) { $where .= " AND m.time LIKE ?"; $where_params[] = "$year$month%"; }
+if (!empty($year) and !empty($month) and !empty($day)) { $where .= " AND m.time LIKE ?"; $where_params[] = "$year$month$day%"; }
+if (!empty($gid)) { $where .= " AND m.gid = ?"; $where_params[] = $gid; }
+$r_mcount = db_row("SELECT COUNT(*) AS result FROM uts_match m WHERE 1 $where", $where_params);
 $mcount = $r_mcount['result'];
 
 $ecount = $mcount/25;
@@ -25,7 +26,7 @@ $fpage = 0;
 if ($ecount < 1) { $lpage = 0; }
 else { $lpage = $ecount2-1; }
 
-$cpage = mysql_real_escape_string(preg_replace('/\D/', '', $_REQUEST["page"]));
+$cpage = preg_replace('/\D/', '', (string) ($_REQUEST["page"] ?? ''));
 if ($cpage == "") { $cpage = "0"; }
 $qpage = $cpage*25;
 
@@ -56,7 +57,7 @@ echo '
   </tr>
   <tr>
     <th colspan="7" align="center">';
-echo '<input type="hidden" name="p" value="'.htmlentities($_REQUEST['p']).'">';
+echo '<input type="hidden" name="p" value="'.htmlentities($_REQUEST['p'] ?? '').'">';
 echo '<table width="900" class="smheading" border="0" cellpadding="0" cellspacing="0">';
 echo '<tr><th class="noborders">Filter:</th>';
 //echo '<td>Date:</td>';
@@ -95,9 +96,7 @@ echo '<th class="noborders"><select class="searchform" name="gid">';
 echo '<option value="0">*</option>';
 
 $sql_game = "SELECT DISTINCT(p.gid), g.name FROM uts_player AS p, uts_games AS g WHERE p.gid = g.id ORDER BY g.name ASC";
-$q_game = mysql_query($sql_game) or die(mysql_error());
-
-while ($r_game = mysql_fetch_array($q_game)) {
+foreach (db_all($sql_game) as $r_game) {
   $selected = ($r_game['gid'] == $gid) ? 'selected' : '';
   echo '<option '.$selected.' value="'.$r_game['gid'].'">'. $r_game['name'] .'</option>';
 }
@@ -115,25 +114,24 @@ echo '
 	  <th class="smheading" align="center" width="200">Scores</th>
   </tr>';
 
-$sql_recent = "SELECT m.id, m.time, g.name AS gamename, m.mapfile, m.gametime, t0score, t1score, t2score, t3score, (SELECT count(p.id) FROM uts_player AS p WHERE m.id = p.matchid) as players FROM uts_match AS m, uts_games AS g WHERE g.id = m.gid $where ORDER BY m.id DESC LIMIT ".mysql_real_escape_string($qpage).",50";
-$q_recent = mysql_query($sql_recent) or die(mysql_error());
+$sql_recent = "SELECT m.id, m.time, g.name AS gamename, m.mapfile, m.gametime, t0score, t1score, t2score, t3score, (SELECT count(p.id) FROM uts_player AS p WHERE m.id = p.matchid) as players FROM uts_match AS m, uts_games AS g WHERE g.id = m.gid $where ORDER BY m.id DESC LIMIT ?,50";
 
-while ($r_recent = mysql_fetch_array($q_recent)) {
-  $r_time = mdate($r_recent[time]);
-  $r_mapfile = un_ut($r_recent[mapfile]);
-  $r_gametime = GetMinutes($r_recent[gametime]);
-  $winner = max($r_recent[t0score], $r_recent[t1score], $r_recent[t2score], $r_recent[t3score]);
-  $moreThan2Teams = ($r_recent[t2score]!=0);
+foreach (db_all($sql_recent, array_merge($where_params, array((int) $qpage))) as $r_recent) {
+  $r_time = mdate($r_recent['time']);
+  $r_mapfile = un_ut($r_recent['mapfile']);
+  $r_gametime = GetMinutes($r_recent['gametime']);
+  $winner = max($r_recent['t0score'], $r_recent['t1score'], $r_recent['t2score'], $r_recent['t3score']);
+  $moreThan2Teams = ($r_recent['t2score']!=0);
 
-  if ($winner == $r_recent[t0score]) {
+  if ($winner == $r_recent['t0score']) {
     $winnercolor = "red";
     $winmsg = "Red is the winner!";
   }
-  elseif ($winner == $r_recent[t1score]) {
+  elseif ($winner == $r_recent['t1score']) {
     $winnercolor = "blue";
     $winmsg = "Blue is the winner!";
   }
-  elseif ($winner == $r_recent[t2score]) {
+  elseif ($winner == $r_recent['t2score']) {
     $winnercolor = "green";
     $winmsg = "Green is the winner!";
   }
@@ -143,15 +141,15 @@ while ($r_recent = mysql_fetch_array($q_recent)) {
   };
 
   echo '
-  <tr class="clickableRow" href="./?p=match&amp;mid='.$r_recent[id].'">
-    <td align="center">'.$r_recent[id].'</td>
-    <td nowrap align="center"><a href="./?p=match&amp;mid='.$r_recent[id].'">'.$r_time.'</a></td>
-    <td nowrap align="center">'.$r_recent[gamename].'</td>
+  <tr class="clickableRow" href="./?p=match&amp;mid='.$r_recent['id'].'">
+    <td align="center">'.$r_recent['id'].'</td>
+    <td nowrap align="center"><a href="./?p=match&amp;mid='.$r_recent['id'].'">'.$r_time.'</a></td>
+    <td nowrap align="center">'.$r_recent['gamename'].'</td>
     <td align="center">'.$r_mapfile.'</td>
-    <td class="tooltip" title="'.$winmsg.'" align="center"><span class="redbox">'.$r_recent[t0score].'</span><span class="bluebox">'.$r_recent[t1score].'</span>';
+    <td class="tooltip" title="'.$winmsg.'" align="center"><span class="redbox">'.$r_recent['t0score'].'</span><span class="bluebox">'.$r_recent['t1score'].'</span>';
 
 		if  ($moreThan2Teams) {
-			echo '<span class="greenbox">'.$r_recent[t2score].' </span><span class="goldbox">  '.$r_recent[t3score].' </span>';
+			echo '<span class="greenbox">'.$r_recent['t2score'].' </span><span class="goldbox">  '.$r_recent['t3score'].' </span>';
 		}
 
     '</td>

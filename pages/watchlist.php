@@ -12,7 +12,7 @@ echo'
       <form name="playersearch" method="post" action="./?p=psearch">
         <div class="darksearch">
           <span>
-            <input type="text" class="search square" placeholder="Search player..." name="name" value="'.htmlentities($playername).'">
+            <input type="text" class="search square" placeholder="Search player..." name="name" value="'.htmlentities($playername ?? '').'">
             <input class="searchbutton" type="submit" value="Search">
           </span>
         </div>';
@@ -63,7 +63,7 @@ foreach ($watchlist as $pid) {
             FROM  uts_pinfo pi,
                   uts_match m,
                   uts_player p
-            WHERE pi.id = '$pid'
+            WHERE pi.id = ?
               AND p.matchid = m.id
               AND p.pid = pi.id
             ORDER BY m.time DESC
@@ -80,14 +80,12 @@ foreach ($watchlist as $pid) {
                   AVG(p.ttl) AS ttl,
                   SUM(gametime) as gametime
             FROM  uts_player AS p
-            WHERE p.pid = '$pid'
+            WHERE p.pid = ?
             GROUP BY p.pid";
 
-  $r_pinfo = small_query($sql_pinfo);
+  $r_pinfo = db_row($sql_pinfo, [$pid]);
 
-  $q_players = mysql_query($sql_players) or die(mysql_error());
-
-  while ($r_players = mysql_fetch_array($q_players)) {
+  foreach (db_all($sql_players, [$pid]) as $r_players) {
     $i++;
     $new = (mtimestamp($r_players['time']) > $s_lastvisit) ? true : false;
     $class = ($i % 2) ? 'grey' : 'grey2';

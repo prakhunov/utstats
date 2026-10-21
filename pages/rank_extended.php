@@ -1,10 +1,10 @@
 <?php
-$gid = my_addslashes($_GET['gid']);
+$gid = preg_replace('/\D/', '', (string) ($_GET['gid'] ?? ''));
 
-$r_gamename = small_query("SELECT name FROM uts_games WHERE id = '$gid'");
-$gamename = $r_gamename['name'];
+$r_gamename = db_row("SELECT name FROM uts_games WHERE id = ?", [$gid]);
+$gamename = $r_gamename ? $r_gamename['name'] : '';
 
-$r_pcount = small_query("SELECT COUNT(*) as pcount FROM uts_rank WHERE gid= '$gid'");
+$r_pcount = db_row("SELECT COUNT(*) as pcount FROM uts_rank WHERE gid= ?", [$gid]);
 $pcount = $r_pcount['pcount'];
 
 $ecount = $pcount/25;
@@ -18,7 +18,7 @@ $fpage = 0;
 IF($ecount < 1) { $lpage = 0; }
 else { $lpage = $ecount2-1; }
 
-$cpage = $_GET["page"];
+$cpage = preg_replace('/\D/', '', (string) ($_GET["page"] ?? ''));
 IF ($cpage == "") { $cpage = "0"; }
 $qpage = $cpage*25;
 
@@ -55,17 +55,16 @@ echo'
 
 	$ranking = $qpage;
 
-	$sql_rplayer = "SELECT pi.name, pi.country, r.rank, r.prevrank, r.matches, r.pid FROM uts_rank AS r, uts_pinfo AS pi WHERE r.pid = pi.id AND r.gid = '$gid' AND pi.banned <> 'Y' ORDER BY rank DESC LIMIT $qpage,25";
-	$q_rplayer = mysql_query($sql_rplayer) or die(mysql_error());
-	while ($r_rplayer = mysql_fetch_array($q_rplayer)) {
+	$sql_rplayer = "SELECT pi.name, pi.country, r.rank, r.prevrank, r.matches, r.pid FROM uts_rank AS r, uts_pinfo AS pi WHERE r.pid = pi.id AND r.gid = ? AND pi.banned <> 'Y' ORDER BY rank DESC LIMIT ?,25";
+	foreach (db_all($sql_rplayer, [$gid, (int) $qpage]) as $r_rplayer) {
 
 		$ranking++;
 	  echo'
 	  <tr class="clickableRow" href="./?p=pinfo&amp;pid='.$r_rplayer['pid'].'">
 		<td   align="center">'.$ranking.'</td>
-		<td nowrap   align="left"><a href="./?p=pinfo&amp;pid='.$r_rplayer['pid'].'">'.FlagImage($r_rplayer[country]).' '.htmlspecialchars($r_rplayer[name]) .' '. RankMovement($r_rplayer['rank'] - $r_rplayer['prevrank']) .'</a></td>
-		<td   align="center">'.get_dp($r_rplayer[rank]).'</td>
-		<td   align="center">'.$r_rplayer[matches].'</td>
+		<td nowrap   align="left"><a href="./?p=pinfo&amp;pid='.$r_rplayer['pid'].'">'.FlagImage($r_rplayer['country']).' '.htmlspecialchars($r_rplayer['name']) .' '. RankMovement($r_rplayer['rank'] - $r_rplayer['prevrank']) .'</a></td>
+		<td   align="center">'.get_dp($r_rplayer['rank']).'</td>
+		<td   align="center">'.$r_rplayer['matches'].'</td>
 	  </tr>';
 
 }
