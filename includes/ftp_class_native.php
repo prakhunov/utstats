@@ -1,142 +1,99 @@
 <?php
+// Minimal FTP client over ext/ftp with the interface includes/ftp.php expects.
+// (Replaces the old socket/pure-PHP FTP classes.)
 
 class ftp {
-	var $lastmsg;
-	var $host;
-	var $fullhost;
-	var $port;
-	var $fp;
-	var $transfertype;
- 	var $errors = array();
-		
-	function SetServer($host, $port) {
-		if (!is_long($port)) {
-			$this->lastmsg =  "Incorrect port syntax";
-			return(false);
-		} else {
-			$ip=@gethostbyname($host);
-			$dns=@gethostbyaddr($host);
-			if(!$ip) $ip = $host;
-			if(!$dns) $dns = $host;
-			if(ip2long($ip) === -1) {
-				$this->lastmsg = "Wrong host name/address \"".$host."\"";
-				return(false);
-			}
-		$this->host = $ip;
-		$this->fullhost = $dns;
+	public string $lastmsg = '';
+	public string $host = '';
+	public int $port = 21;
+	private ?FTP\Connection $conn = null;
+	private int $transfertype = FTP_BINARY;
+	private array $errors = [];
+
+	public function SetServer(string $host, int $port): bool {
+		$this->host = $host;
 		$this->port = $port;
-		}
-		return(true);
+		return true;
 	}
-	
-	function connect() {
-		error_clear_last();
-		if (!check_extension('ftp') or true) {
-			$this->lastmsg = "No FTP support in this php build!";
-			return(false);
-		}
-		$this->fp = @ftp_connect($this->host, $this->port, 30);
-		if (!$this->fp) {
-			$this->lastmsg = error_get_last()['message'] ?? '';
-			return(false);
-		}
-		return(true);
+
+	public function connect(): bool {
+		$conn = $this->call(fn () => ftp_connect($this->host, $this->port, 30));
+		if ($conn === false) return false;
+		$this->conn = $conn;
+		return true;
 	}
-	
-	function login($user, $pass) {
-		error_clear_last();
-		if (!@ftp_login($this->fp, $user, $pass)) {
-			$this->lastmsg = error_get_last()['message'] ?? '';
-			return(false);
-		}
-		return(true);
+
+	public function login(string $user, string $pass): bool {
+		return $this->call(fn () => ftp_login($this->conn, $user, $pass));
 	}
-	
-	function SetType($transfertype) {
+
+	public function SetType(int $transfertype): bool {
 		$this->transfertype = $transfertype;
-		return(true);
+		return true;
 	}
-	
-	function Passive($pasv) {
-		error_clear_last();
-		if (!@ftp_pasv($this->fp, $pasv)) {
-			$this->lastmsg = error_get_last()['message'] ?? '';
-			return(false);
-		}
-		return(true);
+
+	public function Passive(bool $pasv): bool {
+		return $this->call(fn () => ftp_pasv($this->conn, $pasv));
 	}
-	
-	function pwd() {
-		error_clear_last();
-		if (!($res = @ftp_pwd($this->fp))) {
-			$this->lastmsg = error_get_last()['message'] ?? '';
-			return(false);
-		}
-		return($res);
+
+	public function pwd(): string|false {
+		return $this->call(fn () => ftp_pwd($this->conn));
 	}
-	
-	function chdir($dir) {
-		error_clear_last();
-		if (!@ftp_chdir($this->fp, $dir)) {
-			$this->lastmsg = error_get_last()['message'] ?? '';
-			return(false);
-		}
-		return(true);
+
+	public function chdir(string $dir): bool {
+		return $this->call(fn () => ftp_chdir($this->conn, $dir));
 	}
-	
-	function nlist() {
-		error_clear_last();
-		if (!($res = @ftp_nlist($this->fp, '.'))) {
-			$this->lastmsg = error_get_last()['message'] ?? '';
-			return(false);
-		}
-		return($res);
+
+	public function nlist(): array|false {
+		return $this->call(fn () => ftp_nlist($this->conn, '.'));
 	}
-	
-	function get($remotefile, $localfile) {
-		error_clear_last();
-		if (!@ftp_get($this->fp, $localfile, $remotefile, $this->transfertype)) {
-			$this->lastmsg = error_get_last()['message'] ?? '';
+
+	// Download to $localfile; returns its size in bytes, or false.
+	public function get(string $remotefile, string $localfile): int|false {
+		if (!$this->call(fn () => ftp_get($this->conn, $localfile, $remotefile, $this->transfertype))) {
 			$this->PushError('get', "Unable to download $remotefile", $this->lastmsg);
-			return(false);
+			return false;
 		}
-		return(filesize($localfile));
+		clearstatcache(true, $localfile);
+		return filesize($localfile);
 	}
 
-	function delete($remotefile) {
+	public function delete(string $remotefile): bool {
+		return $this->call(fn () => ftp_delete($this->conn, $remotefile));
+	}
+
+	public function rename(string $from, string $to): bool {
+		return $this->call(fn () => ftp_rename($this->conn, $from, $to));
+	}
+
+	public function quit(bool $force = false): bool {
+		if ($this->conn !== null) {
+			@ftp_close($this->conn);
+			$this->conn = null;
+		}
+		return true;
+	}
+
+	public function PushError(string $fctname, string $msg, string|false $desc = false): int {
+		$this->errors[] = ['time' => time(), 'fctname' => $fctname, 'msg' => $msg, 'desc' => $desc];
+		return count($this->errors);
+	}
+
+	public function PopError(): array|false {
+		return array_pop($this->errors) ?? false;
+	}
+
+	// Run an ext/ftp call; on failure keep its warning text in $lastmsg and return false.
+	private function call(callable $fn): mixed {
+		if ($this->conn === null && $this->host === '') {
+			$this->lastmsg = 'No server set';
+			return false;
+		}
 		error_clear_last();
-		if (!@ftp_delete($this->fp, $remotefile)) {
-			$this->lastmsg = error_get_last()['message'] ?? '';
-			return(false);
+		$result = @$fn();
+		if ($result === false) {
+			$this->lastmsg = error_get_last()['message'] ?? 'FTP command failed';
 		}
-		return(true);
+		return $result;
 	}
-	
-	
-	function quit() {
-		if ($this->fp) {
-			ftp_close($this->fp);
-			$this->fp = NULL;
-		}
-		return(true);
-	}
-
-	
-	function PushError($fctname, $msg, $desc=false){
-		$error=array();
-		$error['time']=time();
-		$error['fctname']=$fctname;
-		$error['msg']=$msg;
-		$error['desc']=$desc;
-		if($desc) $tmp=' ('.$desc.')'; else $tmp='';
-		return(array_push($this->errors,$error));
-	}
-	
-	function PopError(){
-		if(count($this->errors)) return(array_pop($this->errors));
-			else return(false);
-	}
-
-	
-	
 }
