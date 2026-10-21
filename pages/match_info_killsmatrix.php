@@ -11,10 +11,10 @@ function PrintVertical($text) {
 // Retrieve the killmatrix
 $sql_km = "SELECT killer, victim, kills
            FROM uts_killsmatrix
-           WHERE matchid = $mid;";
+           WHERE matchid = ?;";
 
-$q_km = mysql_query($sql_km) or die(mysql_error());
-while ($r_km = mysql_fetch_array($q_km)) {
+$q_km = db_query($sql_km, [$mid]);
+while ($r_km = $q_km->fetch()) {
   $km[intval($r_km['killer'])][intval($r_km['victim'])] = $r_km['kills'];
 }
 
@@ -22,7 +22,7 @@ while ($r_km = mysql_fetch_array($q_km)) {
 if (!isset($km)) return;
 
 // Are we processing a teamgame?
-$qm_teamgame = small_query("SELECT teamgame FROM uts_match WHERE id = '$mid';");
+$qm_teamgame = db_row("SELECT teamgame FROM uts_match WHERE id = ?;", [$mid]);
 $teamgame = $qm_teamgame['teamgame'];
 $teamgame = ($teamgame == 'False') ? false : true;
 
@@ -37,11 +37,11 @@ $sql_players = "  SELECT  p.pid,
             FROM    uts_player p,
                   uts_pinfo pi
             WHERE    (p.pid = pi.id)
-              AND  matchid = '$mid'
+              AND  matchid = ?
             ORDER  BY  team ASC,
                   gamescore DESC;";
-$q_players = mysql_query($sql_players) or die(mysql_error());
-while ($r_players = mysql_fetch_array($q_players)) {
+$q_players = db_query($sql_players, [$mid]);
+while ($r_players = $q_players->fetch()) {
   $players[intval($r_players['playerid'])] = array(  'pid'     => $r_players['pid'],
                                     'name'     => $r_players['name'],
                                     'country'  => $r_players['country'],

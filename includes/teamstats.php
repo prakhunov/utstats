@@ -2,7 +2,7 @@
 
 function teamstats($mid, $title, $extra = NULL, $extratitle = NULL, $order = 'gamescore DESC') {
   global $gamename, $gid;
-  $r_info = small_query("SELECT teamgame, t0score, t1score, t2score, t3score FROM uts_match WHERE id = '$mid'");
+  $r_info = db_row("SELECT teamgame, t0score, t1score, t2score, t3score FROM uts_match WHERE id = ?", [$mid]);
   if (!$r_info) die("Match not found");
 
   $teams = ($r_info['teamgame'] == 'True') ? true : false;
@@ -25,14 +25,14 @@ function teamstats($mid, $title, $extra = NULL, $extratitle = NULL, $order = 'ga
   </tr>';
 
   $sql_players = "SELECT pi.name, pi.banned, p.pid, p.team, p.country, p.gametime, p.gamescore, p.frags, p.deaths, p.suicides, p.teamkills, p.eff, p.accuracy, p.ttl, p.rank".(($extra) ? ', p.'.$extra.' AS '.$extra  : '')."
-	  FROM uts_player AS p, uts_pinfo AS pi WHERE p.pid = pi.id AND matchid = $mid
+	  FROM uts_player AS p, uts_pinfo AS pi WHERE p.pid = pi.id AND matchid = ?
 	  ORDER BY".(($teams) ? ' team ASC,' : '')." $order";
-  $q_players = mysql_query($sql_players) or die(mysql_error());
+  $q_players = db_query($sql_players, [$mid]);
   $header = true;
   teamstats_init_totals($totals, $num);
 
-  while ($r_players = zero_out(mysql_fetch_array($q_players))) {
-    $r_players['dom_cp'] = $r_players['gamescore'] - $r_players['frags'];
+  while ($r_players = zero_out($q_players->fetch())) {
+    $r_players['dom_cp'] = (int) $r_players['gamescore'] - (int) $r_players['frags'];
     $r_players['team'] = intval($r_players['team']);
 
     if ($teams and $oldteam != $r_players['team']) {
@@ -74,19 +74,19 @@ function teamstats($mid, $title, $extra = NULL, $extratitle = NULL, $order = 'ga
     $eff = get_dp($r_players['eff']);
     $acc = get_dp($r_players['accuracy']);
     $ttl = GetMinutes($r_players['ttl']);
-    $kills = $r_players['frags'] + $r_players['suicides'];
+    $kills = (int) $r_players['frags'] + (int) $r_players['suicides'];
     $pname = $r_players['name'];
 
-    $totals['gamescore'] += $r_players['gamescore'];
-    if ($extra) $totals[$extra] += $r_players[$extra];
-    $totals['frags'] += $r_players['frags'];
+    $totals['gamescore'] += (int) $r_players['gamescore'];
+    if ($extra) $totals[$extra] += (int) $r_players[$extra];
+    $totals['frags'] += (int) $r_players['frags'];
     $totals['kills'] += $kills;
-    $totals['deaths'] += $r_players['deaths'];
-    $totals['suicides'] += $r_players['suicides'];
-    $totals['teamkills'] += $r_players['teamkills'];
-    $totals['eff'] += $r_players['eff'];
-    $totals['acc'] += $r_players['accuracy'];
-    $totals['ttl'] += $r_players['ttl'];
+    $totals['deaths'] += (int) $r_players['deaths'];
+    $totals['suicides'] += (int) $r_players['suicides'];
+    $totals['teamkills'] += (int) $r_players['teamkills'];
+    $totals['eff'] += (float) $r_players['eff'];
+    $totals['acc'] += (float) $r_players['accuracy'];
+    $totals['ttl'] += (float) $r_players['ttl'];
     $num++;
 
     if ($r_players['banned'] == 'Y') {
@@ -109,7 +109,7 @@ function teamstats($mid, $title, $extra = NULL, $extratitle = NULL, $order = 'ga
     } else {
       echo '<td nowrap   align="left"><span style="text-decoration: line-through;">'.FormatPlayerName($r_players['country'], $r_players['pid'], $r_players['name'], $gid, $gamename, true, $r_players['rank']).'</span></td>';
     }
-    echo '<td align="center">'.GetMinutes($r_players['gametime'] / TIMERATIO).'</td>';
+    echo '<td align="center">'.GetMinutes((float) $r_players['gametime'] / TIMERATIO).'</td>';
     echo '<td align="center">'.$r_players['gamescore'].'</td>';
 
     if ($extra) echo '<td align="center">'.$r_players[$extra].'</td>';
@@ -155,18 +155,18 @@ function teamstats_team_totals(&$totals, $num, $teams, $extra, $teamscore) {
   echo '<td nowrap class="totals" align="center">Totals</td>';
   echo '<td class="totals" align="center"></td>';
   if ($teams) {
-    echo '<td class="totals" align="center"><strong>'.$teamscore.'</strong> ('.$totals[gamescore].')</td>';
+    echo '<td class="totals" align="center"><strong>'.$teamscore.'</strong> ('.$totals['gamescore'].')</td>';
   } else {
-    echo '<td class="totals" align="center">'.$totals[gamescore].'</td>';
+    echo '<td class="totals" align="center">'.$totals['gamescore'].'</td>';
   }
   if ($extra) echo '<td class="totals" align="center">'.$totals[$extra].'</td>';
 
-  echo '<td class="totals" align="center">'.$totals[frags].'</td>';
-  echo '<td class="totals" align="center">'.$totals[kills].'</td>';
-  echo '<td class="totals" align="center">'.$totals[deaths].'</td>';
-  echo '<td class="totals" align="center">'.$totals[suicides].'</td>';
+  echo '<td class="totals" align="center">'.$totals['frags'].'</td>';
+  echo '<td class="totals" align="center">'.$totals['kills'].'</td>';
+  echo '<td class="totals" align="center">'.$totals['deaths'].'</td>';
+  echo '<td class="totals" align="center">'.$totals['suicides'].'</td>';
 
-  if ($teams) echo '<td class="totals" align="center">'.$totals[teamkills].'</td>';
+  if ($teams) echo '<td class="totals" align="center">'.$totals['teamkills'].'</td>';
 
   echo '<td class="totals" align="center">'.$eff.'</td>';
   echo '<td class="totals" align="center">'.$acc.'</td>';

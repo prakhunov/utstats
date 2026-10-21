@@ -1,7 +1,7 @@
 <?php
 
 	global $gamename, $gid;
-	$r_info = small_query("SELECT teamgame, t0score, t1score, t2score, t3score FROM uts_match WHERE id = '$mid'");
+	$r_info = db_row("SELECT teamgame, t0score, t1score, t2score, t3score FROM uts_match WHERE id = ?", [$mid]);
 	if (!$r_info) die("Match not found");
 	$teams = ($r_info['teamgame'] == 'True') ? true : false;
 	$teamscore[-1] = 0;
@@ -26,11 +26,11 @@
 	FROM uts_pinfo AS pi, uts_player AS p
 	LEFT JOIN uts_events AS e
 	ON p.playerid = e.playerid AND p.matchid = e.matchid AND e.col1 = 'out' AND p.gamescore = 0
-	WHERE p.pid = pi.id AND p.matchid = $mid
+	WHERE p.pid = pi.id AND p.matchid = ?
 	GROUP BY p.playerid
 	ORDER BY p.gamescore DESC, (0+e.col2) DESC";
 
-	$q_players = mysql_query($sql_players) or die(mysql_error());
+	$q_players = db_query($sql_players, [$mid]);
 	$header = true;
 
 	$totals['gamescore'] = 0;
@@ -45,7 +45,7 @@
 	$totals['ttl'] = 0;
 	$num = 0;
 
-	while ($r_players = zero_out(mysql_fetch_array($q_players))) {
+	while ($r_players = zero_out($q_players->fetch())) {
 		if ($header) {
 			$header = false;
 			echo '
@@ -70,19 +70,19 @@
 		$eff = get_dp($r_players['eff']);
 		$acc = get_dp($r_players['accuracy']);
 		$ttl = GetMinutes($r_players['ttl']);
-		$kills = $r_players['frags'] + $r_players['suicides'];
+		$kills = (int) $r_players['frags'] + (int) $r_players['suicides'];
 		$pname = $r_players['name'];
 
-		$totals['gamescore'] += $r_players['gamescore'];
-		if ($extra) $totals[$extra] += $r_players[$extra];
-		$totals['frags'] += $r_players['frags'];
+		$totals['gamescore'] += (int) $r_players['gamescore'];
+		if ($extra) $totals[$extra] += (int) $r_players[$extra];
+		$totals['frags'] += (int) $r_players['frags'];
 		$totals['kills'] += $kills;
-		$totals['deaths'] += $r_players['deaths'];
-		$totals['suicides'] += $r_players['suicides'];
-		$totals['teamkills'] += $r_players['teamkills'];
-		$totals['eff'] += $r_players['eff'];
-		$totals['acc'] += $r_players['accuracy'];
-		$totals['ttl'] += $r_players['ttl'];
+		$totals['deaths'] += (int) $r_players['deaths'];
+		$totals['suicides'] += (int) $r_players['suicides'];
+		$totals['teamkills'] += (int) $r_players['teamkills'];
+		$totals['eff'] += (float) $r_players['eff'];
+		$totals['acc'] += (float) $r_players['accuracy'];
+		$totals['ttl'] += (float) $r_players['ttl'];
 		$num++;
 		
 		if ($r_players['banned'] == 'Y') {
@@ -106,14 +106,14 @@
 		} else {
 			echo '<td nowrap class="darkhuman" align="left"><span style="text-decoration: line-through;">'.FormatPlayerName($r_players['country'], $r_players['pid'], $r_players['name'], $gid, $gamename, true, $r_players['rank']).'</span></td>';
 		}
-		echo '<td class="'.$class.'" align="center">'.GetMinutes($r_players[gametime]).'</td>';
-		echo '<td class="'.$class.'" align="center">'.$r_players[gamescore].'</td>';
+		echo '<td class="'.$class.'" align="center">'.GetMinutes($r_players['gametime']).'</td>';
+		echo '<td class="'.$class.'" align="center">'.$r_players['gamescore'].'</td>';
 		echo '<td class="'.$class.'" align="center">'.(empty($r_players['MAX(e.col2)']) ? '' : GetMinutes($r_players['MAX(e.col2)'])).'</td>';
 
-		echo '<td class="'.$class.'" align="center">'.$r_players[frags].'</td>';
+		echo '<td class="'.$class.'" align="center">'.$r_players['frags'].'</td>';
 		echo '<td class="'.$class.'" align="center">'.$kills.'</td>';
-		echo '<td class="'.$class.'" align="center">'.$r_players[deaths].'</td>';
-		echo '<td class="'.$class.'" align="center">'.$r_players[suicides].'</td>';
+		echo '<td class="'.$class.'" align="center">'.$r_players['deaths'].'</td>';
+		echo '<td class="'.$class.'" align="center">'.$r_players['suicides'].'</td>';
 
 		echo '<td class="'.$class.'" align="center">'.$eff.'</td>';
 		echo '<td class="'.$class.'" align="center">'.$acc.'</td>';
@@ -129,14 +129,14 @@
 	echo '<tr>';
 	echo '<td nowrap class="dark" align="center">Totals</td>';
 	echo '<td class="darkgrey" align="center"></td>';
-	echo '<td class="darkgrey" align="center">'.$totals[gamescore].'</td>';
+	echo '<td class="darkgrey" align="center">'.$totals['gamescore'].'</td>';
 	echo '<td class="darkgrey" align="center"></td>';
-	echo '<td class="darkgrey" align="center">'.$totals[frags].'</td>';
-	echo '<td class="darkgrey" align="center">'.$totals[kills].'</td>';
-	echo '<td class="darkgrey" align="center">'.$totals[deaths].'</td>';
-	echo '<td class="darkgrey" align="center">'.$totals[suicides].'</td>';
+	echo '<td class="darkgrey" align="center">'.$totals['frags'].'</td>';
+	echo '<td class="darkgrey" align="center">'.$totals['kills'].'</td>';
+	echo '<td class="darkgrey" align="center">'.$totals['deaths'].'</td>';
+	echo '<td class="darkgrey" align="center">'.$totals['suicides'].'</td>';
 
-	if ($teams) echo '<td class="darkgrey" align="center">'.$totals[teamkills].'</td>';
+	if ($teams) echo '<td class="darkgrey" align="center">'.$totals['teamkills'].'</td>';
 
 	echo '<td class="darkgrey" align="center">'.$eff.'</td>';
 	echo '<td class="darkgrey" align="center">'.$acc.'</td>';

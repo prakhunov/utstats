@@ -22,8 +22,8 @@ function weaponstats($_mid, $_pid, $title = 'Weapons Summary') {
                     uts_weaponstats AS w
             LEFT JOIN uts_pinfo AS pi
               ON    w.pid = pi.id
-            WHERE    w.matchid = '$_mid'
-              AND  w.pid = '$_pid'
+            WHERE    w.matchid = :mid
+              AND  w.pid = :pid
               AND  (wn.id = w.weapon)
               AND wn.hide <> 'Y'";
 
@@ -48,15 +48,17 @@ FROM uts_weapons AS wn,
 uts_weaponstats AS w
               LEFT JOIN uts_pinfo AS pi
                 ON    w.pid = pi.id
-              WHERE    w.matchid = '$_mid'
+              WHERE    w.matchid = :mid
                 AND  (wn.id = w.weapon)
                 AND wn.hide <> 'Y'
               GROUP BY  w.pid,
                     w.weapon";
   }
 
-  $q_weapons = mysql_query($sql_weapons) or die(mysql_error());
-  while ($r_weapons = zero_out(mysql_fetch_array($q_weapons))) {
+  $params = ['mid' => (string) $_mid];
+  if (str_contains($sql_weapons, ':pid')) $params['pid'] = (string) $_pid;
+  $q_weapons = db_query($sql_weapons, $params);
+  while ($r_weapons = zero_out($q_weapons->fetch())) {
     $weaponid = intval($r_weapons['weaponid']);
     $playerid = intval($r_weapons['playerid']);
 

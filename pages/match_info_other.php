@@ -28,38 +28,38 @@ echo '<br>
     <th class="smheading tooltip" align="center" width="40" title="Killed 25 people in a row without dying himself/herself">God</th>
   </tr>';
 
-$sql_firstblood = small_query("SELECT firstblood FROM uts_match WHERE id = $mid");
+$sql_firstblood = db_row("SELECT firstblood FROM uts_match WHERE id = ?", [$mid]);
 $sql_multis = "SELECT p.pid, pi.name, p.country, SUM(spree_double) AS spree_double, SUM(spree_multi) AS spree_multi,
   SUM(spree_ultra) AS spree_ultra, SUM(spree_monster)  AS spree_monster,
   SUM(spree_kill) AS spree_kill, SUM(spree_rampage) AS spree_rampage, SUM(spree_dom) AS spree_dom,
   SUM(spree_uns) AS spree_uns, SUM(spree_god) AS spree_god
   FROM uts_player as p, uts_pinfo AS pi
-  WHERE p.pid = pi.id  AND pi.banned <> 'Y' AND matchid = $mid
+  WHERE p.pid = pi.id  AND pi.banned <> 'Y' AND matchid = ?
   GROUP BY pid, p.country
   ORDER BY name ASC";
 
-$q_multis = mysql_query($sql_multis) or die(mysql_error());
+$q_multis = db_query($sql_multis, [$mid]);
 $i = 0;
 
-while ($r_multis = zero_out(mysql_fetch_array($q_multis))) {
+while ($r_multis = zero_out($q_multis->fetch())) {
   $i++;
   $class = ($i % 2) ? 'grey' : 'grey2';
-  $r_pname = $r_multis[name];
+  $r_pname = $r_multis['name'];
   $myurl = urlencode($r_pname);
 
   echo'
   <tr class="clickableRow" href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_multis['pid'].'">
-    <td nowrap align="left"><a href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_multis['pid'].'">'.FormatPlayerName($r_multis[country], $r_multis[pid], $r_pname, $gid, $gamename).'</a></td>
+    <td nowrap align="left"><a href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_multis['pid'].'">'.FormatPlayerName($r_multis['country'], $r_multis['pid'], $r_pname, $gid, $gamename).'</a></td>
     <td align="center">', ($sql_firstblood['firstblood'] == $r_multis['pid'] ? "Yes": ""), '</td>
-    <td align="center">'.$r_multis[spree_double].'</td>
-    <td align="center">'.$r_multis[spree_multi].'</td>
-    <td align="center">'.$r_multis[spree_ultra].'</td>
-    <td align="center">'.$r_multis[spree_monster].'</td>
-    <td align="center">'.$r_multis[spree_kill].'</td>
-    <td align="center">'.$r_multis[spree_rampage].'</td>
-    <td align="center">'.$r_multis[spree_dom].'</td>
-    <td align="center">'.$r_multis[spree_uns].'</td>
-    <td align="center">'.$r_multis[spree_god].'</td>
+    <td align="center">'.$r_multis['spree_double'].'</td>
+    <td align="center">'.$r_multis['spree_multi'].'</td>
+    <td align="center">'.$r_multis['spree_ultra'].'</td>
+    <td align="center">'.$r_multis['spree_monster'].'</td>
+    <td align="center">'.$r_multis['spree_kill'].'</td>
+    <td align="center">'.$r_multis['spree_rampage'].'</td>
+    <td align="center">'.$r_multis['spree_dom'].'</td>
+    <td align="center">'.$r_multis['spree_uns'].'</td>
+    <td align="center">'.$r_multis['spree_god'].'</td>
   </tr>';
 }
 
@@ -72,32 +72,32 @@ if ((strpos($gamename, '(insta)') === false) && (strpos($gamename, "Last Man Sta
   $sql_pickups = "SELECT p.pid, pi.name, p.country, SUM(p.pu_pads) AS pu_pads, SUM(p.pu_armour) AS pu_armour, SUM(p.pu_keg) AS pu_keg,
     SUM(p.pu_invis) AS pu_invis, SUM(p.pu_belt) AS pu_belt, SUM(p.pu_amp) AS pu_amp
     FROM uts_player as p, uts_pinfo AS pi
-    WHERE p.pid = pi.id AND pi.banned <> 'Y' AND matchid = $mid
+    WHERE p.pid = pi.id AND pi.banned <> 'Y' AND matchid = ?
     GROUP BY pid, p.country
     ORDER BY name ASC";
 
-  $q_pickups = mysql_query($sql_pickups) or die(mysql_error());
+  $q_pickups = db_query($sql_pickups, [$mid]);
   $i = 0;
 
-  while ($r_pickups = zero_out(mysql_fetch_array($q_pickups))) {
+  while ($r_pickups = zero_out($q_pickups->fetch())) {
     $i++;
     $class = ($i % 2) ? 'grey' : 'grey2';
-    $r_pname = $r_pickups[name];
+    $r_pname = $r_pickups['name'];
     $myurl = urlencode($r_pname);
 
-    if (!$anyPickups && ($r_pickups[pu_pads] > 0 || $r_pickups[pu_armour] > 0 || $r_pickups[pu_keg] > 0 || $r_pickups[pu_invis] > 0 || $r_pickups[pu_belt] > 0 || $r_pickups[pu_amp] > 0)) {
+    if (!$anyPickups && ($r_pickups['pu_pads'] > 0 || $r_pickups['pu_armour'] > 0 || $r_pickups['pu_keg'] > 0 || $r_pickups['pu_invis'] > 0 || $r_pickups['pu_belt'] > 0 || $r_pickups['pu_amp'] > 0)) {
       $anyPickups = true;
     }
 
     $contentTable .= '
     <tr class="clickableRow" href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_pickups['pid'].'">
-      <td nowrap align="left"><a href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_pickups['pid'].'">'.FormatPlayerName($r_pickups[country], $r_pickups[pid], $r_pname, $gid, $gamename).'</a></td>
-      <td align="center">'.$r_pickups[pu_pads].'</td>
-      <td align="center">'.$r_pickups[pu_armour].'</td>
-      <td align="center">'.$r_pickups[pu_keg].'</td>
-      <td align="center">'.$r_pickups[pu_invis].'</td>
-      <td align="center">'.$r_pickups[pu_belt].'</td>
-      <td align="center">'.$r_pickups[pu_amp].'</td>
+      <td nowrap align="left"><a href="./?p=matchp&amp;mid='.$mid.'&amp;pid='.$r_pickups['pid'].'">'.FormatPlayerName($r_pickups['country'], $r_pickups['pid'], $r_pname, $gid, $gamename).'</a></td>
+      <td align="center">'.$r_pickups['pu_pads'].'</td>
+      <td align="center">'.$r_pickups['pu_armour'].'</td>
+      <td align="center">'.$r_pickups['pu_keg'].'</td>
+      <td align="center">'.$r_pickups['pu_invis'].'</td>
+      <td align="center">'.$r_pickups['pu_belt'].'</td>
+      <td align="center">'.$r_pickups['pu_amp'].'</td>
     </tr>';
   }
 
