@@ -8,7 +8,7 @@ function get_players($cid) {
   //Load the page where all players are listed into a var.
 
   $url = 'http://www.clanbase.com/claninfo.php?cid='.$cid.'&frame=1';
-  $file = implode('', file($url));
+  $file = implode('', file($url) ?: []);
 
 
   //Use an expression to get the pid + name from each player
@@ -17,6 +17,8 @@ function get_players($cid) {
 
 
   //for each player split the information and put all info in one array
+
+  $player = [];
 
   for ($x=0;$x<count($out);$x++) {
     $player[$x]=explode('" class="slink">',$out[$x][1]);
@@ -47,7 +49,7 @@ function get_clans($wid) {
   //Load the page where all players are listed into a var.
 
   $url = 'http://www.clanbase.com/warinfo.php?wid='.$wid.'&frame=1';
-  $file = implode('', file($url));
+  $file = implode('', file($url) ?: []);
 
   //Use an expression to get the tags from each clan
 
