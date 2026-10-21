@@ -237,7 +237,7 @@ function FlagImage($country, $mini = true) {
 }
 
 function RankMovement($diff) {
-  $diff = round($diff, 2);
+  $diff = round((float) $diff, 2);
   if ($diff == 0) {
     $chimg = 'same';
     $chtext = "ranking not affected";
