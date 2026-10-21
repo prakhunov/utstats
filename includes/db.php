@@ -14,7 +14,7 @@ function db(): PDO {
 
 	global $hostname, $dbport, $dbname, $uname, $upass;
 	$pdo = new PDO(
-		"mysql:host=$hostname;port=$dbport;dbname=$dbname;charset=utf8mb3",
+		"mysql:host=$hostname;port=$dbport;dbname=$dbname;charset=utf8",
 		$uname,
 		$upass,
 		[
