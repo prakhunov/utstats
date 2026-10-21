@@ -105,14 +105,6 @@ function pexplrank() {
 	include("pages/players_explain_ranking.php");
 }
 
-function pmatchs() {
-	include("pages/players_matchs.php");
-}
-
-function pmaps() {
-	include("pages/players_maps.php");
-}
-
 function maps() {
 	include("pages/maps.php");
 }
