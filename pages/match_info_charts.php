@@ -5,25 +5,24 @@ include_once 'includes/renderer-general-output.php';
 global $renderer_heigth;
 global $renderer_width;
 
-$mid = mysql_real_escape_string($mid);
 $prevCategory = "";
 $chartOutput = "";
 $prevRenderedChart = "";
 
 // get all charts for this match
-$charts = mysql_query("SELECT d.* , t.charttype, t.category, t.type, t.color, t.layout,t.columns
+$charts = db_query("SELECT d.* , t.charttype, t.category, t.type, t.color, t.layout,t.columns
 	FROM uts_chartdata d
 	JOIN uts_charttypes t ON d.chartid = t.id
-	WHERE d.mid = $mid
-	ORDER BY d.id ASC") or die(mysql_error());
+	WHERE d.mid = ?
+	ORDER BY d.id ASC", [$mid]);
 
-$chartCount = mysql_num_rows($charts);
+$chartCount = $charts->rowCount();
 
 if ($chartCount >0) {
 	$i = 0;
 
 	// cycle over charts
-	while ($chart = mysql_fetch_array($charts)) {
+	while ($chart = $charts->fetch()) {
 
 		// retrieve both generic as the specific data
 		$category = $chart['category'];
@@ -33,9 +32,9 @@ if ($chartCount >0) {
 		$charttype = $chart['charttype'];
 		$columns = $chart['columns'];
 		$title = $chart['title'];
-		$data = unserialize(gzdecode($chart['data']));
-		$labels = unserialize(gzdecode($chart['labels']));
-		$categories = unserialize(gzdecode($chart['categories']));
+		$data = unserialize(gzdecode((string) $chart['data']), ['allowed_classes' => false]);
+		$labels = unserialize(gzdecode((string) $chart['labels']), ['allowed_classes' => false]);
+		$categories = unserialize(gzdecode((string) $chart['categories']), ['allowed_classes' => false]);
 
 		// append previous chart - this is done to ensure proper outlining (can only know in +1 round)
 		$chartOutput .= $prevRenderedChart;
