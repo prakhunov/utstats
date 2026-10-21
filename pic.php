@@ -7,7 +7,7 @@ if (!isset($pic_enable) or !$pic_enable) pic_error('err_disabled');
 
 function pic_error($name) {
 	header("Content-type: image/png");
-	readfile("assets/images/templates/${name}.png");
+	readfile("assets/images/templates/{$name}.png");
 	exit;
 }
 
@@ -24,7 +24,7 @@ function place_text(&$im, $size, $angle, $x, $to_x, $y, $to_y, $color, $font, $a
 		default:
 			$p_x = $x;
 	}
-	imagettftext($im, $size, $angle, $p_x, $y, $cp, $font, $text);
+	imagettftext($im, $size, $angle, (int) $p_x, (int) $y, $cp, $font, $text);
 }
 
 function image_create($filename, &$load) {
@@ -54,7 +54,6 @@ function image_create($filename, &$load) {
 	}
 	if ($load['bgtransparent']) imagecolortransparent($in, $bg);
 	imagecopy($in, $im, 0, 0, 0, 0, imagesx($im), imagesy($im)) or die("Unable to copy image");
-	imagedestroy($im);
 
 	return($in);
 }
@@ -119,8 +118,19 @@ function replace_vars($text, &$searchrepl) {
 }
 
 function get_values($date_from, $date_to, $pid, $gid, $prefix, &$searchrepl) {
-	$sql_time = (empty($date_from)) ? '' : "AND	m.time >= '".date("YmdHis", $week_start)."' and m.time <= '".date("YmdHis", $week_end);
-	$sql_gid = (empty($gid)) ? '' : "AND m.gid = '$gid'";
+	$params = array();
+	$sql_time = '';
+	if (!empty($date_from)) {
+		$sql_time = "AND	m.time >= ? and m.time <= ?";
+		$params[] = date("YmdHis", $date_from);
+		$params[] = date("YmdHis", $date_to);
+	}
+	$sql_gid = '';
+	if (!empty($gid)) {
+		$sql_gid = "AND m.gid = ?";
+		$params[] = $gid;
+	}
+	$params[] = $pid;
 	$sql_order = ($prefix != 'LM') ? '' : 'ORDER BY m.time DESC LIMIT 0,1';
 	$sql_groupby = ($prefix != 'LM') ? 'p.pid' : '1';
 	$sql = "	SELECT	m.time AS gamedate,
@@ -165,10 +175,10 @@ function get_values($date_from, $date_to, $pid, $gid, $prefix, &$searchrepl) {
 				WHERE 	m.id = p.matchid
 							$sql_time
 							$sql_gid
-					AND   p.pid = '$pid'
+					AND   p.pid = ?
 				GROUP BY $sql_groupby
 							$sql_order";
-	$result = small_query($sql);
+	$result = db_row($sql, $params);
 	if (!$result) return;
 	foreach($result as $name => $value) {
 		$name = strtoupper($name);
@@ -180,7 +190,7 @@ function get_values($date_from, $date_to, $pid, $gid, $prefix, &$searchrepl) {
 			case 'GAMEDATE': $value = date("Y-m-d H:i", mtimestamp($value)); break;
 			case 'RANKMOVEMENT': $value = ($value >= 0) ? '+'.get_dp($value) : get_dp($value); break;
 		}
-		$searchrepl["%${prefix}_${name}%"] = $value;
+		$searchrepl["%{$prefix}_{$name}%"] = $value;
 	}
 }
 
@@ -192,13 +202,16 @@ $gd_info = gd_info();
 if (!$gd_info['FreeType Support']) pic_error('err_no_ft');
 
 $num = isset($_GET['num']) ? $_GET['num'] : 0;
-$pid = isset($_GET['pid']) ? my_addslashes($_GET['pid']) : 0;
-$gid = isset($_GET['gid']) ? my_addslashes($_GET['gid']) : 0;
+$pid = isset($_GET['pid']) ? $_GET['pid'] : 0;
+$gid = isset($_GET['gid']) ? $_GET['gid'] : 0;
 
 if ($num == 0 and $pid == 0 and $gid == 0 and !empty($_SERVER['PATH_INFO'])) {
 	$pi = explode('/', $_SERVER['PATH_INFO']);
-	list($void, $num, $pid, $gid) = $pi;
+	list($void, $num, $pid, $gid) = $pi + array_fill(0, 4, '');
 }
+$num = (int) preg_replace('/\D/', '', (string) $num);
+$pid = preg_replace('/\D/', '', (string) $pid);
+$gid = preg_replace('/\D/', '', (string) $gid);
 
 if (!isset($pic[$num]) or !$pic[$num]['enabled']) pic_error('err_na');
 $load = &$pic[$num]['load'];
@@ -206,7 +219,7 @@ $std = &$pic[$num]['default'];
 $output = &$pic[$num]['output'];
 
 if (empty($pid)) die("No pid supplied");
-$r_pinfo = small_query("SELECT name, country, banned FROM uts_pinfo WHERE id = '$pid'");
+$r_pinfo = db_row("SELECT name, country, banned FROM uts_pinfo WHERE id = ?", [$pid]);
 if (!$r_pinfo) die("Unable to fetch player record");
 if ($r_pinfo['banned'] == 'Y') pic_error('err_banned');
 $playername = $r_pinfo['name'];
@@ -215,7 +228,7 @@ $playercountry = $r_pinfo['country'];
 
 $gamename = '(unknown)';
 if (!empty($gid)) {
-	$r_gameinfo = small_query("SELECT name FROM uts_games WHERE id = '$gid'");
+	$r_gameinfo = db_row("SELECT name FROM uts_games WHERE id = ?", [$gid]);
 	if (!$r_gameinfo) die("Unable to fetch game record");
 	$gamename = $r_gameinfo['name'];
 }
@@ -312,7 +325,7 @@ foreach ($pic[$num]['process'] as $process) {
 			if (empty($process['y_to'])) $process['y_to'] = $process['y_from'];
 
 			$text = replace_vars($process['value'], $searchrepl);
-			place_text($im, $process['fontsize'], $process['angle'], $process['x_from'], $process['x_to'], $process['y_from'], $process['y_to'], $process['fontcolor'], 'assets/images/fonts/'.$process['font'], $process['align'], $text);
+			place_text($im, $process['fontsize'], $process['angle'], $process['x_from'], $process['x_to'], $process['y_from'], $process['y_to'], $process['fontcolor'], __DIR__ .'/assets/fonts/'.$process['font'], $process['align'], $text);
 			break;
 
 		default:
