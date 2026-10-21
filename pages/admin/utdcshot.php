@@ -1,4 +1,11 @@
 <?php
+// Requested directly (img src), not through admin.php, so check the remembered admin key here.
+require(__DIR__ . '/../../includes/config.php');
+if (!hash_equals($import_adminkey, (string) ($_COOKIE['uts_adminkey'] ?? ''))) {
+	http_response_code(403);
+	die('bla');
+}
+
 $filename = (!empty($_REQUEST['filename'])) ? stripslashes($_REQUEST['filename']) : '';
 $filename = str_replace(array('..', '/', '\\', '<', ':'), array(), $filename);
 
