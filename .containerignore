@@ -18,3 +18,4 @@ phpstan.neon
 .containerignore
 .gitignore
 .env.example
+.php-cs-fixer.dist.php

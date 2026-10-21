@@ -13,3 +13,4 @@ vendor/
 
 # Local verification artifacts
 .verify/
+.php-cs-fixer.cache

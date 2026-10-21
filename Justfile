@@ -71,3 +71,10 @@ crawl-routes:
 # Diff 5.5 baseline vs 8.5 port (`just crawl --grep p=match -v`)
 crawl *args:
     scripts/crawl_diff.py {{args}}
+
+# Format PHP (php-cs-fixer, PSR-12)
+fmt:
+    php-cs-fixer fix
+
+fmt-check:
+    php-cs-fixer fix --dry-run --diff
