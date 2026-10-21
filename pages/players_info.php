@@ -1,10 +1,10 @@
 <?php
 
 global $pic_enable;
-$pid = isset($pid) ? $pid : $_GET['pid'];
-$pid = mysql_real_escape_string(preg_replace('/\D/', '', $pid));
+$pid = isset($pid) ? $pid : ($_GET['pid'] ?? '');
+$pid = preg_replace('/\D/', '', (string) $pid);
 
-$r_info = small_query("SELECT name, country, banned FROM uts_pinfo WHERE id = '$pid'");
+$r_info = db_row("SELECT name, country, banned FROM uts_pinfo WHERE id = ?", [$pid]);
 
 if (!$r_info) {
   echo "Player not found";
@@ -35,7 +35,7 @@ if (isset($_GET['togglewatch'])) {
   }
 
   echo "<br>";
-  $target = $PHP_SELF .'?p=pinfo&amp;pid='. $pid;
+  $target = ($PHP_SELF ?? '') .'?p=pinfo&amp;pid='. $pid;
   echo '<span class="watchlist">Do you want to go to <a href="'. $target .'">'. htmlentities($playername) .'\'s page</a> or go to your Watchlist?.<br><a class="navCTA" href="'.$target.'" role="button">Player page</a> <a class="navCTA" href="?p=watchlist" role="button">Watchlist</a>';
   echo '<div class="darksearch">Or search another player:<br>
     <span><input type="text" class="search square" placeholder="Search player..." name="name"><input class="searchbutton" type="submit" value="Search"></span></div></div>';
@@ -43,8 +43,8 @@ if (isset($_GET['togglewatch'])) {
 }
 
 if (isset($_GET['pics'])) {
-  $gid = $_GET['gid'];
-  $gid = preg_replace("/\D/", "", $gid);
+  $gid = $_GET['gid'] ?? '';
+  $gid = preg_replace("/\D/", "", (string) $gid);
 
   if (!$pic_enable) {
     echo "Sorry, pictures are disabled by the administrator";
@@ -62,9 +62,9 @@ if (isset($_GET['pics'])) {
     if (!$options['enabled']) continue;
     if ($options['gidrequired'] and empty($gid)) continue;
     $disp = true;
-    $pinfourl = "http://${oururl}?p=pinfo&pid=$pid";
+    $pinfourl = "http://{$oururl}?p=pinfo&pid=$pid";
     $lgid = ($options['gidrequired']) ? $gid : 0;
-    $imgurl = "http://${oururl}pic.php/$num/$pid/$lgid/.".$options['output']['type'];
+    $imgurl = "http://{$oururl}pic.php/$num/$pid/$lgid/.".$options['output']['type'];
     echo '<table class="zebra box" border="0" cellspacing="0" cellpadding="0" align="center"><tr>';
     echo '<td colspan="2" align="center"><img src="'. $imgurl .'" border="0" /></td>';
     echo '</tr><tr>';
@@ -145,39 +145,37 @@ $sql_plist = "SELECT
     WHERE 
     	p.gid = g.id AND m.id = p.matchid
     AND 
-    	p.pid = '$pid'
+    	p.pid = ?
     GROUP BY 
     	p.gid";
 		
-$q_plist = mysql_query($sql_plist) or die(mysql_error());
-
-while ($r_plist = mysql_fetch_array($q_plist)) {
-  $gametime = sec2hour($r_plist[gametime]);
-  $eff = get_dp($r_plist[kills]/$r_plist[sumeff]*100);
-  $acc = get_dp($r_plist[accuracy]);
-  $ttl = GetMinutes($r_plist[ttl]);
-  $winpercent = round($r_plist[wins]/$r_plist[games]*100, 2);
+foreach (db_all($sql_plist, [$pid]) as $r_plist) {
+  $gametime = sec2hour($r_plist['gametime']);
+  $eff = get_dp($r_plist['sumeff'] != 0 ? $r_plist['kills']/$r_plist['sumeff']*100 : false);
+  $acc = get_dp($r_plist['accuracy']);
+  $ttl = GetMinutes($r_plist['ttl']);
+  $winpercent = round($r_plist['games'] != 0 ? $r_plist['wins']/$r_plist['games']*100 : 0, 2);
 
   echo'
   <tr>
-    <td align="center">'.$r_plist[gamename].'</td>
-    <td align="center">'.$r_plist[gamescore].'</td>
-    <td align="center">'.$r_plist[frags].'</td>
-    <td align="center">'.$r_plist[kills].'</td>
-    <td align="center">'.$r_plist[deaths].'</td>
-    <td align="center">'.$r_plist[suicides].'</td>
-    <td align="center">'.$r_plist[teamkills].'</td>
+    <td align="center">'.$r_plist['gamename'].'</td>
+    <td align="center">'.$r_plist['gamescore'].'</td>
+    <td align="center">'.$r_plist['frags'].'</td>
+    <td align="center">'.$r_plist['kills'].'</td>
+    <td align="center">'.$r_plist['deaths'].'</td>
+    <td align="center">'.$r_plist['suicides'].'</td>
+    <td align="center">'.$r_plist['teamkills'].'</td>
     <td align="center">'.$eff.'</td>
     <td align="center">'.$acc.'</td>
     <td align="center">'.$ttl.'</td>
-    <td  align="center">'.$r_plist[games].'</td>
-	<td  align="center">'.$r_plist[wins].'</td>
+    <td  align="center">'.$r_plist['games'].'</td>
+	<td  align="center">'.$r_plist['wins'].'</td>
 	<td  align="center">'.$winpercent.'%</td>
     <td align="center">'.$gametime.'</td>
   </tr>';
 }
 
-$r_sumplist = small_query("SELECT SUM(p.gamescore) AS gamescore, SUM(p.frags) AS frags, SUM(p.kills) AS kills, SUM(p.deaths) AS deaths,
+$r_sumplist = db_row("SELECT SUM(p.gamescore) AS gamescore, SUM(p.frags) AS frags, SUM(p.kills) AS kills, SUM(p.deaths) AS deaths,
 SUM(p.suicides) AS suicides, SUM(p.teamkills) AS teamkills, SUM(p.kills+p.deaths+p.suicides+p.teamkills) AS sumeff,
 AVG(p.accuracy) AS accuracy, AVG(p.ttl) AS ttl, COUNT(p.id) AS games, SUM(IF(
     	p.team = 0, 
@@ -192,48 +190,47 @@ AVG(p.accuracy) AS accuracy, AVG(p.ttl) AS ttl, COUNT(p.id) AS games, SUM(IF(
             )
         )
 )) as wins,  SUM(p.gametime) as gametime
-FROM uts_player p, uts_match m WHERE p.matchid = m.id AND pid = '$pid'");
+FROM uts_player p, uts_match m WHERE p.matchid = m.id AND pid = ?", [$pid]);
 
-$gametime = sec2hour($r_sumplist[gametime]);
-$eff = get_dp($r_sumplist[kills]/$r_sumplist[sumeff]*100);
-$acc = get_dp($r_sumplist[accuracy]);
-$ttl = GetMinutes($r_sumplist[ttl]);
-$winpercent = round($r_sumplist[wins]/$r_sumplist[games]*100, 2);
+$gametime = sec2hour($r_sumplist['gametime']);
+$eff = get_dp($r_sumplist['sumeff'] != 0 ? $r_sumplist['kills']/$r_sumplist['sumeff']*100 : false);
+$acc = get_dp($r_sumplist['accuracy']);
+$ttl = GetMinutes($r_sumplist['ttl']);
+$winpercent = round($r_sumplist['games'] != 0 ? $r_sumplist['wins']/$r_sumplist['games']*100 : 0, 2);
 
 echo'
 <tr>
   <td align="center">Totals</td>
-  <td align="center">'.$r_sumplist[gamescore].'</td>
-  <td align="center">'.$r_sumplist[frags].'</td>
-  <td align="center">'.$r_sumplist[kills].'</td>
-  <td align="center">'.$r_sumplist[deaths].'</td>
-  <td align="center">'.$r_sumplist[suicides].'</td>
-  <td align="center">'.$r_sumplist[teamkills].'</td>
+  <td align="center">'.$r_sumplist['gamescore'].'</td>
+  <td align="center">'.$r_sumplist['frags'].'</td>
+  <td align="center">'.$r_sumplist['kills'].'</td>
+  <td align="center">'.$r_sumplist['deaths'].'</td>
+  <td align="center">'.$r_sumplist['suicides'].'</td>
+  <td align="center">'.$r_sumplist['teamkills'].'</td>
   <td align="center">'.$eff.'</td>
   <td align="center">'.$acc.'</td>
   <td align="center">'.$ttl.'</td>
-  <td align="center">'.$r_sumplist[games].'</td>
-  <td align="center">'.$r_sumplist[wins].'</td>
+  <td align="center">'.$r_sumplist['games'].'</td>
+  <td align="center">'.$r_sumplist['wins'].'</td>
   <td align="center">'.$winpercent.'%</td>
   <td align="center">'.$gametime.'</td>
 </tr>
 </tbody></table>
 <br>';
 
-$q_assgids = mysql_query("SELECT id FROM uts_games WHERE gamename LIKE '%Assault%';") or die(mysql_error());
 $assgids = array();
 
-while ($r_assgids = mysql_fetch_array($q_assgids)) {
-  $assgids[] = $r_assgids['id'];
+foreach (db_all("SELECT id FROM uts_games WHERE gamename LIKE '%Assault%';") as $r_assgids) {
+  $assgids[] = (int) $r_assgids['id'];
 }
 
 $assquery = (count($assgids) > 0) ? 'SUM(IF (gid IN ('. implode(',', $assgids) .'), ass_obj, 0)) AS ass_obj' : '0 AS ass_obj';
-$sql_cdatot = zero_out(small_query("SELECT SUM(dom_cp) AS dom_cp, $assquery, SUM(flag_taken) AS flag_taken,
+$sql_cdatot = zero_out(db_row("SELECT SUM(dom_cp) AS dom_cp, $assquery, SUM(flag_taken) AS flag_taken,
   SUM(flag_pickedup) AS flag_pickedup, SUM(flag_dropped) AS flag_dropped, SUM(flag_assist) AS flag_assist, SUM(flag_cover) AS flag_cover,
   SUM(flag_seal) AS flag_seal, SUM(flag_capture) AS flag_capture, SUM(flag_kill)as flag_kill,
-  SUM(flag_return) AS flag_return FROM uts_player WHERE pid = '$pid'"));
+  SUM(flag_return) AS flag_return FROM uts_player WHERE pid = ?", [$pid]));
 
-if ($sql_cdatot[ass_obj] || $sql_cdatot[dom_cp] || $sql_cdatot[flag_taken] || $sql_cdatot[flag_pickedup] || $sql_cdatot[flag_dropped] || $sql_cdatot[flag_assist] || $sql_cdatot[flag_cover] || $sql_cdatot[flag_seal] || $sql_cdatot[flag_capture] || $sql_cdatot[flag_kill] || $sql_cdatot[flag_return]) {
+if ($sql_cdatot['ass_obj'] || $sql_cdatot['dom_cp'] || $sql_cdatot['flag_taken'] || $sql_cdatot['flag_pickedup'] || $sql_cdatot['flag_dropped'] || $sql_cdatot['flag_assist'] || $sql_cdatot['flag_cover'] || $sql_cdatot['flag_seal'] || $sql_cdatot['flag_capture'] || $sql_cdatot['flag_kill'] || $sql_cdatot['flag_return']) {
   echo '
   <table class="zebra box" border="0" cellpadding="0" cellspacing="0" width="700">
   <tbody>
@@ -257,30 +254,30 @@ if ($sql_cdatot[ass_obj] || $sql_cdatot[dom_cp] || $sql_cdatot[flag_taken] || $s
     <th align="center">Flag Returns</th>
   </tr>
   <tr>
-    <td align="center">'.$sql_cdatot[ass_obj].'</td>
-    <td align="center">'.$sql_cdatot[dom_cp].'</td>
-    <td align="center">'.$sql_cdatot[flag_taken].'</td>
-    <td align="center">'.$sql_cdatot[flag_pickedup].'</td>
-    <td align="center">'.$sql_cdatot[flag_dropped].'</td>
-    <td align="center">'.$sql_cdatot[flag_assist].'</td>
-    <td align="center">'.$sql_cdatot[flag_cover].'</td>
-    <td align="center">'.$sql_cdatot[flag_seal].'</td>
-    <td align="center">'.$sql_cdatot[flag_capture].'</td>
-    <td align="center">'.$sql_cdatot[flag_kill].'</td>
-    <td align="center">'.$sql_cdatot[flag_return].'</td>
+    <td align="center">'.$sql_cdatot['ass_obj'].'</td>
+    <td align="center">'.$sql_cdatot['dom_cp'].'</td>
+    <td align="center">'.$sql_cdatot['flag_taken'].'</td>
+    <td align="center">'.$sql_cdatot['flag_pickedup'].'</td>
+    <td align="center">'.$sql_cdatot['flag_dropped'].'</td>
+    <td align="center">'.$sql_cdatot['flag_assist'].'</td>
+    <td align="center">'.$sql_cdatot['flag_cover'].'</td>
+    <td align="center">'.$sql_cdatot['flag_seal'].'</td>
+    <td align="center">'.$sql_cdatot['flag_capture'].'</td>
+    <td align="center">'.$sql_cdatot['flag_kill'].'</td>
+    <td align="center">'.$sql_cdatot['flag_return'].'</td>
   </tr>
   </tbody></table>
   <br>';
 }
 
-$sql_firstblood = zero_out(small_query("SELECT COUNT(id) AS fbcount FROM uts_match WHERE firstblood = '$pid'"));
-$sql_multis = zero_out(small_query("SELECT SUM(spree_double) AS spree_double, SUM(spree_multi) AS spree_multi,
+$sql_firstblood = zero_out(db_row("SELECT COUNT(id) AS fbcount FROM uts_match WHERE firstblood = ?", [$pid]));
+$sql_multis = zero_out(db_row("SELECT SUM(spree_double) AS spree_double, SUM(spree_multi) AS spree_multi,
   SUM(spree_ultra) AS spree_ultra, SUM(spree_monster)  AS spree_monster,
   SUM(spree_kill) AS spree_kill, SUM(spree_rampage) AS spree_rampage, SUM(spree_dom) AS spree_dom,
   SUM(spree_uns) AS spree_uns, SUM(spree_god) AS spree_god
-  FROM uts_player WHERE pid = '$pid'"));
+  FROM uts_player WHERE pid = ?", [$pid]));
 
-if ($sql_firstblood[fbcount] || $sql_multis[spree_double] || $sql_multis[spree_multi] || $sql_multis[spree_ultra] || $sql_multis[spree_monster] || $sql_multis[spree_kill] || $sql_multis[spree_rampage] || $sql_multis[spree_dom] || $sql_multis[spree_uns] || $sql_multis[spree_god] ) {
+if ($sql_firstblood['fbcount'] || $sql_multis['spree_double'] || $sql_multis['spree_multi'] || $sql_multis['spree_ultra'] || $sql_multis['spree_monster'] || $sql_multis['spree_kill'] || $sql_multis['spree_rampage'] || $sql_multis['spree_dom'] || $sql_multis['spree_uns'] || $sql_multis['spree_god'] ) {
   echo '
   <table class="zebra box" border="0" cellpadding="0" cellspacing="0" width="700">
   <tbody>
@@ -304,26 +301,26 @@ if ($sql_firstblood[fbcount] || $sql_multis[spree_double] || $sql_multis[spree_m
     <th class="smheading tooltip" align="center" width="40" title="Killed 25 people in a row without dying himself/herself">God</th>
   </tr>
   <tr>
-    <td align="center">'.$sql_firstblood[fbcount].'</td>
-    <td align="center">'.$sql_multis[spree_double].'</td>
-    <td align="center">'.$sql_multis[spree_multi].'</td>
-    <td align="center">'.$sql_multis[spree_ultra].'</td>
-    <td align="center">'.$sql_multis[spree_monster].'</td>
-    <td align="center">'.$sql_multis[spree_kill].'</td>
-    <td align="center">'.$sql_multis[spree_rampage].'</td>
-    <td align="center">'.$sql_multis[spree_dom].'</td>
-    <td align="center">'.$sql_multis[spree_uns].'</td>
-    <td align="center">'.$sql_multis[spree_god].'</td>
+    <td align="center">'.$sql_firstblood['fbcount'].'</td>
+    <td align="center">'.$sql_multis['spree_double'].'</td>
+    <td align="center">'.$sql_multis['spree_multi'].'</td>
+    <td align="center">'.$sql_multis['spree_ultra'].'</td>
+    <td align="center">'.$sql_multis['spree_monster'].'</td>
+    <td align="center">'.$sql_multis['spree_kill'].'</td>
+    <td align="center">'.$sql_multis['spree_rampage'].'</td>
+    <td align="center">'.$sql_multis['spree_dom'].'</td>
+    <td align="center">'.$sql_multis['spree_uns'].'</td>
+    <td align="center">'.$sql_multis['spree_god'].'</td>
   </tr>
   </tbody></table>
   <br>';
 }
 
-$r_pickups = zero_out(small_query("SELECT SUM(pu_pads) AS pu_pads, SUM(pu_armour) AS pu_armour, SUM(pu_keg) AS pu_keg,
+$r_pickups = zero_out(db_row("SELECT SUM(pu_pads) AS pu_pads, SUM(pu_armour) AS pu_armour, SUM(pu_keg) AS pu_keg,
   SUM(pu_invis) AS pu_invis, SUM(pu_belt) AS pu_belt, SUM(pu_amp) AS pu_amp
-  FROM uts_player WHERE pid = '$pid'"));
+  FROM uts_player WHERE pid = ?", [$pid]));
 
-if ($r_pickups[pu_pads] || $r_pickups[pu_armour]  || $r_pickups[pu_keg]  || $r_pickups[pu_invis] || $r_pickups[pu_belt]) {
+if ($r_pickups['pu_pads'] || $r_pickups['pu_armour']  || $r_pickups['pu_keg']  || $r_pickups['pu_invis'] || $r_pickups['pu_belt']) {
   echo '
   <table class="zebra box" border="0" cellpadding="0" cellspacing="0" width="700">
   <tbody>
@@ -339,12 +336,12 @@ if ($r_pickups[pu_pads] || $r_pickups[pu_armour]  || $r_pickups[pu_keg]  || $r_p
     <th class="smheading" align="center" width="80">Damage Amp</th>
   </tr>
   <tr>
-    <td align="center">'.$r_pickups[pu_pads].'</td>
-    <td align="center">'.$r_pickups[pu_armour].'</td>
-    <td align="center">'.$r_pickups[pu_keg].'</td>
-    <td align="center">'.$r_pickups[pu_invis].'</td>
-    <td align="center">'.$r_pickups[pu_belt].'</td>
-    <td align="center">'.$r_pickups[pu_amp].'</td>
+    <td align="center">'.$r_pickups['pu_pads'].'</td>
+    <td align="center">'.$r_pickups['pu_armour'].'</td>
+    <td align="center">'.$r_pickups['pu_keg'].'</td>
+    <td align="center">'.$r_pickups['pu_invis'].'</td>
+    <td align="center">'.$r_pickups['pu_belt'].'</td>
+    <td align="center">'.$r_pickups['pu_amp'].'</td>
   </tr>
   </tbody></table>
   <br>';
@@ -366,7 +363,7 @@ FROM
   uts_events AS e,
   uts_player AS p
 WHERE
-  p.pid = $pid AND
+  p.pid = ? AND
   p.playerid = e.playerid AND
   e.matchid = p.matchid AND
   m.id = p.matchid AND
@@ -377,9 +374,9 @@ ORDER BY
   m.mapfile,
   0 + e.col3 ASC";
 
-$q_btrecords = mysql_query($sql_btrecords) or die (mysql_error());
+$q_btrecords = db_all($sql_btrecords, [$pid]);
 
-if (mysql_num_rows($q_btrecords) > 0) {
+if (count($q_btrecords) > 0) {
   echo '
   <table class="zebra box" border="0" cellpadding="0" cellspacing="0" width="700">
   <tbody>
@@ -393,10 +390,10 @@ if (mysql_num_rows($q_btrecords) > 0) {
     <th class="smheading" align="center" width="200">Date</th>
   </tr>';
 
-  while ($r_btrecords = mysql_fetch_array($q_btrecords)) {
+  foreach ($q_btrecords as $r_btrecords) {
     $map = un_ut($r_btrecords['map']);
     $myurl = urlencode($map);
-    $maprank = 1 + small_count("SELECT DISTINCT p.pid AS rank FROM uts_player as p, uts_events AS e, uts_match as m WHERE (m.mapfile = '" . addslashes($map) . "' OR m.mapfile = '" . addslashes($map) . ".unr') AND m.id = e.matchid AND e.matchid = p.matchid AND e.playerid = p.playerid AND e.col3 < ".$r_btrecords['time'] . " AND e.col1 = 'btcap'");
+    $maprank = 1 + db_count("SELECT DISTINCT p.pid AS rank FROM uts_player as p, uts_events AS e, uts_match as m WHERE (m.mapfile = ? OR m.mapfile = ?) AND m.id = e.matchid AND e.matchid = p.matchid AND e.playerid = p.playerid AND e.col3 < ? AND e.col1 = 'btcap'", [$map, $map . '.unr', (float) $r_btrecords['time']]);
 
     echo '
     <tr>
@@ -410,7 +407,8 @@ if (mysql_num_rows($q_btrecords) > 0) {
 }
 
 // Do graph stuff
-$bgwhere = "pid = '$pid'";
+$bgwhere = "pid = ?";
+$bgparams = [$pid];
 //include("pages/graph_pbreakdown.php");
 
 // Player's ranks
@@ -425,32 +423,31 @@ echo '<table class="zebra box" border="0" cellpadding="0" cellspacing="0" width=
   <th class="smheading" align="center" width="50">Matches</th>
 <th class="smheading" align="center" width="50">Explain</th>';
 
-if ($pic_enable and basename($_SERVER['PATH_TRANSLATED']) != 'admin.php') {
+if ($pic_enable and basename($_SERVER['PATH_TRANSLATED'] ?? '') != 'admin.php') {
   echo '<th class="smheading" align="center" width="50">Pics</th>';
 }
 echo '</tr>';
 
-$sql_rank = "SELECT g.name AS gamename, r.rank, r.prevrank, r.matches, r.gid, r.pid FROM uts_rank AS r, uts_games AS g WHERE r.gid = g.id AND r.pid = '$pid';";
-$q_rank = mysql_query($sql_rank) or die(mysql_error());
+$sql_rank = "SELECT g.name AS gamename, r.rank, r.prevrank, r.matches, r.gid, r.pid FROM uts_rank AS r, uts_games AS g WHERE r.gid = g.id AND r.pid = ?;";
 
-while ($r_rank = mysql_fetch_array($q_rank)) {
-  $r_no = small_query("SELECT (COUNT(*) + 1) AS no FROM uts_rank WHERE gid= '${r_rank['gid']}' and rank > ". get_dp($r_rank['rank']) ."9");
+foreach (db_all($sql_rank, [$pid]) as $r_rank) {
+  $r_no = db_row("SELECT (COUNT(*) + 1) AS no FROM uts_rank WHERE gid= ? and rank > ?", [$r_rank['gid'], get_dp($r_rank['rank']) ."9"]);
 
   echo'<tr>
-  <td align="center">'.RankImageOrText($r_rank['pid'], $name, $r_no['no'], $r_rank['gid'], $r_rank['gamename'], false, '%IT%').'</td>
+  <td align="center">'.RankImageOrText($r_rank['pid'], $name ?? null, $r_no['no'], $r_rank['gid'], $r_rank['gamename'], false, '%IT%').'</td>
   <td align="center">'.$r_rank['gamename'].'</td>
   <td align="center">'.get_dp($r_rank['rank']) .' '. RankMovement($r_rank['rank'] - $r_rank['prevrank']) . '</td>
   <td align="center">'.$r_rank['matches'].'</td>';
 
   echo '<td align="center"><a href="?p=pexplrank&amp;pid='.$pid.'&amp;gid='.$r_rank['gid'].'">(Click)</a></td>';
-  if ($pic_enable and basename($_SERVER['PATH_TRANSLATED']) != 'admin.php') {
+  if ($pic_enable and basename($_SERVER['PATH_TRANSLATED'] ?? '') != 'admin.php') {
     echo '<td  align="center"><a href="?p=pinfo&amp;pid='.$pid.'&amp;gid='.$r_rank['gid'].'&amp;pics=1">(Click)</a></td>';
   }
   echo '</tr>';
 }
 echo '</tbody></table>';
 
-$r_pings = small_query("SELECT MIN(lowping * 1) AS lowping, AVG(avgping * 1) AS avgping, MAX(highping * 1) AS highping FROM uts_player WHERE pid = $pid and lowping > 0");
+$r_pings = db_row("SELECT MIN(lowping * 1) AS lowping, AVG(avgping * 1) AS avgping, MAX(highping * 1) AS highping FROM uts_player WHERE pid = ? and lowping > 0", [$pid]);
 
 if ($r_pings and $r_pings['lowping']) {
   echo '
@@ -473,7 +470,7 @@ if ($r_pings and $r_pings['lowping']) {
   </tbody></table>';
 }
 
-$mcount = $r_sumplist[games];
+$mcount = $r_sumplist['games'];
 $ecount = $mcount/50;
 $ecount2 = number_format($ecount, 0, '.', '');
 
@@ -485,7 +482,7 @@ $fpage = 0;
 if ($ecount < 1) { $lpage = 0; }
 else { $lpage = $ecount2-1; }
 
-$cpage = mysql_real_escape_string(preg_replace('/\D/', '', $_REQUEST["page"]));
+$cpage = preg_replace('/\D/', '', (string) ($_REQUEST["page"] ?? ''));
 if ($cpage == "") { $cpage = "0"; }
 
 $qpage = $cpage*50;
@@ -507,20 +504,19 @@ if (isset($is_admin) and $is_admin) echo '<td class="smheading" align="center">I
 echo'</tr>';
 
 $sql_recent = "SELECT m.id, m.time, g.name AS gamename, m.mapfile, INET_NTOA(p.ip) AS ip FROM uts_match m, uts_player p, uts_games g
-  WHERE p.pid = '$pid' AND m.id = p.matchid AND m.gid = g.id ORDER BY time DESC LIMIT $qpage,50";
-$q_recent = mysql_query($sql_recent) or die(mysql_error());
+  WHERE p.pid = ? AND m.id = p.matchid AND m.gid = g.id ORDER BY time DESC LIMIT ?,50";
 
-while ($r_recent = mysql_fetch_array($q_recent)) {
-  $r_time = mdate($r_recent[time]);
-  $r_mapfile = un_ut($r_recent[mapfile]);
+foreach (db_all($sql_recent, [$pid, (int) $qpage]) as $r_recent) {
+  $r_time = mdate($r_recent['time']);
+  $r_mapfile = un_ut($r_recent['mapfile']);
 
   echo'
-  <tr class="clickableRow" href="./?p=match&amp;mid='.$r_recent[id].'">
-  <td  align="center">'.$r_recent[id].'</td>
-  <td  align="center"><a href="./?p=match&amp;mid='.$r_recent[id].'">'.$r_time.'</a></td>
-  <td  align="center">'.$r_recent[gamename].'</td>
+  <tr class="clickableRow" href="./?p=match&amp;mid='.$r_recent['id'].'">
+  <td  align="center">'.$r_recent['id'].'</td>
+  <td  align="center"><a href="./?p=match&amp;mid='.$r_recent['id'].'">'.$r_time.'</a></td>
+  <td  align="center">'.$r_recent['gamename'].'</td>
   <td  align="center">'.$r_mapfile.'</td>';
-  if (isset($is_admin) and $is_admin) echo '<td  align="center">'. $r_recent[ip].'</td>';
+  if (isset($is_admin) and $is_admin) echo '<td  align="center">'. $r_recent['ip'].'</td>';
 
   echo '</tr>';
 }

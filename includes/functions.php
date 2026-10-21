@@ -109,7 +109,7 @@ function zero_out($data) {
 
 function get_dp($number) {
   // PHP 5 semantics: null counts as 0, leading-numeric strings are truncated, other strings give null
-  if ($number === null) $number = 0;
+  if ($number === null or is_bool($number)) $number = (int) $number;
   if (!is_numeric($number)) {
     if (!is_string($number) or !preg_match('/^\s*[+-]?(\d|\.\d)/', $number)) return null;
     $number = (float) $number;
@@ -217,8 +217,8 @@ function GetItemInfo ($itemname, $itemchunks) {
 }
 
 function GetMinutes($seconds) {
-  $timemins = intval($seconds / 60);
-  $timesecs = ($seconds % 60);
+  $timemins = intval((float) $seconds / 60);
+  $timesecs = ((int) $seconds % 60);
 
   $Reqlength = 2; //Amount of digits we need
   if ($Reqlength-strlen($timemins) > 0) $timemins = str_repeat("0",($Reqlength-strlen($timemins))) . $timemins;

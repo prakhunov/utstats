@@ -12,7 +12,7 @@ function row($name = NULL, $amount = 0, $multiplier = 0, $extra_multiplier = tru
 	$points = $amount * $multiplier;
 	
 	$d_points = get_dp($points);
-	if ($points % 1 == 0) $d_points = ceil($points); 
+	if (((int) $points) % 1 == 0) $d_points = ceil($points); 
 	echo '<tr>';
 	echo '<td>'. htmlentities($name) .'</td>';
 	echo '<td align="center">'. $amount .'</td>';
@@ -22,13 +22,13 @@ function row($name = NULL, $amount = 0, $multiplier = 0, $extra_multiplier = tru
 	return($points);
 }
 
-$pid = isset($pid) ? $pid : $_GET['pid'];
-$gid = isset($gid) ? $gid : $_GET['gid'];
+$pid = isset($pid) ? $pid : ($_GET['pid'] ?? '');
+$gid = isset($gid) ? $gid : ($_GET['gid'] ?? '');
 
-$pid = preg_replace('/\D/', '', $pid);
-$gid = preg_replace('/\D/', '', $gid);
+$pid = preg_replace('/\D/', '', (string) $pid);
+$gid = preg_replace('/\D/', '', (string) $gid);
 
-$r_info = small_query("SELECT name, country, banned FROM uts_pinfo WHERE id = '$pid'");
+$r_info = db_row("SELECT name, country, banned FROM uts_pinfo WHERE id = ?", [$pid]);
 if (!$r_info) {
 	echo "Player not found";
 	include("includes/footer.php");
@@ -47,7 +47,7 @@ if ($r_info['banned'] == 'Y') {
 
 $playername = $r_info['name'];
 
-$r_game = small_query("SELECT name, gamename FROM uts_games WHERE id = '$gid'");
+$r_game = db_row("SELECT name, gamename FROM uts_games WHERE id = ?", [$gid]);
 if (!$r_game) {
 	echo "Game ($gid) not found.";
 	include("includes/footer.php");
@@ -56,7 +56,7 @@ if (!$r_game) {
 $real_gamename = $r_game['gamename'];
 
 
-$r_cnt = small_query("SELECT
+$r_cnt = db_row("SELECT
 		SUM(frags) AS frags, SUM(deaths) AS deaths, SUM(suicides) AS suicides, SUM(teamkills) AS teamkills,
 		SUM(flag_taken) AS flag_taken, SUM(flag_pickedup) AS flag_pickedup, SUM(flag_return) AS flag_return, SUM(flag_capture) AS flag_capture, SUM(flag_cover) AS flag_cover,
 		SUM(flag_seal) AS flag_seal, SUM(flag_assist) AS flag_assist, SUM(flag_kill) AS flag_kill,
@@ -64,7 +64,7 @@ $r_cnt = small_query("SELECT
 		SUM(spree_double) AS spree_double, SUM(spree_multi) AS spree_multi, SUM(spree_ultra) AS spree_ultra, SUM(spree_monster) AS spree_monster,
 		SUM(spree_kill) AS spree_kill, SUM(spree_rampage) AS spree_rampage, SUM(spree_dom) AS spree_dom, SUM(spree_uns) AS spree_uns, SUM(spree_god) AS spree_god,
 		SUM(gametime) AS gametime 
-		FROM uts_player WHERE pid = $pid and gid = $gid");
+		FROM uts_player WHERE pid = ? and gid = ?", [$pid, $gid]);
 
 
 
@@ -86,11 +86,12 @@ echo '
 	</tr>';
 
 if ($real_gamename == "Bunny Track") {
-	$sql_btmaprank = "SELECT e.col2 AS no, COUNT(e.col2) AS count FROM uts_events AS e, uts_player AS p WHERE p.pid = $pid AND p.gid = $gid AND p.playerid = e.playerid AND e.matchid = p.matchid AND e.col2 > 0 AND e.col2 <= 5 GROUP BY e.col2";
-	$q_btmaprank = mysql_query($sql_btmaprank) or die ("Can't retrieve \$q_btmaprank: ". mysql_error());
+	$sql_btmaprank = "SELECT e.col2 AS no, COUNT(e.col2) AS count FROM uts_events AS e, uts_player AS p WHERE p.pid = ? AND p.gid = ? AND p.playerid = e.playerid AND e.matchid = p.matchid AND e.col2 > 0 AND e.col2 <= 5 GROUP BY e.col2";
+	$q_btmaprank = db_query($sql_btmaprank, [$pid, $gid]);
 	$mapranks = array();
-	while($r_btmaprank = mysql_fetch_assoc($q_btmaprank)) {
-		$mapranks[$r_btmaprank[no]] = $r_btmaprank[count];
+	$t_points = 0;
+	while($r_btmaprank = $q_btmaprank->fetch(PDO::FETCH_ASSOC)) {
+		$mapranks[$r_btmaprank['no']] = $r_btmaprank['count'];
 	}
 
 	$t_points += row('First place', (!empty($mapranks[1]) ? $mapranks[1] : 0), 10);
@@ -148,7 +149,7 @@ echo '<tr>	<td class="smheading">Total</td>
 		</tr>';
 
 $gametime = ceil($r_cnt['gametime'] / 60);
-$t_points = $t_points / $gametime;
+$t_points = $gametime ? $t_points / $gametime : false;
 echo '<tr>	<td>Divided by game minutes</td>
 				<td  align="center">'.$gametime.'</td>
 				<td  align="center"></td>
