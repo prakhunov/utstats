@@ -1,21 +1,21 @@
 <?php
 include ("../includes/config.php");
 include ("../includes/functions.php");
-$player = mysql_real_escape_string($_GET[player]);
-$map_key = mysql_real_escape_string($_GET[map_key]);
+$player = $_GET['player'] ?? '';
+$map_key = $_GET['map_key'] ?? '';
 $map_condition = "";
+$params = array('player' => $player);
 if($map_key != null) {
-        $map_condition = "AND uts_match.mapfile like '%$map_key%'";
+        $map_condition = "AND uts_match.mapfile like :map_key";
+$params['map_key'] = '%' . $map_key . '%';
 }
 
-$query = "select sum(uts_player.frags) as frags, sum(uts_player.deaths) as deaths from uts_player,uts_pinfo,uts_games,uts_match where uts_pinfo.id = uts_player.pid and uts_match.id = uts_player.matchid and uts_player.gid = uts_games.id and uts_games.name like '%Capture the Flag%' and uts_pinfo.name = '$player' $map_condition;";
-$result = mysql_query($query) or die (mysql_error());
+$query = "select sum(uts_player.frags) as frags, sum(uts_player.deaths) as deaths from uts_player,uts_pinfo,uts_games,uts_match where uts_pinfo.id = uts_player.pid and uts_match.id = uts_player.matchid and uts_player.gid = uts_games.id and uts_games.name like '%Capture the Flag%' and uts_pinfo.name = :player $map_condition;";
+$result = db_query($query, $params);
 	header('Content-Type: application/json');
-	if(sizeof($result) == 0) {
-		echo "player not found";
-	} else {
+	{
 		$rows = array();
-		while($r = mysql_fetch_assoc($result)) {
+		while($r = $result->fetch(PDO::FETCH_ASSOC)) {
 			$rows[] = $r;
 		}
 		$output = json_encode($rows, JSON_PRETTY_PRINT);

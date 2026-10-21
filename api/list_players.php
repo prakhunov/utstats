@@ -1,15 +1,14 @@
 <?php
 include ("../includes/config.php");
 include ("../includes/functions.php");
-$list_players = mysql_real_escape_string($_GET[list_players]);
+$list_players = $_GET['list_players'] ?? '';
+$params = array();
 $query = "select name from uts_pinfo;";
-$result = mysql_query($query) or die (mysql_error());
+$result = db_query($query, $params);
 header('Content-Type: application/json');
-if(sizeof($result) == 0) {
-	echo "player not found";
-} else {
+{
 	$rows = array();
-	while($r = mysql_fetch_assoc($result)) {
+	while($r = $result->fetch(PDO::FETCH_ASSOC)) {
 		$rows[] = $r['name'];
 	}
 	$output = json_encode($rows, JSON_PRETTY_PRINT);
