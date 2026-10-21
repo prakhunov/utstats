@@ -31,8 +31,6 @@ switch ($_GET["p"] ?? "") {
 	case "maps": maps(); break;			// Maps list
 	case "minfo": minfo(); break;		// Map info
 
-	case "totals": totals(); break;		// Totals summary
-
 	case "watchlist": watchlist(); break;		// The viewer's watchlist
 
 	case "credits": credits(); break;	// Credits
@@ -111,10 +109,6 @@ function maps() {
 
 function minfo() {
 	include("pages/maps_info.php");
-}
-
-function totals() {
-	include("pages/totals.php");
 }
 
 function watchlist() {

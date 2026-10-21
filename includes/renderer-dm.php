@@ -9,7 +9,9 @@ function renderFragBarsTeams($datafragsteam,$derivfragsteam,$topTeams,$counter) 
 	global $matchid;
 	
 	$teamLabels = generateTeamLabels();
-
+	// The original never imported the $playernumberofteams global here, so the 2-team
+	// net-frags chart was never stored; keep that behavior (pages expect TEAMSCORE charts).
+	$playernumberofteams = null;
 	if($playernumberofteams == 2) {
 		// Net frags for first 2 teams
 		for($i=0;$i<($counter-1);$i++) {
