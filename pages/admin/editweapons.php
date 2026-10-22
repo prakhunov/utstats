@@ -26,9 +26,9 @@ echo'<br><table border="0" cellpadding="0" cellspacing="0" width="600">
 </tr>
 <tr>
 	<td class="smheading">Name</td>
-	<td class="smheading" align="center" '.OverlibPrintHint('', 'Image to display instead of the weapon\'s name<br>Should exist in assets/images/weapons/<br>Leave empty to display the weapon name').'>Image</td>
-	<td class="smheading" '.OverlibPrintHint('', 'Use this number to set the weapons order to your liking').'>Order</td>
-	<td class="smheading" '.OverlibPrintHint('', 'If checked, this weapon won\'t be shown (including kills, shots, acc, ...)').'>Hide</td>
+	<td class="smheading" align="center" '.HintAttributes('Image to display instead of the weapon\'s name. Should exist in assets/images/weapons/. Leave empty to display the weapon name').'>Image</td>
+	<td class="smheading" '.HintAttributes('Use this number to set the weapons order to your liking').'>Order</td>
+	<td class="smheading" '.HintAttributes('If checked, this weapon won\'t be shown (including kills, shots, acc, ...)').'>Hide</td>
 </tr>
 <form action="'.htmlspecialchars($_SERVER['PHP_SELF']).'" method="POST">
 <input type="hidden" name="key" value="'.htmlspecialchars($adminkey).'">

@@ -7,7 +7,6 @@
  */
 
 include('pages/match_info_killsmatrix.php');
-include('includes/hints.php');
 include('includes/weaponstats.php');
 weaponstats($mid, null);
 

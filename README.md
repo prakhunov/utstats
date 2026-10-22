@@ -58,9 +58,12 @@ the same license, the Open Unreal Mod License (see `LICENSE`); original copyrigh
 are kept. Changes from the original: ported from PHP 5.5/ext-mysql to PHP 8.5/PDO with
 bound parameters, hardened request handling, env-based config, containerized deploy
 (`docker/`, `deploy/`, `infra/`). The per-file change history is in this repo's git log.
-Bundled third-party libraries and assets (`assets/`) keep their own licenses.
+Bundled assets (`assets/` fonts and images) keep their own licenses.
 
-**Highcharts** (`assets/lib/highcharts/`, v4.0.4) is included under Highsoft's
-non-commercial license: it is **not free for commercial use**. See
-<https://shop.highcharts.com/faq/non-commercial>. This site is a non-commercial community
-site (no ads, no paid content).
+Third-party JavaScript is **not bundled**: jQuery 3.7.1, Tooltipster 4.2.8 (both MIT) and
+Highcharts 4.0.4 (same version as before; newer ones change the chart axes) are loaded
+from public CDNs (code.jquery.com, jsDelivr, cdnjs) pinned with
+Subresource Integrity hashes in `includes/header.php`. Highcharts is used under Highsoft's
+non-commercial license and is **not free for commercial use**, see
+<https://shop.highcharts.com/faq/non-commercial>. This is a non-commercial community site
+(no ads, no paid content).

@@ -39,6 +39,7 @@
 						GeoIP switched to MaxMind GeoLite2 (.mmdb); FTP log download rewritten on ext/ftp.<br>
 						Configuration and secrets moved to environment variables; runs in containers (MariaDB, PHP-FPM, Caddy).<br>
 						Removed dead code and duplicate files; code formatted to PSR-12.<br>
+						JavaScript libraries updated (jQuery 3.7, Tooltipster 4, Highcharts 4.0.4) and loaded from CDNs; overLIB removed.<br>
 						Full history: every change is in this site's git log.<br>
 						</dd><br>
 
@@ -342,12 +343,13 @@
 					GeoLite data created by MaxMind<br/>
 					Available from <a href="http://www.maxmind.com/app/geolitecountry" target="_blank">http://www.maxmind.com/app/geolitecountry</a><br>
 					<br>
-					overLIB by Erik Bosrup<br>
+					overLIB by Erik Bosrup (hover hints in versions before 4.5.0)<br>
 					<a href="http://www.bosrup.com/web/overlib/" target="_blank">http://www.bosrup.com/web/overlib/</a><br>
 					<br>
 					<a href="http://www.highcharts.com/">High Charts</a> - the graphs that made it possible to visualise the data for DOM, DM, CTF.<br>
 					<em>Highcharts is used here under its non-commercial license and is not free for commercial use: <a href="https://shop.highcharts.com/faq/non-commercial" target="_blank">Highcharts non-commercial licensing</a>.</em><br>
-          <a href="http://iamceege.github.io/tooltipster/">Tooltipster</a> - the tooltips used everywhere except the graphs.<br>
+          <a href="https://calebjacob.github.io/tooltipster/">Tooltipster</a> - the tooltips used everywhere except the graphs.<br>
+          <a href="https://jquery.com/">jQuery</a> - JavaScript helpers.<br>
           <a href="http://iconsweets.com/">Yummygum Iconsweets</a> - a few icons came from this awesome set that is free.<br>
           <a href="https://forums.unrealtournament.com/showthread.php?13690-Call-to-Action-Weapon-Icons">Weapon Icons</a> - the weapons icons used are a combination of both DarkAp89 & piemo's designs.<br>
 

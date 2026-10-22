@@ -413,32 +413,10 @@ function FormatPlayerName($country, $pid, $name, $gid = null, $gamename = null, 
     return($ret);
 }
 
-function QuoteHintText($text)
+// Attributes that give an element a hover hint (shown by Tooltipster, see assets/main.js).
+function HintAttributes(string $text): string
 {
-    $search = ['\\', '\'', '(', ')'];
-    $replace = ['\\\\', '\\\'', '\\(', '\\)'];
-    return(str_replace($search, $replace, $text));
-}
-
-function OverlibPrintHint($name, $text = null, $caption = null)
-{
-    include(dirname(__FILE__) .'/hints.php');
-    if (!isset($hint[$name]) and empty($text)) {
-        return('');
-    }
-    if ($text === null) {
-        $text = $hint[$name]['text'];
-    }
-    if ($caption === null and isset($hint[$name]['caption'])) {
-        $caption = $hint[$name]['caption'];
-    }
-    $rv  = 'onmouseover="return overlib(\''. QuoteHintText($text) .'\'';
-    if ($caption !== null) {
-        $rv .= ', CAPTION, \''. QuoteHintText($caption) .'\'';
-    }
-    $rv .= ');" ';
-    $rv .= 'onmouseout="return nd();"';
-    return($rv);
+    return 'data-hint title="' . htmlspecialchars($text) . '"';
 }
 
 function debug_output($desc, $data)
