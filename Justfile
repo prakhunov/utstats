@@ -118,11 +118,15 @@ deploy: release
     just host-run "/usr/local/sbin/utstats-deploy $(git rev-parse --short=12 HEAD)"
 
 # Shell as the utstats user, who owns the rootless containers (`podman ps`,
-# `systemctl --user status utstats-php`). `sudo -i` from there is not available;
-# use `just host-run` for root tasks. Session plugin comes from the devshell.
+# `systemctl --user status utstats-php`). For root use `just host-root-shell`
 host-shell:
     aws ssm start-session --region {{host_region}} --target $(tofu -chdir=infra output -raw instance_id) \
         --document-name AWS-StartInteractiveCommand --parameters command="sudo -iu utstats"
+
+# Root shell on the host (installs, journalctl -u amazon-ssm-agent, utstats-podman ...)
+host-root-shell:
+    aws ssm start-session --region {{host_region}} --target $(tofu -chdir=infra output -raw instance_id) \
+        --document-name AWS-StartInteractiveCommand --parameters command="sudo -i"
 
 # Push production secrets from a local env file (default .env.prod) to SSM
 secrets-push file=".env.prod":

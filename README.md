@@ -48,4 +48,5 @@ root uses `utstats-podman` / `utstats-systemctl` to act as that user.
 | `just db-push <dump.sql.gz>` | replace the production DB with a dump |
 | `just importer on\|off` | toggle the FTP importer (only ONE host may pull the game servers' logs) |
 | `just host-run "<cmd>"` | run a command on the host as root via SSM |
+| `just host-root-shell` | root shell on the host |
 | `just host-shell` | shell as `utstats` (`podman ps`, `systemctl --user status utstats-php`, `journalctl --user -u utstats-import`) |
