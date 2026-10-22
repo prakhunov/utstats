@@ -29,6 +29,7 @@ db -N -e "SELECT table_name FROM information_schema.tables WHERE table_schema = 
 
 db -e "SELECT COUNT(*) AS matches, MAX(time) AS newest FROM uts_match"
 
-systemctl start utstats-php.service
+# Caddy Requires= php, so stopping php above stopped it too.
+systemctl start utstats-php.service utstats-caddy.service
 if systemctl is-enabled --quiet utstats-import.timer 2>/dev/null; then systemctl start utstats-import.timer; fi
 echo "Restore done"
