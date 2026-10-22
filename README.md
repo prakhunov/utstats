@@ -36,8 +36,10 @@ just db-load <dump.sql[.gz]> # load a UTStats mysqldump, converts tables to Inno
 ## Production
 
 Host: t4g.small in eu-central-1 (`infra/`, OpenTofu), canonical name `utstats.ut.banko.gg`;
-`utstats.passionategaming.eu` is a CNAME to it at NFO. Services are podman quadlets
-(`deploy/quadlet/`) plus a minutely importer timer (`deploy/systemd/`).
+`utstats.passionategaming.eu` is a CNAME to it at NFO. Services are **rootless** podman
+quadlets (`deploy/quadlet/`) plus a minutely importer timer (`deploy/systemd/`), all under
+the `utstats` user's systemd manager (linger on). Root only installs files. On the host,
+root uses `utstats-podman` / `utstats-systemctl` to act as that user.
 
 | Command | What |
 |---|---|
@@ -45,4 +47,5 @@ Host: t4g.small in eu-central-1 (`infra/`, OpenTofu), canonical name `utstats.ut
 | `just secrets-push` | push `.env.prod` (gitignored) to SSM `/utstats/*`; the only writer of those params |
 | `just db-push <dump.sql.gz>` | replace the production DB with a dump |
 | `just importer on\|off` | toggle the FTP importer (only ONE host may pull the game servers' logs) |
-| `just host-run "<cmd>"` / `just host-shell` | run a command / open a shell on the host via SSM |
+| `just host-run "<cmd>"` | run a command on the host as root via SSM |
+| `just host-shell` | shell as `utstats` (`podman ps`, `systemctl --user status utstats-php`, `journalctl --user -u utstats-import`) |
