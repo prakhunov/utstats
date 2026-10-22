@@ -27,6 +27,7 @@
               pkgs.mariadb.client
               pkgs.caddy
               pkgs.python3 # scripts/crawl_diff.py
+              pkgs.ssm-session-manager-plugin # just host-shell
             ];
             # Lint/analysis tools (phpstan, phpcs + PHPCompatibility, rector) come from composer require-dev.
             shellHook = ''

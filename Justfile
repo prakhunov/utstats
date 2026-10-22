@@ -117,9 +117,10 @@ host-run cmd:
 deploy: release
     just host-run "/usr/local/sbin/utstats-deploy $(git rev-parse --short=12 HEAD)"
 
-# Interactive shell on the host (Session Manager)
+# Root shell on the host (Session Manager; plugin comes from the devshell)
 host-shell:
-    aws ssm start-session --region {{host_region}} --target $(tofu -chdir=infra output -raw instance_id)
+    aws ssm start-session --region {{host_region}} --target $(tofu -chdir=infra output -raw instance_id) \
+        --document-name AWS-StartInteractiveCommand --parameters command="sudo -i"
 
 # Push production secrets from a local env file (default .env.prod) to SSM
 secrets-push file=".env.prod":
