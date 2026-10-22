@@ -16,3 +16,6 @@ vendor/
 .php-cs-fixer.cache
 infra/.terraform/
 .env.prod
+
+# direnv cache
+.direnv/
