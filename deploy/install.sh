@@ -29,6 +29,8 @@ export XDG_RUNTIME_DIR=/run/user/$uid
 cd ~
 EOF
 chown utstats:utstats "$home/.bash_profile"
+install -d -o utstats -g utstats "$home/.config" "$home/.config/containers" "$home/.config/containers/systemd" \
+    "$home/.config/systemd" "$home/.config/systemd/user"
 
 # Rootless Caddy binds 80/443.
 echo "net.ipv4.ip_unprivileged_port_start = 80" >/etc/sysctl.d/90-utstats.conf
@@ -100,8 +102,7 @@ utstats-podman build --pull=newer -t localhost/utstats-php:latest -f /opt/utstat
 utstats-podman image prune -f >/dev/null
 
 # 6. User units.
-install -d -o utstats -g utstats "$home/.config" "$home/.config/containers" "$home/.config/containers/systemd" \
-    "$home/.config/systemd" "$home/.config/systemd/user"
+# (config dirs were created in step 1)
 install -m 644 -o utstats -g utstats /opt/utstats/current/deploy/quadlet/* "$home/.config/containers/systemd/"
 install -m 644 -o utstats -g utstats /opt/utstats/current/deploy/systemd/* "$home/.config/systemd/user/"
 utstats-systemctl daemon-reload
