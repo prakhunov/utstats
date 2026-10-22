@@ -28,6 +28,9 @@
               pkgs.caddy
               pkgs.python3 # scripts/crawl_diff.py
               pkgs.ssm-session-manager-plugin # just host-shell
+              pkgs.opentofu # infra/ and the just recipes that read its outputs
+              pkgs.awscli2
+              pkgs.jq
             ];
             # Lint/analysis tools (phpstan, phpcs + PHPCompatibility, rector) come from composer require-dev.
             shellHook = ''
