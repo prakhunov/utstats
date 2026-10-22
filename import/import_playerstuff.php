@@ -161,6 +161,12 @@ if ($r_tos > $servergametime) {
 $r_ttl = get_dp($q_ttl['col4'] ?? 0);
 $r_score = $q_score['col4'] ?? null;
 
+// Non-team matches (DM, 1v1, LMS) have no TeamChange event: store team 0 instead of
+// relying on MySQL coercing '' into the int column (same fix as upstream sn3p 4090438).
+if (!$playerteam) {
+    $playerteam = 0;
+}
+
 // Generate player record
 $sql_playerid = "	INSERT
 							INTO		uts_player
