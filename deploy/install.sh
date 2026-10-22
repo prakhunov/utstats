@@ -24,6 +24,8 @@ loginctl enable-linger utstats
 uid=$(id -u utstats)
 for _ in $(seq 30); do [[ -d /run/user/$uid ]] && break; sleep 1; done
 # Login shells (just host-shell) need the user runtime dir for podman/systemctl --user.
+# useradd leaves a pre-existing home root-owned; podman needs to create ~/.local in it.
+install -d -m 750 -o utstats -g utstats "$home"
 cat >"$home/.bash_profile" <<EOF
 export XDG_RUNTIME_DIR=/run/user/$uid
 cd ~
