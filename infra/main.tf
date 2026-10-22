@@ -116,9 +116,9 @@ resource "aws_iam_role_policy" "utstats" {
         Condition = { StringLike = { "s3:prefix" = ["${var.release_prefix}/*"] } }
       },
       {
-        Sid      = "ReadAppParams"
-        Effect   = "Allow"
-        Action   = ["ssm:GetParametersByPath", "ssm:GetParameters", "ssm:GetParameter"]
+        Sid    = "ReadAppParams"
+        Effect = "Allow"
+        Action = ["ssm:GetParametersByPath", "ssm:GetParameters", "ssm:GetParameter"]
         # GetParametersByPath authorizes against the path itself, the others against each parameter.
         Resource = [
           "arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter${var.ssm_prefix}",
