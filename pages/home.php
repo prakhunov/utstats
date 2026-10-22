@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
 // Get last map, time, scores
 $qlastMaps = db_row("SELECT id, mapfile, time, t0score, t1score, t2score, t3score FROM uts_match WHERE id = (SELECT MAX(id) FROM uts_match)");
 $lastMapId = $qlastMaps['id'];

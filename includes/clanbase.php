@@ -1,6 +1,12 @@
 <?php
 
 /*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
+/*
   This function is to get the players from a clan.
   It will return an array with all the information.
 */

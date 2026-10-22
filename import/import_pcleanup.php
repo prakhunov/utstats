@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
 $sql_tgame = db_row("SELECT teamgame FROM uts_match WHERE id = ?", [$matchid]);
 if ($sql_tgame == "True") {
     $rem_srecord = "DELETE FROM uts_player WHERE matchid = ? AND team > 3";

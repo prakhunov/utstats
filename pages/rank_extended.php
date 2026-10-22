@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
 $gid = preg_replace('/\D/', '', (string) ($_GET['gid'] ?? ''));
 
 $r_gamename = db_row("SELECT name FROM uts_games WHERE id = ?", [$gid]);

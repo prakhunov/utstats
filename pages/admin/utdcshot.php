@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
 // Requested directly (img src), not through admin.php, so check the remembered admin key here.
 require(__DIR__ . '/../../includes/config.php');
 if (!hash_equals($import_adminkey, (string) ($_COOKIE['uts_adminkey'] ?? ''))) {

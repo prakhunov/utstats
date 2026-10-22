@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
 // Get information about this match
 $sql_assault = db_row("SELECT assaultid, ass_att, gametime, ass_win FROM uts_match WHERE id = ?", [$mid]);
 $ass_id = $sql_assault['assaultid'];

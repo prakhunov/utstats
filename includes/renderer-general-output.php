@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
 // Fix for UTF-8 required for local use
 require_once('encoding.php');
 use ForceUTF8\Encoding;
@@ -203,8 +209,8 @@ function hex2rgb($hex)
         $b = hexdec(substr($hex, 2, 1).substr($hex, 2, 1));
     } else {
         $r = hexdec(substr($hex, 0, 2));
-        $g = hexdec(substr($hex,2,2));
-        $b = hexdec(substr($hex,4,2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
     }
     $rgb = [$r, $g, $b];
     return implode(",", $rgb); // returns the rgb values separated by commas

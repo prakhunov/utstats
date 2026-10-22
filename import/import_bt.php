@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
 // get the caps, captimes and store them in the events database
 $sql_capbt = "SELECT col0, col1, col2, col3, col4 FROM uts_temp_$uid WHERE (col1 = 'cap' OR col1 = 'btcap') AND col2 = ?";
 $q_capbt = db_all($sql_capbt, [$playerid]);

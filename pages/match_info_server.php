@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
 $matchinfo = db_row("SELECT m.time, m.servername, g.name AS gamename, m.gamename AS real_gamename, m.gid, m.mapname, m.mapfile, m.serverinfo, m.gameinfo, m.mutators, m.serverip FROM uts_match AS m, uts_games AS g WHERE m.gid = g.id AND m.id = ?", [$mid]);
 $matchdate = mdate($matchinfo['time']);
 $gamename = $matchinfo['gamename'];

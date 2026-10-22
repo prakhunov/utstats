@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
 $r_info = db_row("SELECT teamgame, t0, t1, t2, t3, t0score, t1score, t2score, t3score FROM uts_match WHERE id = ?", [$mid]);
 if (!$r_info) {
     die("Match not found");

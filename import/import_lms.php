@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
 // get the caps, captimes and store them in the events database
 $ttl = 0;
 if (($qc_deaths['col4'] ?? null) + ($q_suicides['col4'] ?? null) == $qm_gameinfofl) {

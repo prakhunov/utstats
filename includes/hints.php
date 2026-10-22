@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
 $hint['F'] = 		[	"caption"	=>	"Frags",
                                 "text" 		=>	"A player's frag count is equal to their kills minus suicides.  In team games team kills (not team suicides) are also subtracted from the player's kills."
                             ];
@@ -21,7 +27,7 @@ $hint['TK'] = 		[	"caption"	=>	"Team Kills",
                             ];
 
 $hint['Multis'] =
-                    	[	"caption"	=>	"Multi Kills",
+                        [	"caption"	=>	"Multi Kills",
                                 "text" 		=>	"Special event: If you manage to kill more 2 than people within a short space of time you get a Double Kill, 3 is a Multi Kill etc"
                             ];
 

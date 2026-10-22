@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
 // Firstly we need to work out First Last Next Prev pages
 $scount = db_count("SELECT servername, serverip FROM uts_match GROUP BY servername, serverip");
 $ecount = $scount / 25;

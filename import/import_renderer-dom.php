@@ -1,6 +1,6 @@
-
+<?php /* Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License. Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening, formatting. Full per-change history: git log -- <this file>. */ ?>
 <?php
-    include_once('includes/renderer-dom.php');
+include_once('includes/renderer-dom.php');
 include_once('includes/renderer-dm.php');
 
 // Only run script if at least 5 minutes were played
