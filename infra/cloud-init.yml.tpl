@@ -1,6 +1,6 @@
 #cloud-config
-# UTStats host bootstrap (AlmaLinux 10 aarch64). Installs podman, the AWS CLI and the SSM
-# agent, then runs the latest release's deploy/install.sh, which owns everything else
+# UTStats host bootstrap (AlmaLinux 10 aarch64; the community AMI ships the SSM agent).
+# Installs podman and the AWS CLI, then runs the latest release's deploy/install.sh, which owns everything else
 # (quadlet units, importer timer, secrets, GeoIP, image build). Re-deploys run the same
 # script via `just deploy` (SSM send-command), so this file rarely needs to change.
 #
@@ -39,6 +39,4 @@ runcmd:
   - [sh, -c, "fallocate -l 1G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile && echo '/swapfile none swap defaults 0 0' >> /etc/fstab"]
   # AWS CLI v2
   - [sh, -c, "curl -fsSL https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip -o /tmp/awscli.zip && unzip -q /tmp/awscli.zip -d /tmp && /tmp/aws/install && rm -rf /tmp/aws /tmp/awscli.zip"]
-  # SSM agent (Session Manager access; no SSH port is open)
-  - [sh, -c, "dnf install -y https://s3.${region}.amazonaws.com/amazon-ssm-${region}/latest/linux_arm64/amazon-ssm-agent.rpm && systemctl enable --now amazon-ssm-agent"]
   - [/usr/local/sbin/utstats-deploy]

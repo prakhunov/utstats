@@ -104,8 +104,9 @@ host-run cmd:
     #!/usr/bin/env bash
     set -euo pipefail
     id=$(tofu -chdir=infra output -raw instance_id)
+    cmd={{quote(cmd)}}
     cid=$(aws ssm send-command --region {{host_region}} --instance-ids "$id" --document-name AWS-RunShellScript \
-        --timeout-seconds 3600 --parameters "$(jq -n --arg c '{{cmd}}' '{commands:[$c], executionTimeout:["3600"]}')" \
+        --timeout-seconds 3600 --parameters "$(jq -cn --arg c "$cmd" '{commands:[$c], executionTimeout:["3600"]}')" \
         --query Command.CommandId --output text)
     while s=$(aws ssm get-command-invocation --region {{host_region}} --command-id "$cid" --instance-id "$id" --query Status --output text 2>/dev/null); [[ $s == Pending || $s == InProgress || $s == Delayed || -z $s ]]; do sleep 3; done
     aws ssm get-command-invocation --region {{host_region}} --command-id "$cid" --instance-id "$id" \
