@@ -43,9 +43,10 @@ cat >/usr/local/sbin/utstats-podman <<EOF
 #!/bin/sh
 cd $home && exec runuser -u utstats -- env XDG_RUNTIME_DIR=/run/user/$uid HOME=$home podman "\$@"
 EOF
-cat >/usr/local/sbin/utstats-systemctl <<'EOF'
+cat >/usr/local/sbin/utstats-systemctl <<EOF
 #!/bin/sh
-exec systemctl --user -M utstats@ "$@"
+cd $home && exec runuser -u utstats -- env XDG_RUNTIME_DIR=/run/user/$uid \
+    DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$uid/bus systemctl --user "\$@"
 EOF
 chmod 755 /usr/local/sbin/utstats-podman /usr/local/sbin/utstats-systemctl
 
