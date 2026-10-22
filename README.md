@@ -32,3 +32,17 @@ just db-load <dump.sql[.gz]> # load a UTStats mysqldump, converts tables to Inno
   `renderings/`, which are the `/data` volume in the image.
 - Caddy only exposes `/`, `index.php`, `pic.php`, `api/*.php`, `assets/` and `robots.txt`;
   the admin UI and the web importer are not reachable from outside.
+
+## Production
+
+Host: t4g.small in eu-central-1 (`infra/`, OpenTofu), canonical name `utstats.ut.banko.gg`;
+`utstats.passionategaming.eu` is a CNAME to it at NFO. Services are podman quadlets
+(`deploy/quadlet/`) plus a minutely importer timer (`deploy/systemd/`).
+
+| Command | What |
+|---|---|
+| `just deploy` | package HEAD to S3 and install it on the host |
+| `just secrets-push` | push `.env.prod` (gitignored) to SSM `/utstats/*`; the only writer of those params |
+| `just db-push <dump.sql.gz>` | replace the production DB with a dump |
+| `just importer on\|off` | toggle the FTP importer (only ONE host may pull the game servers' logs) |
+| `just host-run "<cmd>"` / `just host-shell` | run a command / open a shell on the host via SSM |
