@@ -50,3 +50,12 @@ root uses `utstats-podman` / `utstats-systemctl` to act as that user.
 | `just host-run "<cmd>"` | run a command on the host as root via SSM |
 | `just host-root-shell` | root shell on the host |
 | `just host-shell` | shell as `utstats` (`podman ps`, `systemctl --user status utstats-php`, `journalctl --user -u utstats-import`) |
+
+## License
+
+This is a modification of [UTStats](https://github.com/sn3p/utstats) and is released under
+the same license, the Open Unreal Mod License (see `LICENSE`); original copyright notices
+are kept. Changes from the original: ported from PHP 5.5/ext-mysql to PHP 8.5/PDO with
+bound parameters, hardened request handling, env-based config, containerized deploy
+(`docker/`, `deploy/`, `infra/`). The per-file change history is in this repo's git log.
+Bundled third-party libraries and assets (`assets/`) keep their own licenses.
