@@ -32,6 +32,16 @@
 				<div id="contentChangeLog" style="display: none;">
 					<blockquote><p>
 					<dl>
+						<dt><strong>4.5.0 (22/10/2026 by Passionate Gaming)</strong></dt>
+						<dd>
+						Ported from PHP 5.5/ext-mysql to PHP 8.5 and PDO; every query uses bound parameters (SQL injection fixes).<br>
+						Escaped request values echoed into pages (XSS fixes); server query limited to known game servers.<br>
+						GeoIP switched to MaxMind GeoLite2 (.mmdb); FTP log download rewritten on ext/ftp.<br>
+						Configuration and secrets moved to environment variables; runs in containers (MariaDB, PHP-FPM, Caddy).<br>
+						Removed dead code and duplicate files; code formatted to PSR-12.<br>
+						Full history: every change is in this site's git log.<br>
+						</dd><br>
+
 						<dt><strong>4.4.0 (8/1/2018 by HULKSMASH and sn3p)</dt>
 						<dd>
 						Amazing new theme & sexy styling (by HULKSMASH).<br>
