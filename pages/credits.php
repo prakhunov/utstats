@@ -32,7 +32,7 @@
 				<div id="contentChangeLog" style="display: none;">
 					<blockquote><p>
 					<dl>
-						<dt><strong>4.5.0 (22/10/2026 by Passionate Gaming)</strong></dt>
+						<dt><strong>4.5.0 (22/10/2026 by banko, Passionate Gaming)</strong></dt>
 						<dd>
 						Ported from PHP 5.5/ext-mysql to PHP 8.5 and PDO; every query uses bound parameters (SQL injection fixes).<br>
 						Escaped request values echoed into pages (XSS fixes); server query limited to known game servers.<br>

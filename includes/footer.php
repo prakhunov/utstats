@@ -7,8 +7,8 @@
       <a href="./?p=help">Help</a>
       <br>
       <br>
-      <a href="https://github.com/sn3p/utstats" target="_blank">UTStats Beta 4.4.0</a>
-      &copy; <?php echo date("Y"); ?> azazel, AnthraX toa and sn3p
+      <a href="https://github.com/prakhunov/utstats" target="_blank">UTStats 4.5.0</a>
+      &copy; <?php echo date("Y"); ?> azazel, AnthraX toa, sn3p and banko
     </div>
   </body>
 </html>
