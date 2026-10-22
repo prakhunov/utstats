@@ -24,7 +24,11 @@ WORKDIR /var/www/html
 COPY --from=vendor /app/vendor ./vendor
 COPY --chown=root:root . .
 # Runtime state lives on the /data volume (logs, renderings, ftp timestamp).
+# The base image makes /var/www/html 1777 www-data; in a sticky world-writable dir the
+# kernel (fs.protected_symlinks) refuses to let www-data follow these root-owned
+# symlinks. The app never writes its code tree, so make it root-owned and read-only.
 RUN mkdir -p /data/logs/backup /data/logs/ac /data/logs/ace /data/logs/utdc /data/renderings \
  && ln -sfn /data/logs logs && ln -sfn /data/renderings renderings \
+ && chown root:root /var/www/html && chmod 755 /var/www/html \
  && chown -R www-data:www-data /data
 VOLUME /data
