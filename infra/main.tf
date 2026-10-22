@@ -119,7 +119,11 @@ resource "aws_iam_role_policy" "utstats" {
         Sid      = "ReadAppParams"
         Effect   = "Allow"
         Action   = ["ssm:GetParametersByPath", "ssm:GetParameters", "ssm:GetParameter"]
-        Resource = "arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter${var.ssm_prefix}/*"
+        # GetParametersByPath authorizes against the path itself, the others against each parameter.
+        Resource = [
+          "arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter${var.ssm_prefix}",
+          "arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter${var.ssm_prefix}/*",
+        ]
       },
       {
         Sid       = "DecryptAppParams"
