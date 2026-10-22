@@ -1,0 +1,10 @@
+[Unit]
+Description=Run the UTStats importer every minute
+
+[Timer]
+# A run still in progress makes systemd skip the next tick, so imports never overlap.
+OnCalendar=minutely
+AccuracySec=5s
+
+[Install]
+WantedBy=timers.target
