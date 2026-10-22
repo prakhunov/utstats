@@ -142,16 +142,10 @@ resource "aws_iam_instance_profile" "utstats" {
 }
 
 # --- App secrets ----------------------------------------------------------------
-# The /utstats/* SecureStrings (DB creds, admin key, FTP servers) are created and
-# updated ONLY by `just secrets-push`, never by tofu: a managed aws_ssm_parameter
-# refreshes its real value into state even with ignore_changes. They were managed
-# here briefly; this block drops them from state without deleting them.
-removed {
-  from = aws_ssm_parameter.env
-  lifecycle {
-    destroy = false
-  }
-}
+# The /utstats/* SecureStrings (DB creds, admin key, FTP servers) are deliberately NOT
+# tofu resources: a managed aws_ssm_parameter refreshes its real value into state even
+# with ignore_changes. `just secrets-push` is their only writer; the host's IAM policy
+# above grants read access to the path.
 
 # Importer on/off switch (see deploy/install.sh). Flip to "true" only after the old
 # host's importer cron is stopped: both would race to pull+delete the same FTP logs.
