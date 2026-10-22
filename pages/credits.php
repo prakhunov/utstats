@@ -19,7 +19,7 @@
 				<blockquote>
 					<p>
 						UTStats was developed by azazel, )&deg;DoE&deg;(-AnthraX, PJMODOS, toa and sn3p.<br>
-						The source code is available from <a href="https://github.com/sn3p/utstats" target="_blank">GitHub</a>.<br>
+						The source code of this site is available from <a href="https://github.com/prakhunov/utstats" target="_blank">GitHub</a> (a fork of <a href="https://github.com/sn3p/utstats" target="_blank">sn3p/utstats</a>).<br>
 						All original pages are W3C <a href="http://validator.w3.org/check?uri=referer" target="_blank">HTML 4.01</a> and
 						<a href="http://jigsaw.w3.org/css-validator/" target="_blank">CSS</a> compliant
 					</p>
