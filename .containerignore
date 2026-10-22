@@ -19,3 +19,5 @@ phpstan.neon
 .gitignore
 .env.example
 .php-cs-fixer.dist.php
+infra
+deploy
