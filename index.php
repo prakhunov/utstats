@@ -5,11 +5,14 @@ include ("includes/functions.php");
 
 if (!isset($_GET['noheader'])) include ("includes/header.php");
 
+$json = false;
+
 switch ($_GET["p"]) {
 	case "": page(); break; 			// Our opening page
 
 	case "recent": recent(); break;		// list of recent games, 30 in date order
 	case "match": match(); break;		// Single Match stats
+	case "match_json": $json = true; match_json(); break; // JSON form of Match Stats
 	case "matchp": matchp(); break;		// Player stats for single match
 	case "report": report(); break;		// Report generator
 
@@ -52,6 +55,10 @@ function recent() {
 
 function match() {
 	include("pages/match.php");
+}
+
+function match_json() {
+	include("pages/match_json.php");
 }
 
 function matchp() {
@@ -130,6 +137,8 @@ function help() {
 	include("pages/help.php");
 }
 
-include("includes/footer.php");
+if(!$json) {
+	include("includes/footer.php");
+}
 
 ?>

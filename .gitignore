@@ -1,9 +1,10 @@
-# OS generated files #
-######################
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+logs
+pgaming_1_commandxle_replaced.sql
+pgaming_1.sql
+
+# Secrets: real config lives only on the host; template is includes/config.php.example
+includes/config.php
+
+# Runtime output (renderer charts, GeoIP database)
+renderings/
+GeoIP.dat

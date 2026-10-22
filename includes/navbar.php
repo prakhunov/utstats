@@ -17,5 +17,9 @@
     <li>
       <a href="./?p=watchlist">Watchlist</a>
     </li>
+    <li class="website">
+      <a href="http://passionategaming.eu/" target="_blank">passionategaming.eu</a>
+    </li>
+
   </ul>
 </div>

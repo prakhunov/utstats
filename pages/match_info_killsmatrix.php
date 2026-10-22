@@ -56,7 +56,7 @@ $extra = $teamgame ? 3 : 2;
 echo '
 <table class="zebra" border="0" cellpadding="0" cellspacing="0" width="700">
   <tbody><tr>
-    <th class="heading" colspan="'. (count($players) + $extra) .'" align="center">Kills Match Up</th>
+    <th class="heading" colspan="'. (count($players) + $extra) .'" align="center">Kills Matrix</th>
   </tr>
   <tr>
     <th class="smheading" colspan="'.$extra.'" rowspan="'.$extra.'" align="center"><center><img src="assets/images/arrow.png"></th>

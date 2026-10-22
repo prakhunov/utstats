@@ -1,7 +1,7 @@
 <?php
 
 // Get last map, time, scores
-$qlastMaps = small_query("SELECT id, mapfile, time, t0score, t1score, t2score, t3score FROM uts_match WHERE time = (SELECT MAX(time) FROM uts_match)");
+$qlastMaps = small_query("SELECT id, mapfile, time, t0score, t1score, t2score, t3score FROM uts_match WHERE id = (SELECT MAX(id) FROM uts_match)");
 $lastMapId = $qlastMaps['id'];
 $lastMapFile = $qlastMaps['mapfile'];
 $lastMapFileName = rtrim($lastMapFile, ".unr");
@@ -78,7 +78,7 @@ echo '
     <th class="smheading" align="center" width="200">Scores</th>
   </tr>';
 
-$sql_recent = "SELECT m.id, m.time, g.name AS gamename, m.mapfile, m.gametime, t0score, t1score, t2score, t3score, (SELECT count(p.id) FROM uts_player AS p WHERE m.id = p.matchid) as players FROM uts_match AS m, uts_games AS g WHERE g.id = m.gid $where ORDER BY m.time DESC LIMIT 10";
+$sql_recent = "SELECT m.id, m.time, g.name AS gamename, m.mapfile, m.gametime, t0score, t1score, t2score, t3score, (SELECT count(p.id) FROM uts_player AS p WHERE m.id = p.matchid) as players FROM uts_match AS m, uts_games AS g WHERE g.id = m.gid $where ORDER BY m.id DESC LIMIT 10";
 $q_recent = mysql_query($sql_recent) or die(mysql_error());
 
 while ($r_recent = mysql_fetch_array($q_recent)) {
@@ -168,7 +168,6 @@ echo '<tbody>
 </tbody>
 </table>
 <br>
-
 <table class="box zebra" border="0" cellpadding="1" cellspacing="1" width="900">
 <thead>
   <tr>
@@ -186,11 +185,32 @@ echo '<tbody>
 <thead>
 <tbody>';
 
-$sql_gamesummary = "SELECT g.id AS gid, g.name AS gamename, SUM(p.frags) AS frags, SUM(p.kills) AS kills, SUM(p.suicides) AS suicides, SUM(p.teamkills) AS teamkills, COUNT(DISTINCT p.matchid) AS matchcount
+$sql_gamesummary = "SELECT 
+    g.id AS gid, 
+    g.name AS gamename, 
+    SUM(p.frags) AS frags, 
+    SUM(p.kills) AS kills, 
+    SUM(p.suicides) AS suicides, 
+    SUM(p.teamkills) AS teamkills, 
+    COUNT(DISTINCT p.matchid) AS matchcount
+  FROM 
+      uts_player AS p
+  INNER JOIN 
+      uts_games AS g
+  ON 
+      p.gid = g.id
+  GROUP BY 
+      g.id, g.name
+  ORDER BY 
+      g.name ASC;
+";
+
+/*$sql_gamesummary = "SELECT g.id AS gid, g.name AS gamename, SUM(p.frags) AS frags, SUM(p.kills) AS kills, SUM(p.suicides) AS suicides, SUM(p.teamkills) AS teamkills, COUNT(DISTINCT p.matchid) AS matchcount
   FROM uts_player AS p, uts_games AS g
   WHERE p.gid = g.id
-  GROUP BY gamename, gid
-  ORDER BY gamename ASC";
+  GROUP BY gamename, gid";*/
+
+// ORDER BY gamename ASC";
 
 $q_gamesummary = mysql_query($sql_gamesummary) or die(mysql_error());
 

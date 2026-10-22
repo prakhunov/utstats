@@ -115,7 +115,7 @@ echo '
 	  <th class="smheading" align="center" width="200">Scores</th>
   </tr>';
 
-$sql_recent = "SELECT m.id, m.time, g.name AS gamename, m.mapfile, m.gametime, t0score, t1score, t2score, t3score, (SELECT count(p.id) FROM uts_player AS p WHERE m.id = p.matchid) as players FROM uts_match AS m, uts_games AS g WHERE g.id = m.gid $where ORDER BY m.time DESC LIMIT ".mysql_real_escape_string($qpage).",50";
+$sql_recent = "SELECT m.id, m.time, g.name AS gamename, m.mapfile, m.gametime, t0score, t1score, t2score, t3score, (SELECT count(p.id) FROM uts_player AS p WHERE m.id = p.matchid) as players FROM uts_match AS m, uts_games AS g WHERE g.id = m.gid $where ORDER BY m.id DESC LIMIT ".mysql_real_escape_string($qpage).",50";
 $q_recent = mysql_query($sql_recent) or die(mysql_error());
 
 while ($r_recent = mysql_fetch_array($q_recent)) {

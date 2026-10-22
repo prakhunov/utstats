@@ -175,9 +175,9 @@ function adminselect(&$options) {
 						}
 					}
 					
-					$sql_server = "SELECT id, servername, serverip FROM uts_match GROUP BY servername, serverip ORDER BY servername ASC";
+					$sql_server = "SELECT max(id) as id, servername, serverip FROM uts_match GROUP BY servername, serverip ORDER BY servername ASC";
 					if (isset($var['wheregid'])) {
-						$sql_server = "SELECT id, servername, serverip FROM uts_match WHERE gid = '". $values[$var['wheregid']] ."' GROUP BY servername, serverip ORDER BY servername ASC";
+						$sql_server = "SELECT max(id) as id, servername, serverip FROM uts_match WHERE gid = '". $values[$var['wheregid']] ."' GROUP BY servername, serverip ORDER BY servername ASC";
 					}
 					$q_server = mysql_query($sql_server) or die(mysql_error());
 					while ($r_server = mysql_fetch_array($q_server)) {

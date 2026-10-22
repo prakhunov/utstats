@@ -1,7 +1,8 @@
 <?php
 // Connect to database
-mysql_connect($hostname, $uname, $upass);
-mysql_select_db($dbname);
+$dbh = mysql_connect($hostname, $uname, $upass);
+mysql_query("set names 'utf8'",$dbh);
+mysql_select_db($dbname, $dbh);
 
 // Error reporting
 // error_reporting(E_ALL & ~E_NOTICE);
@@ -174,8 +175,10 @@ function sec2hour($number) {
 
 function un_ut($name) {
   $gname = str_replace("Botpack.", "", "$name");
+  $gname = str_replace("newCTF.", "", "$name");
   $gname = str_replace("Class ", "", "$gname");
   $gname = str_replace("CTFGame", "Capture The Flag", "$gname");
+  $gname = str_replace("newCTF", "New Capture the Flag", "$gname");
   $gname = str_replace(".unr", "", "$gname");
   return ($gname);
 }
@@ -603,13 +606,19 @@ function getMapImageName($mapname) {
         'CB6',
         'CB7',
         'CB',
+	'-CL-A',
+	'-CL',
         'LE13',
         'LE14',
+        'LE15-sa',
+        'LE17-saFix',
+        'LE17-sa',
         'LE15',
         'LE16',
         'LE17',
         'LE18',
         'LE19',
+	'LE21',
         'LE',
         '-DE13',
         '-DE14',
@@ -618,6 +627,7 @@ function getMapImageName($mapname) {
         '-DE17',
         '-DE18',
         '-DE19',
+	'-FIX',
         'v2',
         'v3',
         'v4',

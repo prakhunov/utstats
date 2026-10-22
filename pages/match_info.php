@@ -13,6 +13,8 @@ $_GLOBALS['gamename'] = $gamename;
 include("includes/teamstats.php");
 include("pages/match_info_charts.php");
 
+#echo "<script type='text/javascript'>alert('$real_gamename');</script>";
+
 switch($real_gamename) {
   case "Assault":
   case "Assault (insta)":
@@ -21,6 +23,12 @@ switch($real_gamename) {
 
   case "Capture the Flag":
   case "Capture the Flag (insta)":
+  case "New Capture the Flag":
+  case "New Capture the Flag (insta)":
+  case "Assigned Teams: New Capture the Flag (insta)":
+  case "Assigned Teams: New Capture the Flag":
+  case "Assigned Teams: Capture the Flag (insta)":
+  case "Assigned Teams: Capture the Flag":
     include("pages/match_info_ctf.php");
     teamstats($mid, 'Match Summary');
       break;
@@ -72,7 +80,7 @@ else if ($real_gamename != "Bunny Track") {
   include("pages/match_info_other.php");
 }
 
-if ($real_gamename == "Capture the Flag" or $real_gamename == "Capture the Flag (insta)") {
+if ($real_gamename == "Capture the Flag" or $real_gamename == "Capture the Flag (insta)" or $real_gamename == "New Capture the Flag" or $real_gamename == "New Capture the Flag (insta)") {
   include("pages/match_report.php");
 }
 
