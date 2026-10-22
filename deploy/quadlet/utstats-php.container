@@ -10,10 +10,10 @@ Network=utstats.network
 NetworkAlias=php
 EnvironmentFile=/etc/utstats/app.env
 # logs/ (downloaded + backed-up UT logs, FTP timestamp), renderings/, GeoIP mmdb
-Volume=/var/lib/utstats/data:/data:Z
+Volume=/var/lib/utstats/data:/data
 
 [Service]
 Restart=always
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target

@@ -11,13 +11,13 @@ EnvironmentFile=/etc/utstats/caddy.env
 PublishPort=80:80
 PublishPort=443:443
 PublishPort=443:443/udp
-Volume=/opt/utstats/current/docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro,z
+Volume=/opt/utstats/current/docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
 # Static files come from the same release the PHP image was built from.
-Volume=/opt/utstats/current:/var/www/html:ro,z
+Volume=/opt/utstats/current:/var/www/html:ro
 Volume=utstats-caddy:/data
 
 [Service]
 Restart=always
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target

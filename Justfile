@@ -117,10 +117,12 @@ host-run cmd:
 deploy: release
     just host-run "/usr/local/sbin/utstats-deploy $(git rev-parse --short=12 HEAD)"
 
-# Root shell on the host (Session Manager; plugin comes from the devshell)
+# Shell as the utstats user, who owns the rootless containers (`podman ps`,
+# `systemctl --user status utstats-php`). `sudo -i` from there is not available;
+# use `just host-run` for root tasks. Session plugin comes from the devshell.
 host-shell:
     aws ssm start-session --region {{host_region}} --target $(tofu -chdir=infra output -raw instance_id) \
-        --document-name AWS-StartInteractiveCommand --parameters command="sudo -i"
+        --document-name AWS-StartInteractiveCommand --parameters command="sudo -iu utstats"
 
 # Push production secrets from a local env file (default .env.prod) to SSM
 secrets-push file=".env.prod":
@@ -141,4 +143,4 @@ db-push file:
 # Turn the minutely importer on/off on the host (only ONE host may pull the FTP logs)
 importer state:
     aws ssm put-parameter --region {{host_region}} --name /utstats/IMPORT_ENABLED --type String --overwrite --value {{ if state == "on" { "true" } else { "false" } }} >/dev/null
-    just host-run "systemctl {{ if state == "on" { "enable --now" } else { "disable --now" } }} utstats-import.timer && systemctl is-active utstats-import.timer || true"
+    just host-run "utstats-systemctl {{ if state == "on" { "enable --now" } else { "disable --now" } }} utstats-import.timer; utstats-systemctl is-active utstats-import.timer || true"
