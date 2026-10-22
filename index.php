@@ -9,11 +9,12 @@
 include("includes/config.php");
 include("includes/functions.php");
 
-if (!isset($_GET['noheader'])) {
+// JSON routes return bare JSON: no HTML header/footer around them.
+$json = ($_GET["p"] ?? "") === "match_json";
+
+if (!$json && !isset($_GET['noheader'])) {
     include("includes/header.php");
 }
-
-$json = false;
 
 switch ($_GET["p"] ?? "") {
     case "": page();
@@ -23,7 +24,7 @@ switch ($_GET["p"] ?? "") {
         break;		// list of recent games, 30 in date order
     case "match": page_match();
         break;		// Single Match stats
-    case "match_json": $json = true;
+    case "match_json":
         match_json();
         break; // JSON form of Match Stats
     case "matchp": matchp();
