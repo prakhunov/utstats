@@ -346,6 +346,7 @@
 					<a href="http://www.bosrup.com/web/overlib/" target="_blank">http://www.bosrup.com/web/overlib/</a><br>
 					<br>
 					<a href="http://www.highcharts.com/">High Charts</a> - the graphs that made it possible to visualise the data for DOM, DM, CTF.<br>
+					<em>Highcharts is used here under its non-commercial license and is not free for commercial use: <a href="https://shop.highcharts.com/faq/non-commercial" target="_blank">Highcharts non-commercial licensing</a>.</em><br>
           <a href="http://iamceege.github.io/tooltipster/">Tooltipster</a> - the tooltips used everywhere except the graphs.<br>
           <a href="http://iconsweets.com/">Yummygum Iconsweets</a> - a few icons came from this awesome set that is free.<br>
           <a href="https://forums.unrealtournament.com/showthread.php?13690-Call-to-Action-Weapon-Icons">Weapon Icons</a> - the weapons icons used are a combination of both DarkAp89 & piemo's designs.<br>

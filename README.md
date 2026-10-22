@@ -59,3 +59,8 @@ are kept. Changes from the original: ported from PHP 5.5/ext-mysql to PHP 8.5/PD
 bound parameters, hardened request handling, env-based config, containerized deploy
 (`docker/`, `deploy/`, `infra/`). The per-file change history is in this repo's git log.
 Bundled third-party libraries and assets (`assets/`) keep their own licenses.
+
+**Highcharts** (`assets/lib/highcharts/`, v4.0.4) is included under Highsoft's
+non-commercial license: it is **not free for commercial use**. See
+<https://shop.highcharts.com/faq/non-commercial>. This site is a non-commercial community
+site (no ads, no paid content).
