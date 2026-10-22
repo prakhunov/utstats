@@ -141,18 +141,15 @@ resource "aws_iam_instance_profile" "utstats" {
   role = aws_iam_role.utstats.name
 }
 
-# --- App secrets (values set out of band by `just secrets-push`, never in state) --
-
-resource "aws_ssm_parameter" "env" {
-  for_each = toset([
-    "UTSTATS_DB_NAME", "UTSTATS_DB_USER", "UTSTATS_DB_PASS",
-    "UTSTATS_ADMIN_KEY", "UTSTATS_FTP_SERVERS", "MARIADB_ROOT_PASSWORD",
-  ])
-  name  = "${var.ssm_prefix}/${each.key}"
-  type  = "SecureString"
-  value = "unset"
+# --- App secrets ----------------------------------------------------------------
+# The /utstats/* SecureStrings (DB creds, admin key, FTP servers) are created and
+# updated ONLY by `just secrets-push`, never by tofu: a managed aws_ssm_parameter
+# refreshes its real value into state even with ignore_changes. They were managed
+# here briefly; this block drops them from state without deleting them.
+removed {
+  from = aws_ssm_parameter.env
   lifecycle {
-    ignore_changes = [value]
+    destroy = false
   }
 }
 
