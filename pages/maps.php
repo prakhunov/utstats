@@ -121,7 +121,7 @@ echo'
 			<select class="searchform" name="gid">
 				<option value="0">*</option>';
 
-$sql_game = "SELECT DISTINCT(p.gid), g.name FROM uts_player AS p, uts_games AS g WHERE p.gid = g.id ORDER BY g.name ASC";
+$sql_game = "SELECT g.id AS gid, g.name FROM uts_games AS g WHERE EXISTS (SELECT 1 FROM uts_player AS p WHERE p.gid = g.id) ORDER BY g.name ASC, g.id ASC";
 foreach (db_all($sql_game) as $r_game) {
     $selected = ($r_game['gid'] == $gid) ? 'selected' : '';
     echo '<option '.$selected.' value="'.$r_game['gid'].'">'. $r_game['name'] .'</option>';

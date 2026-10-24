@@ -149,13 +149,13 @@ echo'
   <thead>';
 
 // Get Summary Info
-$r_playercount = db_row("SELECT COUNT(*) AS result FROM uts_pinfo");
+$r_playercount = db_row_cached("SELECT COUNT(*) AS result FROM uts_pinfo");
 $playercount = $r_playercount['result'];
-$servercount = db_count("SELECT DISTINCT servername FROM uts_match");
-$mapcount = db_count("SELECT COUNT(mapfile) AS result FROM uts_match GROUP BY mapfile");
-$r_matchcount = db_row("SELECT COUNT(*) AS result FROM uts_match");
+$servercount = count(db_all_cached("SELECT DISTINCT servername FROM uts_match"));
+$mapcount = count(db_all_cached("SELECT COUNT(mapfile) AS result FROM uts_match GROUP BY mapfile"));
+$r_matchcount = db_row_cached("SELECT COUNT(*) AS result FROM uts_match");
 $matchcount = $r_matchcount['result'];
-$hourscount = db_row("SELECT SUM(gametime) AS result FROM uts_player");
+$hourscount = db_row_cached("SELECT SUM(gametime) AS result FROM uts_player");
 $gametime = sec2hour($hourscount['result']);
 
 echo '<tbody>
@@ -213,10 +213,10 @@ $sql_gamesummary = "SELECT
 
 // ORDER BY gamename ASC";
 
-foreach (db_all($sql_gamesummary) as $r_gamesummary) {
+foreach (db_all_cached($sql_gamesummary) as $r_gamesummary) {
     $gid = $r_gamesummary['gid'];
 
-    $q_gametime = db_row("SELECT SUM(gametime) AS gametime FROM uts_match WHERE gid = ?", [$gid]);
+    $q_gametime = db_row_cached("SELECT SUM(gametime) AS gametime FROM uts_match WHERE gid = ?", [$gid]);
     $gametime = sec2hour($q_gametime['gametime']);
 
     echo '
@@ -231,11 +231,11 @@ foreach (db_all($sql_gamesummary) as $r_gamesummary) {
   </tr>';
 }
 
-$totalsummary = db_row("SELECT SUM(p.frags) AS frags, SUM(p.kills) AS kills, SUM(p.suicides) AS suicides, SUM(p.teamkills) AS teamkills, COUNT(DISTINCT p.matchid) AS matchcount, SUM(p.gametime) AS gametime
+$totalsummary = db_row_cached("SELECT SUM(p.frags) AS frags, SUM(p.kills) AS kills, SUM(p.suicides) AS suicides, SUM(p.teamkills) AS teamkills, COUNT(DISTINCT p.matchid) AS matchcount, SUM(p.gametime) AS gametime
   FROM uts_player AS p, uts_games AS g
   WHERE p.gid = g.id");
 
-$q_gametime = db_row("SELECT SUM(gametime) AS gametime FROM uts_match");
+$q_gametime = db_row_cached("SELECT SUM(gametime) AS gametime FROM uts_match");
 $gametime = sec2hour($q_gametime['gametime']);
 
 echo '

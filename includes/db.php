@@ -97,3 +97,58 @@ function db_pick(mixed $value, array $allowed, string $default): string
 {
     return in_array($value, $allowed, true) ? $value : $default;
 }
+
+// --- Cached reads ---------------------------------------------------------------
+// For expensive all-time aggregates (home page totals, list pages). Results are keyed on
+// the SQL, its parameters and the data version (newest match id), so an import makes them
+// stale immediately; admin edits that don't add a match show up after DB_CACHE_TTL.
+// Files live in the PHP container's temp dir, shared by all FPM workers and dropped on restart.
+
+const DB_CACHE_TTL = 3600;
+
+function db_data_version(): string
+{
+    static $version = null;
+    return $version ??= (db_value('SELECT MAX(id) FROM uts_match') ?? '0');
+}
+
+function db_all_cached(string $sql, array $params = []): array
+{
+    $dir = sys_get_temp_dir() . '/utstats-cache';
+    $file = $dir . '/' . hash('xxh128', db_data_version() . "\0" . $sql . "\0" . serialize($params));
+
+    $mtime = @filemtime($file);
+    if ($mtime !== false && time() - $mtime < DB_CACHE_TTL) {
+        $rows = @unserialize((string) file_get_contents($file), ['allowed_classes' => false]);
+        if (is_array($rows)) {
+            return $rows;
+        }
+    }
+
+    $rows = db_all($sql, $params);
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0700, true);
+    }
+    $tmp = $file . '.' . getmypid();
+    if (@file_put_contents($tmp, serialize($rows)) !== false) {
+        rename($tmp, $file); // atomic: readers never see a partial file
+    }
+    if (random_int(0, 200) === 0) {
+        db_cache_prune($dir);
+    }
+    return $rows;
+}
+
+function db_row_cached(string $sql, array $params = []): array|false
+{
+    return db_all_cached($sql, $params)[0] ?? false;
+}
+
+function db_cache_prune(string $dir): void
+{
+    foreach (glob($dir . '/*') ?: [] as $f) {
+        if (time() - (int) @filemtime($f) > DB_CACHE_TTL) {
+            @unlink($f);
+        }
+    }
+}

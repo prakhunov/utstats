@@ -6,7 +6,7 @@
  * formatting. Full per-change history: git log -- <this file>.
  */
 
-$sql_rgame = "SELECT DISTINCT(p.gid), g.name FROM uts_player AS p, uts_games AS g WHERE p.gid = g.id ORDER BY g.name ASC";
+$sql_rgame = "SELECT g.id AS gid, g.name FROM uts_games AS g WHERE EXISTS (SELECT 1 FROM uts_player AS p WHERE p.gid = g.id) ORDER BY g.name ASC, g.id ASC";
 foreach (db_all($sql_rgame) as $r_rgame) {
 
     echo'
