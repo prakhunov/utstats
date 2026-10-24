@@ -111,6 +111,8 @@ install -m 644 -o utstats -g utstats /opt/utstats/current/deploy/systemd/* "$hom
 utstats-systemctl daemon-reload
 utstats-systemctl restart utstats-db.service
 utstats-systemctl restart utstats-php.service utstats-caddy.service
+utstats-systemctl enable --now utstats-warm.timer
+utstats-systemctl start --no-block utstats-warm.service
 
 # The importer pulls (and deletes) logs from the game servers' FTP. Only one host may do
 # that, so the timer stays off until /utstats/IMPORT_ENABLED is "true".

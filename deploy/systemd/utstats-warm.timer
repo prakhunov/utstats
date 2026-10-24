@@ -1,0 +1,9 @@
+[Unit]
+Description=Keep UTStats cached aggregates warm (cache TTL is 1 h)
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=10min
+
+[Install]
+WantedBy=timers.target
