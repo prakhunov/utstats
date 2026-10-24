@@ -1,16 +1,16 @@
-$(document).ready(function() {
-  // Tooltips
-  $(".tooltip").tooltipster();
+$(function () {
+  // Tooltips: rank icons etc. (.tooltip) and admin hints ([data-hint]) use their title text.
+  $(".tooltip, [data-hint]").tooltipster({ theme: "tooltipster-utstats", delay: 100 });
 
-  // Click rows
-  $(".clickableRow").click(function() {
-    if (event.which == 1) {
-      window.document.location = $(this).attr("href");
+  // Click rows (left button only)
+  $(".clickableRow").on("click", function (event) {
+    if (event.which === 1) {
+      window.location = $(this).attr("href");
     }
   });
 
   // Credits changelog toggle
-  $(".changeLog").click(function() {
+  $(".changelog").on("click", function () {
     $("#contentChangeLog").slideToggle(300);
   });
 });

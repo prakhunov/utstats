@@ -1,29 +1,38 @@
 <?php
 
-function InvertSort($curr_field, $filter, $sort) {
-	if ($curr_field != $filter) return(($curr_field == "name") ? "ASC" : "DESC");
-	if ($sort == 'ASC') return('DESC');
-	return('ASC');
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
+function InvertSort($curr_field, $filter, $sort)
+{
+    if ($curr_field != $filter) {
+        return(($curr_field == "name") ? "ASC" : "DESC");
+    }
+    if ($sort == 'ASC') {
+        return('DESC');
+    }
+    return('ASC');
 }
 
-function SortPic($curr_field, $filter, $sort) {
-	if ($curr_field != $filter) return;
-	$fname = 'images/s_'. strtolower($sort) .'.png';
-	if (!file_exists($fname)) return;
-	return('&nbsp;<img src="'. $fname .'" border="0" width="11" height="9" alt="" title="('.strtolower($sort).'ending)">');
+function SortPic($curr_field, $filter, $sort)
+{
+    if ($curr_field != $filter) {
+        return;
+    }
+    $fname = 'images/s_'. strtolower($sort) .'.png';
+    if (!file_exists($fname)) {
+        return;
+    }
+    return('&nbsp;<img src="'. $fname .'" border="0" width="11" height="9" alt="" title="('.strtolower($sort).'ending)">');
 }
 
 // Get filter and set sorting
-$playername = my_stripslashes($_REQUEST[name]);
-$playersearch = my_addslashes($_REQUEST[name]);
-$filter = my_addslashes($_GET[filter]);
-$sort = my_addslashes($_GET[sort]);
-
-IF (empty($filter) or (!in_array(strtolower($filter), array("name", "games", "gamescore", "frags", "kills", "deaths", "suicides", "eff", "accuracy", "ttl", "gametime")))) {
-	$filter = "name";
-}
-
-if (empty($sort) or ($sort != 'ASC' and $sort != 'DESC')) $sort = ($filter == "name") ? "ASC" : "DESC";
+$playername = (string) ($_REQUEST['name'] ?? '');
+$filter = db_pick(strtolower($_GET['filter'] ?? ''), ["name", "games", "gamescore", "frags", "kills", "deaths", "suicides", "eff", "accuracy", "ttl", "gametime"], "name");
+$sort = db_pick($_GET['sort'] ?? '', ['ASC', 'DESC'], ($filter == "name") ? "ASC" : "DESC");
 
 echo'
 <form NAME="playersearch" METHOD="post" ACTION="./?p=psearch">
@@ -53,25 +62,24 @@ echo'
 
 $sql_plist = "SELECT pi.name AS name, pi.country AS country, p.pid, COUNT(p.id) AS games, SUM(p.gamescore) as gamescore, SUM(p.frags) AS frags, SUM(p.kills) AS kills,
 SUM(p.deaths) AS deaths, SUM(p.suicides) as suicides, AVG(p.eff) AS eff, AVG(p.accuracy) AS accuracy, AVG(p.ttl) AS ttl, SUM(gametime) as gametime
-FROM uts_player AS p, uts_pinfo AS pi WHERE p.pid = pi.id AND pi.name LIKE '%".$playersearch."%' AND pi.banned <> 'Y' GROUP BY name, country, p.pid ORDER BY $filter $sort";
+FROM uts_player AS p, uts_pinfo AS pi WHERE p.pid = pi.id AND pi.name LIKE ? AND pi.banned <> 'Y' GROUP BY name, country, p.pid ORDER BY $filter $sort";
 
-$q_plist = mysql_query($sql_plist) or die(mysql_error());
-while ($r_plist = mysql_fetch_array($q_plist)) {
+foreach (db_all($sql_plist, ['%' . $playername . '%']) as $r_plist) {
 
-	  $gametime = sec2hour($r_plist[gametime]);
-	  $eff = get_dp($r_plist[eff]);
-	  $acc = get_dp($r_plist[accuracy]);
-	  $ttl = GetMinutes($r_plist[ttl]);
-	  
-	  echo'
+    $gametime = sec2hour($r_plist['gametime']);
+    $eff = get_dp($r_plist['eff']);
+    $acc = get_dp($r_plist['accuracy']);
+    $ttl = GetMinutes($r_plist['ttl']);
+
+    echo'
 	  <tr>
-		<td nowrap class="dark" align="left"><a class="darkhuman" href="./?p=pinfo&amp;pid='.$r_plist['pid'].'">'.FormatPlayerName($r_plist[country], $r_plist['pid'], $r_plist[name]).'</a></td>
-		<td class="grey" align="center">'.$r_plist[games].'</td>
-		<td class="grey" align="center">'.$r_plist[gamescore].'</td>
-		<td class="grey" align="center">'.$r_plist[frags].'</td>
-		<td class="grey" align="center">'.$r_plist[kills].'</td>
-		<td class="grey" align="center">'.$r_plist[deaths].'</td>
-		<td class="grey" align="center">'.$r_plist[suicides].'</td>
+		<td nowrap class="dark" align="left"><a class="darkhuman" href="./?p=pinfo&amp;pid='.$r_plist['pid'].'">'.FormatPlayerName($r_plist['country'], $r_plist['pid'], $r_plist['name']).'</a></td>
+		<td class="grey" align="center">'.$r_plist['games'].'</td>
+		<td class="grey" align="center">'.$r_plist['gamescore'].'</td>
+		<td class="grey" align="center">'.$r_plist['frags'].'</td>
+		<td class="grey" align="center">'.$r_plist['kills'].'</td>
+		<td class="grey" align="center">'.$r_plist['deaths'].'</td>
+		<td class="grey" align="center">'.$r_plist['suicides'].'</td>
 		<td class="grey" align="center">'.$eff.'</td>
 		<td class="grey" align="center">'.$acc.'</td>
 		<td class="grey" align="center">'.$ttl.'</td>
@@ -80,4 +88,3 @@ while ($r_plist = mysql_fetch_array($q_plist)) {
 }
 echo'
 </tbody></table></form>';
-?>

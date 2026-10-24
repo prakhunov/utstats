@@ -1,26 +1,32 @@
 <?php
 
-$mid = preg_replace('/\D/', '', $_GET[mid]);
-$pid = preg_replace('/\D/', '', $_GET[pid]);
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
 
-$r_infos = small_query("SELECT p.playerid, p.country, pi.name, pi.banned, p.gid, g.name AS gamename
+$mid = preg_replace('/\D/', '', $_GET['mid'] ?? '');
+$pid = preg_replace('/\D/', '', $_GET['pid'] ?? '');
+
+$r_infos = db_row("SELECT p.playerid, p.country, pi.name, pi.banned, p.gid, g.name AS gamename
   FROM uts_player p, uts_pinfo pi, uts_games g
-  WHERE p.gid = g.id AND p.pid = pi.id AND p.pid = '$pid' AND matchid = '$mid' LIMIT 0,1;");
+  WHERE p.gid = g.id AND p.pid = pi.id AND p.pid = ? AND matchid = ? LIMIT 0,1;", [$pid, $mid]);
 
 if (!$r_infos) {
-  echo "Unable to retrieve data!";
-  include("includes/footer.php");
-  exit;
+    echo "Unable to retrieve data!";
+    include("includes/footer.php");
+    exit;
 }
 
 if ($r_infos['banned'] == 'Y') {
-  if (isset($is_admin) and $is_admin) {
-    echo "Warning: Banned player - Admin override<br>";
-  } else {
-    echo "Sorry, this player has been banned!";
-    include("includes/footer.php");
-    exit;
-  }
+    if (isset($is_admin) and $is_admin) {
+        echo "Warning: Banned player - Admin override<br>";
+    } else {
+        echo "Sorry, this player has been banned!";
+        include("includes/footer.php");
+        exit;
+    }
 }
 
 $playerid = $r_infos['playerid'];
@@ -41,16 +47,16 @@ echo '
         <a href="./?p=pinfo&amp;pid='.$pid.'">'.FlagImage($country) .' '. htmlentities($playername) .'</a>
       </div>
       <div>'.
-        RankImageOrText($pid, $playername, NULL, $gid, $gamename, true, '%IT% in %GN% with %RP% ranking points.')
+        RankImageOrText($pid, $playername, null, $gid, $gamename, true, '%IT% in %GN% with %RP% ranking points.')
       .'</div>
       <a class="navCTA" href="./?p=pinfo&amp;pid='.$pid.'" role="button">Player page</a>
       <a class="navCTA" href="?p=pinfo&amp;pid='.$pid.'&amp;togglewatch=1&amp;noheader=1" role="button">';
 
-      if (PlayerOnWatchlist($pid)) {
-        echo 'Remove from Watchlist';
-      } else {
-        echo 'Add to Watchlist';
-      };
+if (PlayerOnWatchlist($pid)) {
+    echo 'Remove from Watchlist';
+} else {
+    echo 'Add to Watchlist';
+};
 
 echo '</a>
     </th>
@@ -78,21 +84,21 @@ echo '
     <th class="smheading" align="center" width="50">Time</th>
   </tr>';
 
-  $r_gsumm = zero_out(small_query("SELECT gamescore, frags, SUM(frags+suicides) AS kills, deaths, suicides, teamkills, eff, accuracy, ttl, gametime, spree_kill, spree_rampage, spree_dom, spree_uns, spree_god
+$r_gsumm = zero_out(db_row("SELECT gamescore, frags, SUM(frags+suicides) AS kills, deaths, suicides, teamkills, eff, accuracy, ttl, gametime, spree_kill, spree_rampage, spree_dom, spree_uns, spree_god
     FROM uts_player
-    WHERE matchid = $mid AND pid = '$pid'
-    GROUP BY pid, gamescore, frags, deaths, suicides, teamkills, eff, accuracy, ttl, gametime, spree_kill, spree_rampage, spree_dom, spree_uns, spree_god"));
+    WHERE matchid = ? AND pid = ?
+    GROUP BY pid, gamescore, frags, deaths, suicides, teamkills, eff, accuracy, ttl, gametime, spree_kill, spree_rampage, spree_dom, spree_uns, spree_god", [$mid, $pid]));
 
 echo '
   <tr>
-    <td align="center">'.$r_gsumm[frags].'</td>
-    <td align="center">'.$r_gsumm[kills].'</td>
-    <td align="center">'.$r_gsumm[deaths].'</td>
-    <td align="center">'.$r_gsumm[suicides].'</td>
-    <td align="center">'.$r_gsumm[eff].'</td>
-    <td align="center">'.$r_gsumm[accuracy].'</td>
-    <td align="center">'.$r_gsumm[ttl].'</td>
-    <td align="center">'.GetMinutes($r_gsumm[gametime]).'</td>
+    <td align="center">'.$r_gsumm['frags'].'</td>
+    <td align="center">'.$r_gsumm['kills'].'</td>
+    <td align="center">'.$r_gsumm['deaths'].'</td>
+    <td align="center">'.$r_gsumm['suicides'].'</td>
+    <td align="center">'.$r_gsumm['eff'].'</td>
+    <td align="center">'.$r_gsumm['accuracy'].'</td>
+    <td align="center">'.$r_gsumm['ttl'].'</td>
+    <td align="center">'.GetMinutes($r_gsumm['gametime']).'</td>
   </tr>
 </tbody>
 </table>
@@ -119,31 +125,31 @@ echo '
     <th class="smheading tooltip" align="center" width="40" title="Killed 25 people in a row without dying himself/herself">God</th>
   </tr>';
 
-$r_gsumm = zero_out(small_query("SELECT spree_double, spree_multi, spree_ultra, spree_monster, spree_kill, spree_rampage, spree_dom, spree_uns, spree_god
+$r_gsumm = zero_out(db_row("SELECT spree_double, spree_multi, spree_ultra, spree_monster, spree_kill, spree_rampage, spree_dom, spree_uns, spree_god
   FROM uts_player
-  WHERE matchid = $mid AND pid = '$pid'
-  GROUP BY pid, spree_double, spree_multi, spree_ultra, spree_monster, spree_kill, spree_rampage, spree_dom, spree_uns, spree_god"));
+  WHERE matchid = ? AND pid = ?
+  GROUP BY pid, spree_double, spree_multi, spree_ultra, spree_monster, spree_kill, spree_rampage, spree_dom, spree_uns, spree_god", [$mid, $pid]));
 
-$sql_firstblood = small_query("SELECT firstblood FROM uts_match WHERE id = $mid");
+$sql_firstblood = db_row("SELECT firstblood FROM uts_match WHERE id = ?", [$mid]);
 
-if ($sql_firstblood[firstblood] == $pid) {
-  $firstblood = "Yes";
+if ($sql_firstblood['firstblood'] == $pid) {
+    $firstblood = "Yes";
 } else {
-  $firstblood = "No";
+    $firstblood = "No";
 }
 
 echo '
   <tr>
     <td align="center">'.$firstblood.'</td>
-    <td align="center">'.$r_gsumm[spree_double].'</td>
-    <td align="center">'.$r_gsumm[spree_multi].'</td>
-    <td align="center">'.$r_gsumm[spree_ultra].'</td>
-    <td align="center">'.$r_gsumm[spree_monster].'</td>
-    <td align="center">'.$r_gsumm[spree_kill].'</td>
-    <td align="center">'.$r_gsumm[spree_rampage].'</td>
-    <td align="center">'.$r_gsumm[spree_dom].'</td>
-    <td align="center">'.$r_gsumm[spree_uns].'</td>
-    <td align="center">'.$r_gsumm[spree_god].'</td>
+    <td align="center">'.$r_gsumm['spree_double'].'</td>
+    <td align="center">'.$r_gsumm['spree_multi'].'</td>
+    <td align="center">'.$r_gsumm['spree_ultra'].'</td>
+    <td align="center">'.$r_gsumm['spree_monster'].'</td>
+    <td align="center">'.$r_gsumm['spree_kill'].'</td>
+    <td align="center">'.$r_gsumm['spree_rampage'].'</td>
+    <td align="center">'.$r_gsumm['spree_dom'].'</td>
+    <td align="center">'.$r_gsumm['spree_uns'].'</td>
+    <td align="center">'.$r_gsumm['spree_god'].'</td>
   </tr>
 </tbody>
 </table>
@@ -152,10 +158,10 @@ echo '
 include('includes/weaponstats.php');
 weaponstats($mid, $pid);
 
-$r_pings = small_query("SELECT lowping, avgping, highping FROM uts_player WHERE pid = $pid  and matchid = $mid and lowping > 0");
+$r_pings = db_row("SELECT lowping, avgping, highping FROM uts_player WHERE pid = ?  and matchid = ? and lowping > 0", [$pid, $mid]);
 
 if ($r_pings and $r_pings['lowping']) {
-  echo '<br>
+    echo '<br>
   <table class="zebra box" border="0" cellpadding="0" cellspacing="0">
   <tbody>
   <tr>
@@ -173,5 +179,3 @@ if ($r_pings and $r_pings['lowping']) {
   </tr>
   </tbody></table>';
 }
-
-?>

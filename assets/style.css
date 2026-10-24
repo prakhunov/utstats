@@ -1220,3 +1220,24 @@ a.epicinfo:hover {
   color: #ffffff;
   text-decoration: none;
 }
+
+/* Tooltipster 4 theme matching the original dark UTStats tooltips */
+.tooltipster-sidetip.tooltipster-utstats .tooltipster-box {
+  border-radius: 5px;
+  border: 1px solid #1e1e1e;
+  background: linear-gradient(#3b383b, #1e1e1e);
+  box-shadow: 10px 10px 26px -10px rgba(0, 0, 0, 0.75);
+}
+.tooltipster-sidetip.tooltipster-utstats .tooltipster-content {
+  color: #fff;
+  font-weight: 200;
+  font-size: 14px;
+  line-height: 16px;
+  padding: 8px 10px;
+  max-width: 400px;
+}
+.tooltipster-sidetip.tooltipster-utstats.tooltipster-top .tooltipster-arrow-background { border-top-color: #1e1e1e; }
+.tooltipster-sidetip.tooltipster-utstats.tooltipster-bottom .tooltipster-arrow-background { border-bottom-color: #3b383b; }
+.tooltipster-sidetip.tooltipster-utstats.tooltipster-left .tooltipster-arrow-background { border-left-color: #2b292b; }
+.tooltipster-sidetip.tooltipster-utstats.tooltipster-right .tooltipster-arrow-background { border-right-color: #2b292b; }
+.tooltipster-sidetip.tooltipster-utstats .tooltipster-arrow-border { border-color: transparent; }

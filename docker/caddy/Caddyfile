@@ -1,0 +1,30 @@
+{
+	# Local dev listens on :8080; production sets UTSTATS_SITE=utstats.passionategaming.eu for automatic TLS.
+	admin off
+}
+
+{$UTSTATS_SITE::8080} {
+	root * /var/www/html
+	encode zstd gzip
+
+	request_body {
+		max_size 8MB
+	}
+
+	header {
+		-Server
+		X-Content-Type-Options nosniff
+		X-Frame-Options SAMEORIGIN
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+
+	# Allowlist: only the public entrypoints and static assets are reachable. Everything
+	# else in the app tree (includes/, pages/, import.php, admin.php, config, scripts) is 403.
+	@internal {
+		not path / /index.php /pic.php /pic.php/* /api/*.php /assets/* /robots.txt /favicon.ico
+	}
+	respond @internal 403
+
+	php_fastcgi php:9000
+	file_server
+}

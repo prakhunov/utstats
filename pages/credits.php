@@ -1,4 +1,4 @@
-<table class="box" border="0" cellpadding="0" cellspacing="0" width="900">
+<?php /* Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License. Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening, formatting. Full per-change history: git log -- <this file>. */ ?><table class="box" border="0" cellpadding="0" cellspacing="0" width="900">
   <tbody>
     <tr>
       <th class="heading" align="center">Credits</th>
@@ -19,7 +19,7 @@
 				<blockquote>
 					<p>
 						UTStats was developed by azazel, )&deg;DoE&deg;(-AnthraX, PJMODOS, toa and sn3p.<br>
-						The source code is available from <a href="https://github.com/sn3p/utstats" target="_blank">GitHub</a>.<br>
+						The source code of this site is available from <a href="https://github.com/prakhunov/utstats" target="_blank">GitHub</a> (a fork of <a href="https://github.com/sn3p/utstats" target="_blank">sn3p/utstats</a>).<br>
 						All original pages are W3C <a href="http://validator.w3.org/check?uri=referer" target="_blank">HTML 4.01</a> and
 						<a href="http://jigsaw.w3.org/css-validator/" target="_blank">CSS</a> compliant
 					</p>
@@ -32,6 +32,17 @@
 				<div id="contentChangeLog" style="display: none;">
 					<blockquote><p>
 					<dl>
+						<dt><strong>4.5.0 (22/10/2026 by banko, Passionate Gaming)</strong></dt>
+						<dd>
+						Ported from PHP 5.5/ext-mysql to PHP 8.5 and PDO; every query uses bound parameters (SQL injection fixes).<br>
+						Escaped request values echoed into pages (XSS fixes); server query limited to known game servers.<br>
+						GeoIP switched to MaxMind GeoLite2 (.mmdb); FTP log download rewritten on ext/ftp.<br>
+						Configuration and secrets moved to environment variables; runs in containers (MariaDB, PHP-FPM, Caddy).<br>
+						Removed dead code and duplicate files; code formatted to PSR-12.<br>
+						JavaScript libraries updated (jQuery 3.7, Tooltipster 4, Highcharts 4.0.4) and loaded from CDNs; overLIB removed.<br>
+						Full history: every change is in this site's git log.<br>
+						</dd><br>
+
 						<dt><strong>4.4.0 (8/1/2018 by HULKSMASH and sn3p)</dt>
 						<dd>
 						Amazing new theme & sexy styling (by HULKSMASH).<br>
@@ -332,11 +343,13 @@
 					GeoLite data created by MaxMind<br/>
 					Available from <a href="http://www.maxmind.com/app/geolitecountry" target="_blank">http://www.maxmind.com/app/geolitecountry</a><br>
 					<br>
-					overLIB by Erik Bosrup<br>
+					overLIB by Erik Bosrup (hover hints in versions before 4.5.0)<br>
 					<a href="http://www.bosrup.com/web/overlib/" target="_blank">http://www.bosrup.com/web/overlib/</a><br>
 					<br>
 					<a href="http://www.highcharts.com/">High Charts</a> - the graphs that made it possible to visualise the data for DOM, DM, CTF.<br>
-          <a href="http://iamceege.github.io/tooltipster/">Tooltipster</a> - the tooltips used everywhere except the graphs.<br>
+					<em>Highcharts is used here under its non-commercial license and is not free for commercial use: <a href="https://shop.highcharts.com/faq/non-commercial" target="_blank">Highcharts non-commercial licensing</a>.</em><br>
+          <a href="https://calebjacob.github.io/tooltipster/">Tooltipster</a> - the tooltips used everywhere except the graphs.<br>
+          <a href="https://jquery.com/">jQuery</a> - JavaScript helpers.<br>
           <a href="http://iconsweets.com/">Yummygum Iconsweets</a> - a few icons came from this awesome set that is free.<br>
           <a href="https://forums.unrealtournament.com/showthread.php?13690-Call-to-Action-Weapon-Icons">Weapon Icons</a> - the weapons icons used are a combination of both DarkAp89 & piemo's designs.<br>
 

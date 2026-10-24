@@ -1,0 +1,34 @@
+# PHP-FPM 8.5 image for UTStats. Must stay on a patched 8.5 release
+# (>= 8.5.12 fixes CVE-2026-109618 / CVE-2026-109619).
+FROM docker.io/library/php:8.5-fpm AS base
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends libfreetype6-dev libjpeg62-turbo-dev libpng-dev libbz2-dev unzip \
+ && docker-php-ext-configure gd --with-freetype --with-jpeg \
+ && docker-php-ext-install -j"$(nproc)" pdo_mysql gd ftp bz2 \
+ && apt-get purge -y --auto-remove libfreetype6-dev libjpeg62-turbo-dev libpng-dev libbz2-dev \
+ && apt-get install -y --no-install-recommends libfreetype6 libjpeg62-turbo libpng16-16t64 libbz2-1.0 \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY docker/php/utstats.ini /usr/local/etc/php/conf.d/zz-utstats.ini
+COPY docker/php/www.conf /usr/local/etc/php-fpm.d/zz-utstats.conf
+
+FROM base AS vendor
+COPY --from=docker.io/library/composer:2 /usr/bin/composer /usr/bin/composer
+WORKDIR /app
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-interaction --no-progress --classmap-authoritative
+
+FROM base
+WORKDIR /var/www/html
+COPY --from=vendor /app/vendor ./vendor
+COPY --chown=root:root . .
+# Runtime state lives on the /data volume (logs, renderings, ftp timestamp).
+# The base image makes /var/www/html 1777 www-data; in a sticky world-writable dir the
+# kernel (fs.protected_symlinks) refuses to let www-data follow these root-owned
+# symlinks. The app never writes its code tree, so make it root-owned and read-only.
+RUN mkdir -p /data/logs/backup /data/logs/ac /data/logs/ace /data/logs/utdc /data/renderings \
+ && ln -sfn /data/logs logs && ln -sfn /data/renderings renderings \
+ && chown root:root /var/www/html && chmod 755 /var/www/html \
+ && chown -R www-data:www-data /data
+VOLUME /data

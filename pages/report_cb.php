@@ -1,4 +1,11 @@
 <?php
+
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
 echo'<form NAME="report" METHOD="get" ACTION="./?p=report">
 	<input type="hidden" name="p" value="report" size="0">
 	<input type="hidden" name="rtype" value="clanbase" size="0">
@@ -10,7 +17,7 @@ echo'<form NAME="report" METHOD="get" ACTION="./?p=report">
 	</tr>
 	<tr>
 	  <td ALIGN="left" class="grey">
-	  <input TYPE="text" NAME="wid" MAXLENGTH="20" SIZE="20" value="'.(preg_replace('/\D/', '', $_GET['wid'])).'" CLASS="searchform">
+	  <input TYPE="text" NAME="wid" MAXLENGTH="20" SIZE="20" value="'.(preg_replace('/\D/', '', $_GET['wid'] ?? '')).'" CLASS="searchform">
 	  <input TYPE="submit" VALUE="Submit" CLASS="searchformb"></td>
 	</tr>
   </table>
@@ -27,34 +34,34 @@ echo'<table>
 <tr>
 	<td width="50%" class="grey">';
 
-$sql_rteam = "SELECT p.id, pi.name FROM uts_player AS p, uts_pinfo AS pi WHERE p.pid = pi.id AND matchid = $id AND team = 0 ORDER BY pi.name ASC";
-$q_rteam = mysql_query($sql_rteam);
-while ($r_rteam = mysql_fetch_array($q_rteam)) {
-	echo''.$r_rteam[name].'<br />';
-	}
+$sql_rteam = "SELECT p.id, pi.name FROM uts_player AS p, uts_pinfo AS pi WHERE p.pid = pi.id AND matchid = ? AND team = 0 ORDER BY pi.name ASC";
+$q_rteam = db_query($sql_rteam, [$id]);
+while ($r_rteam = $q_rteam->fetch()) {
+    echo''.$r_rteam['name'].'<br />';
+}
 echo'</td>
 <td width="50%" class="grey">';
 
-$sql_bteam = "SELECT p.id, pi.name FROM uts_player AS p, uts_pinfo AS pi WHERE p.pid = pi.id AND matchid = $id AND team = 1 ORDER BY pi.name ASC";
-$q_bteam = mysql_query($sql_bteam);
-while ($r_bteam = mysql_fetch_array($q_bteam)) {
-	echo''.$r_bteam[name].'<br />';
-	}
+$sql_bteam = "SELECT p.id, pi.name FROM uts_player AS p, uts_pinfo AS pi WHERE p.pid = pi.id AND matchid = ? AND team = 1 ORDER BY pi.name ASC";
+$q_bteam = db_query($sql_bteam, [$id]);
+while ($r_bteam = $q_bteam->fetch()) {
+    echo''.$r_bteam['name'].'<br />';
+}
 echo'</td></tr></table><br>';
 
-IF ($wid == "") {
+if ($wid == "") {
 }
 
-IF ($stage >= "1") {
-   include("includes/clanbase.php");
-   $warinfo = get_clans($wid);
+if ($stage >= "1") {
+    include("includes/clanbase.php");
+    $warinfo = get_clans($wid);
 }
 
-IF ($stage == "1") {
-	$claninfo0 = get_players($warinfo[0][1]);
-	$claninfo1 = get_players($warinfo[1][1]);
+if ($stage == "1") {
+    $claninfo0 = get_players($warinfo[0][1]);
+    $claninfo1 = get_players($warinfo[1][1]);
 
-	echo'<form action="" method="get">
+    echo'<form action="" method="get">
 	<input type="hidden" name="p" value="report" size="0">
 	<input type="hidden" name="rtype" value="clanbase" size="0">
 	<input type="hidden" name="id" value="'.$id.'" size="0">
@@ -78,27 +85,27 @@ IF ($stage == "1") {
 	</form>';
 }
 
-IF ($stage == "2") {
-	$redteam = $_GET["red"];
+if ($stage == "2") {
+    $redteam = $_GET["red"] ?? '';
 
-	IF($redteam == $warinfo[0][1]) {
-		$redcid = $warinfo[0][1];
-		$redname = $warinfo[0][2];
-		$redinfo = get_players($warinfo[0][1]);
-		$bluecid = $warinfo[1][1];
-		$bluename = $warinfo[1][2];
-		$blueinfo = get_players($warinfo[1][1]);
+    if ($redteam == $warinfo[0][1]) {
+        $redcid = $warinfo[0][1];
+        $redname = $warinfo[0][2];
+        $redinfo = get_players($warinfo[0][1]);
+        $bluecid = $warinfo[1][1];
+        $bluename = $warinfo[1][2];
+        $blueinfo = get_players($warinfo[1][1]);
 
-	} else {
-		$redcid = $warinfo[1][1];
-		$redname = $warinfo[1][2];
-		$redinfo = get_players($warinfo[1][1]);
-		$bluecid = $warinfo[0][1];
-		$bluename = $warinfo[0][2];
-		$blueinfo = get_players($warinfo[0][1]);
-	}
+    } else {
+        $redcid = $warinfo[1][1];
+        $redname = $warinfo[1][2];
+        $redinfo = get_players($warinfo[1][1]);
+        $bluecid = $warinfo[0][1];
+        $bluename = $warinfo[0][2];
+        $blueinfo = get_players($warinfo[0][1]);
+    }
 
-	echo'<form action="" method="get">
+    echo'<form action="" method="get">
 			<input type="hidden" name="p" value="report" size="0">
 			<input type="hidden" name="rtype" value="clanbase" size="0">
 			<input type="hidden" name="stage" value="generate" size="0">
@@ -115,54 +122,53 @@ IF ($stage == "2") {
 				<a href="http://www.clanbase.com/claninfo.php?cid='.$redcid.'" target="_blank">'.$redname.'</a></td>
 			</tr>';
 
-			$redcount = count($redinfo);
-			$bluecount = count($blueinfo);
+    $redcount = count($redinfo);
+    $bluecount = count($blueinfo);
 
-			$sql_rteam = "SELECT p.id, pi.name FROM uts_player AS p, uts_pinfo AS pi WHERE p.pid = pi.id AND matchid = $id AND team = 0 ORDER BY pi.name ASC";
+    $sql_rteam = "SELECT p.id, pi.name FROM uts_player AS p, uts_pinfo AS pi WHERE p.pid = pi.id AND matchid = ? AND team = 0 ORDER BY pi.name ASC";
 
-			$q_rteam = mysql_query($sql_rteam);
-			while($r_rteam = mysql_fetch_array($q_rteam)) {
+    $q_rteam = db_query($sql_rteam, [$id]);
+    while ($r_rteam = $q_rteam->fetch()) {
 
-			echo'<tr>
-				<td class="grey">'.$r_rteam[name].'</td>
+        echo'<tr>
+				<td class="grey">'.$r_rteam['name'].'</td>
 				<td class="grey">
-				<select CLASS="searchform" name="'.$r_rteam[id].'">
+				<select CLASS="searchform" name="'.$r_rteam['id'].'">
 				<option selected CLASS="searchform" value="">Use Me To Assign a CB Player to Stats</option>';
 
-			for ($i = 0; $i < $redcount; $i++) {
-					echo'<option CLASS="searchform" value="'.$redinfo[$i][0].'">'.$redinfo[$i][1].'</option>';
-				}
-				echo'</select></td>
+        for ($i = 0; $i < $redcount; $i++) {
+            echo'<option CLASS="searchform" value="'.$redinfo[$i][0].'">'.$redinfo[$i][1].'</option>';
+        }
+        echo'</select></td>
 				</tr>';
-		}
+    }
 
-			echo'<td width="100%" align="center" class="smheading" colspan="2">
+    echo'<td width="100%" align="center" class="smheading" colspan="2">
 				<a href="http://www.clanbase.com/claninfo.php?cid='.$bluecid.'" target="_blank">'.$bluename.'</a></td>';
 
 
-			$sql_bteam = "SELECT p.id, pi.name FROM uts_player AS p, uts_pinfo AS pi WHERE p.pid = pi.id AND matchid = $id AND team = 1 ORDER BY pi.name ASC";
+    $sql_bteam = "SELECT p.id, pi.name FROM uts_player AS p, uts_pinfo AS pi WHERE p.pid = pi.id AND matchid = ? AND team = 1 ORDER BY pi.name ASC";
 
-			$q_bteam = mysql_query($sql_bteam);
-			while($r_bteam = mysql_fetch_array($q_bteam)) {
+    $q_bteam = db_query($sql_bteam, [$id]);
+    while ($r_bteam = $q_bteam->fetch()) {
 
-			echo'<tr>
-				<td class="grey">'.$r_bteam[name].'</td>
+        echo'<tr>
+				<td class="grey">'.$r_bteam['name'].'</td>
 				<td class="grey">
-				<select CLASS="searchform" name="'.$r_bteam[id].'">
+				<select CLASS="searchform" name="'.$r_bteam['id'].'">
 				<option selected CLASS="searchform" value="">Use Me To Assign a CB Player to Stats</option>';
 
-			for ($i = 0; $i < $bluecount; $i++) {
-					echo'<option CLASS="searchform" value="'.$blueinfo[$i][0].'">'.$blueinfo[$i][1].'</option>';
-				}
-				echo'</select></td>
+        for ($i = 0; $i < $bluecount; $i++) {
+            echo'<option CLASS="searchform" value="'.$blueinfo[$i][0].'">'.$blueinfo[$i][1].'</option>';
+        }
+        echo'</select></td>
 				</tr>';
-		}
+    }
 
-	echo'<tr>
+    echo'<tr>
 		<td class="grey" colspan="2" align="center">
 		<input type=submit CLASS="searchformb" value="Generate Report">
 		</td>
 	</tr>
 	</table></form>';
 }
-?>

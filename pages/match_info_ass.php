@@ -1,37 +1,44 @@
 <?php
+
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
 // Get information about this match
-$sql_assault = small_query("SELECT assaultid, ass_att, gametime, ass_win FROM uts_match WHERE id = $mid");
-$ass_id = $sql_assault[assaultid];
-$gametime = $sql_assault[gametime];
+$sql_assault = db_row("SELECT assaultid, ass_att, gametime, ass_win FROM uts_match WHERE id = ?", [$mid]);
+$ass_id = $sql_assault['assaultid'];
+$gametime = $sql_assault['gametime'];
 
 // Get information about the other match
-$sql_assault2 = small_query("SELECT id, gametime, ass_win FROM uts_match WHERE assaultid = '$ass_id' AND id != $mid LIMIT 0,1");
-$mid2 = $sql_assault2[id];
-$gametime2 = $sql_assault2[gametime];
+$sql_assault2 = db_row("SELECT id, gametime, ass_win FROM uts_match WHERE assaultid = ? AND id != ? LIMIT 0,1", [$ass_id, $mid]);
+$mid2 = $sql_assault2['id'];
+$gametime2 = $sql_assault2['gametime'];
 
 // Work out who was attacking which match
-$ass_att = $sql_assault[ass_att];
-IF($ass_att == 0) {
-	$ass_att = "Red";
-	$ass_att2 = "Blue";
+$ass_att = $sql_assault['ass_att'];
+if ($ass_att == 0) {
+    $ass_att = "Red";
+    $ass_att2 = "Blue";
 } else {
-	$ass_att = "Blue";
-	$ass_att2 = "Red";
+    $ass_att = "Blue";
+    $ass_att2 = "Red";
 }
 
 // Work out the end result for each match
-$asswin = $sql_assault[ass_win];
-$asswin2 = $sql_assault2[ass_win];
-IF($asswin == 0) {
-	$asswin = "$ass_att2 Successfully Defended";
+$asswin = $sql_assault['ass_win'];
+$asswin2 = $sql_assault2['ass_win'];
+if ($asswin == 0) {
+    $asswin = "$ass_att2 Successfully Defended";
 } else {
-	$asswin = "$ass_att Successfully Attacked";
+    $asswin = "$ass_att Successfully Attacked";
 }
 
-IF($asswin2 == 0) {
-	$asswin2 = "$ass_att Successfully Defended";
+if ($asswin2 == 0) {
+    $asswin2 = "$ass_att Successfully Defended";
 } else {
-	$asswin2 = "$ass_att2 Successfully Attacked";
+    $asswin2 = "$ass_att2 Successfully Attacked";
 }
 
 $gametime = sec2min($gametime);
@@ -50,10 +57,10 @@ echo'
 
 // The Other Game (if it happened)
 
-IF($mid2 != NULL) {
-	teamstats($mid2, 'Match Summary - '.$ass_att2.' Team Attacking', 'ass_obj', 'Ass Obj');
-	
-	echo'
+if ($mid2 != null) {
+    teamstats($mid2, 'Match Summary - '.$ass_att2.' Team Attacking', 'ass_obj', 'Ass Obj');
+
+    echo'
 	<table class = "zebra box" border="0" cellpadding="0" cellspacing="0" width="720">
 	<tbody><tr>
 		<th class="smheading" colspan="15" align="center">'.$asswin2.'</th>
@@ -61,4 +68,3 @@ IF($mid2 != NULL) {
 	</tbody></table>
 	<br>';
 }
-?>

@@ -1,4 +1,4 @@
-<table class="box" border="0" cellpadding="0" cellspacing="0" width="900">
+<?php /* Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License. Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening, formatting. Full per-change history: git log -- <this file>. */ ?><table class="box" border="0" cellpadding="0" cellspacing="0" width="900">
   <tbody>
 	<tr>
 	  <td class="heading" align="center">Help</td>

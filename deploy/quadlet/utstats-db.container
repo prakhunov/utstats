@@ -1,0 +1,21 @@
+[Unit]
+Description=UTStats MariaDB
+
+[Container]
+ContainerName=utstats-db
+Image=docker.io/library/mariadb:12.3
+Network=utstats.network
+NetworkAlias=db
+EnvironmentFile=/etc/utstats/db.env
+Volume=utstats-mysql:/var/lib/mysql
+Exec=--character-set-server=utf8mb3 --collation-server=utf8mb3_general_ci --max-allowed-packet=256M --innodb-buffer-pool-size=384M
+HealthCmd=healthcheck.sh --connect --innodb_initialized
+HealthInterval=10s
+Notify=healthy
+
+[Service]
+Restart=always
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target

@@ -1,6 +1,15 @@
 <?php
-if (empty($import_adminkey) or isset($_REQUEST['import_adminkey']) or $import_adminkey != $adminkey) die('bla');
-	
+
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
+if (empty($import_adminkey) or isset($_REQUEST['import_adminkey']) or $import_adminkey != $adminkey) {
+    die('bla');
+}
+
 $options['title'] = 'Delete match';
 $i = 0;
 $options['vars'][$i]['name'] = 'server';
@@ -18,7 +27,7 @@ $i++;
 $results = adminselect($options);
 
 
-$matchid = $results['mid'];
+$matchid = (int)$results['mid'];
 
 echo'<br><table border="0" cellpadding="0" cellspacing="0" width="600">
 <tr>
@@ -26,80 +35,76 @@ echo'<br><table border="0" cellpadding="0" cellspacing="0" width="600">
 </tr>
 <tr>
 	<td class="smheading" align="left" width="200">Adjusting Rankings</td>';
-$sql_radjust = "SELECT pid, gid, rank FROM uts_player WHERE matchid = $matchid";
-$q_radjust = mysql_query($sql_radjust) or die(mysql_error());
-$pids = array();
-while ($r_radjust = mysql_fetch_array($q_radjust)) {
+$sql_radjust = "SELECT pid, gid, rank FROM uts_player WHERE matchid = ?";
+$pids = [];
+foreach (db_all($sql_radjust, [$matchid]) as $r_radjust) {
 
-	$pid = $r_radjust[pid];
-	$pids[] = $pid;
-	$gid = $r_radjust[gid];
-	$rank = $r_radjust[rank];
+    $pid = $r_radjust['pid'];
+    $pids[] = $pid;
+    $gid = $r_radjust['gid'];
+    $rank = $r_radjust['rank'];
 
-	$sql_crank = small_query("SELECT id, rank, matches FROM uts_rank WHERE pid = $pid AND gid = $gid");
-	if (!$sql_crank) continue;
-	
-	$rid = $sql_crank[id];
-	$newrank = $sql_crank[rank]-$rank;
-	$oldrank = $sql_crank[rank];
-	$matchcount = $sql_crank[matches]-1;
+    $sql_crank = db_row("SELECT id, rank, matches FROM uts_rank WHERE pid = ? AND gid = ?", [$pid, $gid]);
+    if (!$sql_crank) {
+        continue;
+    }
 
-	mysql_query("UPDATE uts_rank SET rank = $newrank, prevrank = $oldrank, matches = $matchcount WHERE id = $rid") or die(mysql_error());
-	mysql_query("DELETE FROM uts_rank WHERE matches = 0") or die(mysql_error());
+    $rid = $sql_crank['id'];
+    $newrank = $sql_crank['rank'] - $rank;
+    $oldrank = $sql_crank['rank'];
+    $matchcount = $sql_crank['matches'] - 1;
+
+    db_exec("UPDATE uts_rank SET rank = ?, prevrank = ?, matches = ? WHERE id = ?", [$newrank, $oldrank, $matchcount, $rid]);
+    db_exec("DELETE FROM uts_rank WHERE matches = 0");
 }
-	echo'<td class="grey" align="left" width="700">Done</td>
+echo'<td class="grey" align="left" width="700">Done</td>
 </tr>
 <tr>
 	<td class="smheading" align="left" width="200">Removing Match Record:</td>';
-mysql_query("DELETE FROM uts_match WHERE id = $matchid") or die(mysql_error());
-	echo'<td class="grey" align="left" width="400">Done</td>
+db_exec("DELETE FROM uts_match WHERE id = ?", [$matchid]);
+echo'<td class="grey" align="left" width="400">Done</td>
 </tr>
 <tr>
 	<td class="smheading" align="left" width="200">Removing Player Records:</td>';
-mysql_query("DELETE FROM uts_player WHERE matchid = $matchid") or die(mysql_error());
-	echo'<td class="grey" align="left" width="400">Done</td>
+db_exec("DELETE FROM uts_player WHERE matchid = ?", [$matchid]);
+echo'<td class="grey" align="left" width="400">Done</td>
 </tr>
 <tr>
 	<td class="smheading" align="left" width="200">Removing Kill Matrix Entries:</td>';
-mysql_query("DELETE FROM uts_killsmatrix WHERE matchid = $matchid") or die(mysql_error());
-	echo'<td class="grey" align="left" width="400">Done</td>
+db_exec("DELETE FROM uts_killsmatrix WHERE matchid = ?", [$matchid]);
+echo'<td class="grey" align="left" width="400">Done</td>
 </tr>
 <tr>
 	<td class="smheading" align="left" width="200">Removing Weapon Stats:</td>';
-mysql_query("DELETE FROM uts_weaponstats WHERE matchid = $matchid") or die(mysql_error());
-	echo'<td class="grey" align="left" width="400">Done</td>
+db_exec("DELETE FROM uts_weaponstats WHERE matchid = ?", [$matchid]);
+echo'<td class="grey" align="left" width="400">Done</td>
 </tr>
 <tr>
 	<td class="smheading" align="left" width="200">Amending Player Weapon Stats:</td>';
-foreach($pids as $pid) {
-	mysql_query("DELETE FROM uts_weaponstats WHERE matchid IN ('$matchid','0') AND pid = '$pid'") or die(mysql_error());
+foreach ($pids as $pid) {
+    db_exec("DELETE FROM uts_weaponstats WHERE matchid IN (?,'0') AND pid = ?", [$matchid, $pid]);
 
-	$q_weaponstats = mysql_query("SELECT weapon, SUM(kills) AS kills, SUM(shots) AS shots, SUM(hits) as hits, SUM(damage) as damage, AVG(acc) AS acc FROM uts_weaponstats WHERE pid = '$pid'  GROUP BY weapon") or die(mysql_error());
-	while ($r_weaponstats = mysql_fetch_array($q_weaponstats)) {
-		mysql_query("INSERT INTO uts_weaponstats SET matchid='0', pid='$pid', weapon='${r_weaponstats['weapon']}', kills='${r_weaponstats['kills']}', shots='${r_weaponstats['shots']}', hits='${r_weaponstats['hits']}', damage='${r_weaponstats['damage']}', acc='${r_weaponstats['acc']}'") or die(mysql_error());
-	}
+    foreach (db_all("SELECT weapon, SUM(kills) AS kills, SUM(shots) AS shots, SUM(hits) as hits, SUM(damage) as damage, AVG(acc) AS acc FROM uts_weaponstats WHERE pid = ?  GROUP BY weapon", [$pid]) as $r_weaponstats) {
+        db_exec("INSERT INTO uts_weaponstats SET matchid='0', pid=?, weapon=?, kills=?, shots=?, hits=?, damage=?, acc=?", [$pid, $r_weaponstats['weapon'], $r_weaponstats['kills'], $r_weaponstats['shots'], $r_weaponstats['hits'], $r_weaponstats['damage'], $r_weaponstats['acc']]);
+    }
 }
-	echo'<td class="grey" align="left" width="400">Done</td>
+echo'<td class="grey" align="left" width="400">Done</td>
 </tr>
 <tr>
 	<td class="smheading" align="left" width="200">Amending Global Weapon Stats:</td>';
-	mysql_query("DELETE FROM uts_weaponstats WHERE matchid='0' AND pid='0'") or die(mysql_error());
+db_exec("DELETE FROM uts_weaponstats WHERE matchid='0' AND pid='0'");
 
-	$q_weaponstats = mysql_query("SELECT weapon, SUM(kills) AS kills, SUM(shots) AS shots, SUM(hits) as hits, SUM(damage) as damage, AVG(acc) AS acc FROM uts_weaponstats WHERE matchid = '0'  GROUP BY weapon") or die(mysql_error());
-	while ($r_weaponstats = mysql_fetch_array($q_weaponstats)) {
-		mysql_query("INSERT INTO uts_weaponstats SET matchid='0', pid='0', weapon='${r_weaponstats['weapon']}', kills='${r_weaponstats['kills']}', shots='${r_weaponstats['shots']}', hits='${r_weaponstats['hits']}', damage='${r_weaponstats['damage']}', acc='${r_weaponstats['acc']}'") or die(mysql_error());
-	}
+foreach (db_all("SELECT weapon, SUM(kills) AS kills, SUM(shots) AS shots, SUM(hits) as hits, SUM(damage) as damage, AVG(acc) AS acc FROM uts_weaponstats WHERE matchid = '0'  GROUP BY weapon") as $r_weaponstats) {
+    db_exec("INSERT INTO uts_weaponstats SET matchid='0', pid='0', weapon=?, kills=?, shots=?, hits=?, damage=?, acc=?", [$r_weaponstats['weapon'], $r_weaponstats['kills'], $r_weaponstats['shots'], $r_weaponstats['hits'], $r_weaponstats['damage'], $r_weaponstats['acc']]);
+}
 
-	echo'<td class="grey" align="left" width="400">Done</td>
+echo'<td class="grey" align="left" width="400">Done</td>
 </tr>
 <tr>
 	<td class="smheading" align="left" width="200">Removing events:</td>';
-mysql_query("DELETE FROM uts_events WHERE matchid = $matchid") or die(mysql_error());
-	echo'<td class="grey" align="left" width="400">Done</td>
+db_exec("DELETE FROM uts_events WHERE matchid = ?", [$matchid]);
+echo'<td class="grey" align="left" width="400">Done</td>
 </tr>
 <tr>
-	<td class="smheading" align="center" colspan="2">Match Deleted - <a href="./admin.php?key='.$_REQUEST[key].'">Go Back To Admin Page</a></td>
+	<td class="smheading" align="center" colspan="2">Match Deleted - <a href="./admin.php?key='.$_REQUEST['key'].'">Go Back To Admin Page</a></td>
 </tr></table>';
-
-
-?>

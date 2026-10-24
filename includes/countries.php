@@ -1,5 +1,12 @@
 <?php
-$a_countries = array(
+
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
+$a_countries = [
             'af' => 'Afghanistan',
             'al' => 'Albania, People\'s Socialist Republic of',
             'dz' => 'Algeria, People\'s Democratic Republic of',
@@ -203,7 +210,7 @@ $a_countries = array(
             'lk' => 'Sri Lanka, Democratic Socialist Republic of',
             'sd' => 'Sudan, Democratic Republic of the',
             'sr' => 'Suriname, Republic of',
-            'sg' => 'Svalbard & Jan Mayen Islands',
+            'sj' => 'Svalbard & Jan Mayen Islands',
             'sz' => 'Swaziland, Kingdom of',
             'se' => 'Sweden, Kingdom of',
             'ch' => 'Switzerland, Swiss Confederation',
@@ -239,6 +246,5 @@ $a_countries = array(
             'yu' => 'Yugoslavia, Socialist Federal Republic of',
             'zm' => 'Zambia, Republic of',
             'zw' => 'Zimbabwe',
-				'xx' => 'Unknown country'
-        );
-?>
+                'xx' => 'Unknown country'
+        ];

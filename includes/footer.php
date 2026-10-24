@@ -1,4 +1,4 @@
-    <div class="footer">
+<?php /* Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License. Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening, formatting. Full per-change history: git log -- <this file>. */ ?>    <div class="footer">
       <a href="./?p=maps">Maps</a>
       <a href="./?p=servers">Servers</a>
       <a href="./import.php">Import</a>
@@ -7,8 +7,8 @@
       <a href="./?p=help">Help</a>
       <br>
       <br>
-      <a href="https://github.com/sn3p/utstats" target="_blank">UTStats Beta 4.4.0</a>
-      &copy; <?php echo date("Y"); ?> azazel, AnthraX toa and sn3p
+      <a href="https://github.com/prakhunov/utstats" target="_blank">UTStats 4.5.0</a>
+      &copy; <?php echo date("Y"); ?> azazel, AnthraX toa, sn3p and banko
     </div>
   </body>
 </html>

@@ -1,0 +1,19 @@
+[Unit]
+Description=UTStats PHP-FPM
+Requires=utstats-db.service
+After=utstats-db.service
+
+[Container]
+ContainerName=utstats-php
+Image=localhost/utstats-php:latest
+Network=utstats.network
+NetworkAlias=php
+EnvironmentFile=/etc/utstats/app.env
+# logs/ (downloaded + backed-up UT logs, FTP timestamp), renderings/, GeoIP mmdb
+Volume=/var/lib/utstats/data:/data
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

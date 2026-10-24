@@ -1,8 +1,13 @@
 <?php
-$sql_rgame = "SELECT DISTINCT(p.gid), g.name FROM uts_player AS p, uts_games AS g WHERE p.gid = g.id ORDER BY g.name ASC";
-$q_rgame = mysql_query($sql_rgame) or die(mysql_error());
 
-while ($r_rgame = mysql_fetch_array($q_rgame)) {
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
+
+$sql_rgame = "SELECT DISTINCT(p.gid), g.name FROM uts_player AS p, uts_games AS g WHERE p.gid = g.id ORDER BY g.name ASC";
+foreach (db_all($sql_rgame) as $r_rgame) {
 
     echo'
     <table class="box zebra" border="0" cellpadding="0" cellspacing="0" width="700">
@@ -18,13 +23,13 @@ while ($r_rgame = mysql_fetch_array($q_rgame)) {
 	    </tr>
     ';
 
-  $ranking = 0;
+    $ranking = 0;
 
-  $sql_rplayer = "SELECT pi.id AS pid, pi.name, pi.country, r.rank, r.prevrank, r.matches FROM uts_rank AS r, uts_pinfo AS pi WHERE r.pid = pi.id AND r.gid =  '$r_rgame[gid]' AND pi.banned <> 'Y' ORDER BY r.rank DESC LIMIT 0,10";
-  $q_rplayer = mysql_query($sql_rplayer) or die(mysql_error());
+    $sql_rplayer = "SELECT pi.id AS pid, pi.name, pi.country, r.rank, r.prevrank, r.matches FROM uts_rank AS r, uts_pinfo AS pi WHERE r.pid = pi.id AND r.gid =  ? AND pi.banned <> 'Y' ORDER BY r.rank DESC LIMIT 0,10";
+    $q_rplayer = db_all($sql_rplayer, [$r_rgame['gid']]);
 
-  if (mysql_num_rows($q_rplayer) == 0) {
-    echo '
+    if (count($q_rplayer) == 0) {
+        echo '
     <tr>
 	    <th align="center" colspan = "4">No players entered the rankings yet.</th>
     </tr>
@@ -33,31 +38,29 @@ while ($r_rgame = mysql_fetch_array($q_rgame)) {
     </tr>
     </tbody></table>
 		<br>';
-  }
-  else {
-    while ($r_rplayer = mysql_fetch_array($q_rplayer)) {
+    } else {
+        foreach ($q_rplayer as $r_rplayer) {
 
-      $ranking++;
-      $myurl = urlencode($r_rplayer[name]);
+            $ranking++;
+            $myurl = urlencode($r_rplayer['name']);
 
-      echo'
-      <tr class="clickableRow" href="./?p=pinfo&amp;pid='.$r_rplayer[pid].'">
+            echo'
+      <tr class="clickableRow" href="./?p=pinfo&amp;pid='.$r_rplayer['pid'].'">
 	      <td align="center">'.$ranking.'</td>
 	      <td nowrap align="left">
-					<a href="./?p=pinfo&amp;pid='.$r_rplayer[pid].'">'.FlagImage($r_rplayer[country]).' '.htmlspecialchars($r_rplayer[name], ENT_QUOTES) .' '. RankMovement($r_rplayer['rank'] - $r_rplayer['prevrank']).'</a>
+					<a href="./?p=pinfo&amp;pid='.$r_rplayer['pid'].'">'.FlagImage($r_rplayer['country']).' '.htmlspecialchars($r_rplayer['name'], ENT_QUOTES) .' '. RankMovement($r_rplayer['rank'] - $r_rplayer['prevrank']).'</a>
 				</td>
-	      <td align="center">'.get_dp($r_rplayer[rank]).'</td>
-	      <td align="center">'.$r_rplayer[matches].'</td>
+	      <td align="center">'.get_dp($r_rplayer['rank']).'</td>
+	      <td align="center">'.$r_rplayer['matches'].'</td>
       </tr>';
-    }
-    echo'
+        }
+        echo'
     <tr>
 	    <td class="totals" align="center" colspan="4">
-				<a href="./?p=ext_rank&amp;gid='.$r_rgame[gid].'">Click here to see all the rankings</a>
+				<a href="./?p=ext_rank&amp;gid='.$r_rgame['gid'].'">Click here to see all the rankings</a>
 			</td>
     </tr>
     </tbody></table>
 		<br>';
-  }
+    }
 }
-?>

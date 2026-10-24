@@ -1,0 +1,10 @@
+[Unit]
+Description=UTStats log importer (FTP pull from the UT servers + import)
+Requires=utstats-php.service
+After=utstats-php.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/podman exec -u www-data utstats-php php import.php
+# A stuck FTP server must not block the next run forever.
+TimeoutStartSec=15min

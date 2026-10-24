@@ -1,144 +1,180 @@
 <?php
 
-include ("includes/config.php");
-include ("includes/functions.php");
+/*
+ * Modified from UTStats (https://github.com/sn3p/utstats), Open Unreal Mod License.
+ * Changes: ported to PHP 8.5 and PDO (bound SQL parameters), request input hardening,
+ * formatting. Full per-change history: git log -- <this file>.
+ */
 
-if (!isset($_GET['noheader'])) include ("includes/header.php");
+include("includes/config.php");
+include("includes/functions.php");
 
-$json = false;
+// JSON routes return bare JSON: no HTML header/footer around them.
+$json = ($_GET["p"] ?? "") === "match_json";
 
-switch ($_GET["p"]) {
-	case "": page(); break; 			// Our opening page
-
-	case "recent": recent(); break;		// list of recent games, 30 in date order
-	case "match": match(); break;		// Single Match stats
-	case "match_json": $json = true; match_json(); break; // JSON form of Match Stats
-	case "matchp": matchp(); break;		// Player stats for single match
-	case "report": report(); break;		// Report generator
-
-	case "rank": rank(); break;			// Rankings
-	case "ext_rank": ext_rank(); break;	// Extended rankings
-
-	case "servers": servers(); break;	// Server listings
-	case "sinfo": sinfo(); break;		// Server info
-	case "squery": squery(); break;		// Server query page
-
-	case "players": players(); break;	// Players list
-	case "psearch": psearch(); break;	// Player search
-	case "pinfo": pinfo(); break;		// Player info
-	case "pexplrank": pexplrank(); break;		// Explain ranking
-
-	case "maps": maps(); break;			// Maps list
-	case "minfo": minfo(); break;		// Map info
-
-	case "totals": totals(); break;		// Totals summary
-
-	case "watchlist": watchlist(); break;		// The viewer's watchlist
-
-	case "credits": credits(); break;	// Credits
-	case "help": help(); break;			// Help Page
-
-	default: page(); break; 			// Our opening page
+if (!$json && !isset($_GET['noheader'])) {
+    include("includes/header.php");
 }
 
-function page() {
-	include("pages/home.php");
+switch ($_GET["p"] ?? "") {
+    case "": page();
+        break; 			// Our opening page
+
+    case "recent": recent();
+        break;		// list of recent games, 30 in date order
+    case "match": page_match();
+        break;		// Single Match stats
+    case "match_json":
+        match_json();
+        break; // JSON form of Match Stats
+    case "matchp": matchp();
+        break;		// Player stats for single match
+    case "report": report();
+        break;		// Report generator
+
+    case "rank": rank();
+        break;			// Rankings
+    case "ext_rank": ext_rank();
+        break;	// Extended rankings
+
+    case "servers": servers();
+        break;	// Server listings
+    case "sinfo": sinfo();
+        break;		// Server info
+    case "squery": squery();
+        break;		// Server query page
+
+    case "players": players();
+        break;	// Players list
+    case "psearch": psearch();
+        break;	// Player search
+    case "pinfo": pinfo();
+        break;		// Player info
+    case "pexplrank": pexplrank();
+        break;		// Explain ranking
+
+    case "maps": maps();
+        break;			// Maps list
+    case "minfo": minfo();
+        break;		// Map info
+
+    case "watchlist": watchlist();
+        break;		// The viewer's watchlist
+
+    case "credits": credits();
+        break;	// Credits
+    case "help": help();
+        break;			// Help Page
+
+    default: page();
+        break; 			// Our opening page
 }
 
-function admin() {
-	include("admin.php");
+function page()
+{
+    include("pages/home.php");
 }
 
-function recent() {
-	include("pages/recent.php");
+function admin()
+{
+    include("admin.php");
 }
 
-function match() {
-	include("pages/match.php");
+function recent()
+{
+    include("pages/recent.php");
 }
 
-function match_json() {
-	include("pages/match_json.php");
+function page_match()
+{
+    include("pages/match.php");
 }
 
-function matchp() {
-	include("pages/match_player.php");
+function match_json()
+{
+    include("pages/match_json.php");
 }
 
-function report() {
-	include("pages/report.php");
+function matchp()
+{
+    include("pages/match_player.php");
 }
 
-function rank() {
-	include("pages/rank.php");
+function report()
+{
+    include("pages/report.php");
 }
 
-function ext_rank() {
-	include("pages/rank_extended.php");
+function rank()
+{
+    include("pages/rank.php");
 }
 
-function servers() {
-	include("pages/servers.php");
+function ext_rank()
+{
+    include("pages/rank_extended.php");
 }
 
-function sinfo() {
-	include("pages/servers_info.php");
+function servers()
+{
+    include("pages/servers.php");
 }
 
-function squery() {
-	include("pages/servers_query.php");
+function sinfo()
+{
+    include("pages/servers_info.php");
 }
 
-function players() {
-	include("pages/players.php");
+function squery()
+{
+    include("pages/servers_query.php");
 }
 
-function psearch() {
-	include("pages/players_search.php");
+function players()
+{
+    include("pages/players.php");
 }
 
-function pinfo() {
-	include("pages/players_info.php");
+function psearch()
+{
+    include("pages/players_search.php");
 }
 
-function pexplrank() {
-	include("pages/players_explain_ranking.php");
+function pinfo()
+{
+    include("pages/players_info.php");
 }
 
-function pmatchs() {
-	include("pages/players_matchs.php");
+function pexplrank()
+{
+    include("pages/players_explain_ranking.php");
 }
 
-function pmaps() {
-	include("pages/players_maps.php");
+function maps()
+{
+    include("pages/maps.php");
 }
 
-function maps() {
-	include("pages/maps.php");
+function minfo()
+{
+    include("pages/maps_info.php");
 }
 
-function minfo() {
-	include("pages/maps_info.php");
+function watchlist()
+{
+    include("pages/watchlist.php");
 }
 
-function totals() {
-	include("pages/totals.php");
+function credits()
+{
+    include("pages/credits.php");
 }
 
-function watchlist() {
-	include("pages/watchlist.php");
+function help()
+{
+    include("pages/help.php");
 }
 
-function credits() {
-	include("pages/credits.php");
+if (!$json) {
+    include("includes/footer.php");
 }
-
-function help() {
-	include("pages/help.php");
-}
-
-if(!$json) {
-	include("includes/footer.php");
-}
-
-?>

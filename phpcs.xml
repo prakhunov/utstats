@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<ruleset name="UTStats">
+    <description>PHP 8.5 compatibility gate</description>
+    <file>.</file>
+    <exclude-pattern>vendor/*</exclude-pattern>
+    <exclude-pattern>assets/*</exclude-pattern>
+    <exclude-pattern>logs/*</exclude-pattern>
+    <exclude-pattern>.verify/*</exclude-pattern>
+    <arg name="extensions" value="php,inc"/>
+    <arg value="sp"/>
+    <config name="testVersion" value="8.5-"/>
+    <rule ref="PHPCompatibility"/>
+</ruleset>
