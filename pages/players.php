@@ -125,7 +125,7 @@ $sql_plist = "SELECT pi.name AS name, pi.country AS country, p.pid, COUNT(p.id) 
 SUM(p.deaths) AS deaths, SUM(p.suicides) as suicides, AVG(p.eff) AS eff, AVG(p.accuracy) AS accuracy, AVG(p.ttl) AS ttl, SUM(gametime) as gametime
 FROM uts_player AS p, uts_pinfo AS pi WHERE p.pid = pi.id AND pi.banned <> 'Y' GROUP BY p.pid ORDER BY $filter $sort LIMIT ?,50";
 
-foreach (db_all($sql_plist, [(int) $qpage]) as $r_plist) {
+foreach (db_all_cached($sql_plist, [(int) $qpage]) as $r_plist) {
     $gametime = sec2hour($r_plist['gametime']);
     $eff = get_dp($r_plist['eff']);
     $acc = get_dp($r_plist['accuracy']);

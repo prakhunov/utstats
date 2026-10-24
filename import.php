@@ -713,6 +713,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,
             $teamgame, $mapname, $mapfile, $serverinfo, $gameinfo, $s_frags, $s_kills, $s_suicides, $s_teamkills, $s_deaths,
             $t0info, $t1info, $t2info, $t3info, $t0score, $t1score, $t2score, $t3score]));
         $matchid = db_insert_id();			// Get our Match ID
+        $cache_dirty = true;               // bump the page cache generation once the run finishes
 
         echo "Yes (ID: $matchid)\n";
         if ($html) {
@@ -1058,6 +1059,12 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,
     unlink($filename);
 }
 closedir($logdir);
+
+// Publish the new data to cached pages only now, after every row of every imported match
+// is written: a page cached mid-import would otherwise keep half-imported totals.
+if (!empty($cache_dirty)) {
+    db_cache_bump();
+}
 
 if ($html) {
     echo '<br>';

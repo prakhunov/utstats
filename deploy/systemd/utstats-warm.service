@@ -1,0 +1,9 @@
+[Unit]
+Description=UTStats: pre-compute cached page aggregates
+Requires=utstats-caddy.service
+After=utstats-caddy.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh /opt/utstats/current/deploy/warm-cache.sh
+TimeoutStartSec=10min

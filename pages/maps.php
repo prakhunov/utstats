@@ -59,7 +59,7 @@ if (isset($q)) {
 }
 
 // Firstly we need to work out First Last Next Prev pages
-$mcount = db_count("SELECT mapfile FROM uts_match" . $sql_condition . " GROUP BY mapfile", $sql_params);
+$mcount = count(db_all_cached("SELECT mapfile FROM uts_match" . $sql_condition . " GROUP BY mapfile", $sql_params));
 $ecount = $mcount / 25;
 $ecount2 = number_format($ecount, 0, '.', '');
 
@@ -121,7 +121,7 @@ echo'
 			<select class="searchform" name="gid">
 				<option value="0">*</option>';
 
-$sql_game = "SELECT DISTINCT(p.gid), g.name FROM uts_player AS p, uts_games AS g WHERE p.gid = g.id ORDER BY g.name ASC";
+$sql_game = "SELECT g.id AS gid, g.name FROM uts_games AS g WHERE EXISTS (SELECT 1 FROM uts_player AS p WHERE p.gid = g.id) ORDER BY g.name ASC, g.id ASC";
 foreach (db_all($sql_game) as $r_game) {
     $selected = ($r_game['gid'] == $gid) ? 'selected' : '';
     echo '<option '.$selected.' value="'.$r_game['gid'].'">'. $r_game['name'] .'</option>';
@@ -147,7 +147,7 @@ echo '</select>
 $sql_maps = "SELECT IF(RIGHT(mapfile,4) LIKE '.unr', mapfile, CONCAT(mapfile, '.unr')) as mapfile, COUNT(id) AS matchcount, AVG(frags) AS frags, AVG(t0score+t1score+t2score+t3score) AS matchscore, SUM(gametime) AS gametime
 	FROM uts_match" . $sql_condition . " GROUP BY mapfile ORDER BY $filter $sort LIMIT ?,25";
 
-foreach (db_all($sql_maps, array_merge($sql_params, [(int) $qpage])) as $r_maps) {
+foreach (db_all_cached($sql_maps, array_merge($sql_params, [(int) $qpage])) as $r_maps) {
     $r_mapfile = un_ut($r_maps['mapfile']);
     $myurl = urlencode($r_mapfile);
     $r_gametime = GetMinutes($r_maps['gametime']);

@@ -8,3 +8,5 @@ Type=oneshot
 ExecStart=/usr/bin/podman exec -u www-data utstats-php php import.php
 # A stuck FTP server must not block the next run forever.
 TimeoutStartSec=15min
+# New matches change the cache key: recompute the expensive pages now, not on a visitor request.
+ExecStartPost=-/bin/sh /opt/utstats/current/deploy/warm-cache.sh
