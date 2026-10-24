@@ -31,6 +31,9 @@
               pkgs.opentofu # infra/ and the just recipes that read its outputs
               pkgs.awscli2
               pkgs.jq
+              # `podman compose` provider = docker-compose v2 (same as FragMath's devshell);
+              # it drives the rootless podman socket exported as DOCKER_HOST below.
+              pkgs.docker-compose
             ];
             # Lint/analysis tools (phpstan, phpcs + PHPCompatibility, rector) come from composer require-dev.
             shellHook = ''
