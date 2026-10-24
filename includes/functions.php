@@ -87,7 +87,8 @@ function my_fopen($filename, $mode, &$compression)
     }
 
     switch ($compression) {
-        case 'bz2':    $fp = @bzopen($filename, $mode);
+        // bzopen() only takes "r"/"w" since PHP 8 (no "b"/"+" flags); it throws otherwise.
+        case 'bz2':    $fp = @bzopen($filename, str_contains($mode, 'w') ? 'w' : 'r');
             break;
         case 'zlib':   $fp = @gzopen($filename, $mode);
             break;
@@ -469,7 +470,7 @@ function compress_file($method, $in, $out, $stripx00)
         return(false);
     }
     switch ($method) {
-        case 'bz2':    $fp_out = @bzopen($out, 'wb');
+        case 'bz2':    $fp_out = @bzopen($out, 'w'); // PHP 8 rejects "wb"
             break;
         case 'zlib':   $fp_out = @gzopen($out, 'wb6');
             break;
