@@ -100,43 +100,82 @@ function db_pick(mixed $value, array $allowed, string $default): string
 
 // --- Cached reads ---------------------------------------------------------------
 // For expensive all-time aggregates (home page totals, list pages). Results are keyed on
-// the SQL, its parameters and the data version (newest match id), so an import makes them
-// stale immediately; admin edits that don't add a match show up after DB_CACHE_TTL.
-// Files live in the PHP container's temp dir, shared by all FPM workers and dropped on restart.
+// the SQL, its parameters and a cache generation that import.php bumps (db_cache_bump)
+// only after a run has finished writing its matches, so a page is never cached from a
+// half-imported match. Admin edits show up after DB_CACHE_TTL.
+// Files live in the PHP container's temp dir, shared by all FPM workers and the CLI
+// importer (same container), and are dropped on restart.
 
 const DB_CACHE_TTL = 3600;
 
-function db_data_version(): string
+function db_cache_dir(): string
 {
-    static $version = null;
-    return $version ??= (db_value('SELECT MAX(id) FROM uts_match') ?? '0');
+    $dir = sys_get_temp_dir() . '/utstats-cache';
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0700, true);
+    }
+    return $dir;
+}
+
+function db_cache_generation(): string
+{
+    static $generation = null;
+    return $generation ??= ((string) @file_get_contents(db_cache_dir() . '/generation') ?: '0');
+}
+
+// Start a new cache generation: every cached result is recomputed on next use.
+function db_cache_bump(): void
+{
+    $file = db_cache_dir() . '/generation';
+    $tmp = $file . '.' . getmypid();
+    if (@file_put_contents($tmp, bin2hex(random_bytes(8))) !== false) {
+        rename($tmp, $file);
+    }
 }
 
 function db_all_cached(string $sql, array $params = []): array
 {
-    $dir = sys_get_temp_dir() . '/utstats-cache';
-    $file = $dir . '/' . hash('xxh128', db_data_version() . "\0" . $sql . "\0" . serialize($params));
+    $dir = db_cache_dir();
+    $file = $dir . '/' . hash('xxh128', db_cache_generation() . "\0" . $sql . "\0" . serialize($params));
 
-    $mtime = @filemtime($file);
-    if ($mtime !== false && time() - $mtime < DB_CACHE_TTL) {
-        $rows = @unserialize((string) file_get_contents($file), ['allowed_classes' => false]);
-        if (is_array($rows)) {
+    $rows = db_cache_read($file);
+    if ($rows !== null) {
+        return $rows;
+    }
+
+    // One worker computes a missing result; concurrent requests for it wait, then reuse it.
+    $lock = @fopen($file . '.lock', 'c');
+    if ($lock !== false) {
+        flock($lock, LOCK_EX);
+        $rows = db_cache_read($file);
+        if ($rows !== null) {
+            fclose($lock);
             return $rows;
         }
     }
 
     $rows = db_all($sql, $params);
-    if (!is_dir($dir)) {
-        @mkdir($dir, 0700, true);
-    }
     $tmp = $file . '.' . getmypid();
     if (@file_put_contents($tmp, serialize($rows)) !== false) {
         rename($tmp, $file); // atomic: readers never see a partial file
+    }
+    if ($lock !== false) {
+        fclose($lock);
     }
     if (random_int(0, 200) === 0) {
         db_cache_prune($dir);
     }
     return $rows;
+}
+
+function db_cache_read(string $file): ?array
+{
+    $mtime = @filemtime($file);
+    if ($mtime === false || time() - $mtime >= DB_CACHE_TTL) {
+        return null;
+    }
+    $rows = @unserialize((string) @file_get_contents($file), ['allowed_classes' => false]);
+    return is_array($rows) ? $rows : null;
 }
 
 function db_row_cached(string $sql, array $params = []): array|false
@@ -147,7 +186,7 @@ function db_row_cached(string $sql, array $params = []): array|false
 function db_cache_prune(string $dir): void
 {
     foreach (glob($dir . '/*') ?: [] as $f) {
-        if (time() - (int) @filemtime($f) > DB_CACHE_TTL) {
+        if (basename($f) !== 'generation' && time() - (int) @filemtime($f) > DB_CACHE_TTL) {
             @unlink($f);
         }
     }
