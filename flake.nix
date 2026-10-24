@@ -38,6 +38,7 @@
             # Lint/analysis tools (phpstan, phpcs + PHPCompatibility, rector) come from composer require-dev.
             shellHook = ''
               export PATH="$PWD/vendor/bin:$PATH"
+              export DOCKER_HOST="unix://''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/podman/podman.sock"
             '';
           };
         });
