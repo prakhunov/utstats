@@ -109,6 +109,11 @@ chcon -R -t container_file_t "$data"
 utstats-podman build --pull=newer -t localhost/utstats-php:latest -f /opt/utstats/current/docker/php/Containerfile /opt/utstats/current
 utstats-podman image prune -f >/dev/null
 
+# Caddy runs the floating tag of its quadlet; podman only pulls an image that is missing, so
+# take the newest build here (security fixes). MariaDB is left alone on purpose.
+utstats-podman pull -q docker.io/library/caddy:2 >/dev/null \
+    || log "WARNING: could not pull a newer Caddy image; keeping the one on the host"
+
 # 6. User units.
 # (config dirs were created in step 1)
 install -m 644 -o utstats -g utstats /opt/utstats/current/deploy/quadlet/* "$home/.config/containers/systemd/"

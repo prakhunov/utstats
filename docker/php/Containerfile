@@ -1,6 +1,6 @@
-# PHP-FPM 8.5 image for UTStats. Must stay on a patched 8.5 release
-# (>= 8.5.12 fixes CVE-2026-109618 / CVE-2026-109619).
-FROM docker.io/library/php:8.5-fpm AS base
+# PHP-FPM 8.6 image for UTStats. The tag floats within 8.6: every deploy builds with
+# --pull=newer (deploy/install.sh), so a deploy takes the newest 8.6 patch release.
+FROM docker.io/library/php:8.6-fpm AS base
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends libfreetype6-dev libjpeg62-turbo-dev libpng-dev libbz2-dev unzip \
