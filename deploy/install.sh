@@ -86,7 +86,12 @@ MARIADB_DATABASE=$(get UTSTATS_DB_NAME)
 MARIADB_USER=$(get UTSTATS_DB_USER)
 MARIADB_PASSWORD=$(get UTSTATS_DB_PASS)
 EOF
-write_env caddy.env <<<"UTSTATS_SITE=utstats.ut.banko.gg, utstats.passionategaming.eu"
+# UTSTATS_PLAIN_SITE: the plain-HTTP site of the Caddyfile (IpToCountry lookups from the
+# game servers, which cannot do TLS).
+write_env caddy.env <<EOF
+UTSTATS_SITE=utstats.ut.banko.gg, utstats.passionategaming.eu
+UTSTATS_PLAIN_SITE=http://utstats.ut.banko.gg
+EOF
 
 # 4. Runtime state: owned by www-data (uid 33) inside the containers' user namespace.
 install -d -m 755 -o utstats -g utstats "$data"
@@ -103,6 +108,11 @@ chcon -R -t container_file_t "$data"
 # 5. PHP image, built from the release into the utstats user's storage.
 utstats-podman build --pull=newer -t localhost/utstats-php:latest -f /opt/utstats/current/docker/php/Containerfile /opt/utstats/current
 utstats-podman image prune -f >/dev/null
+
+# Caddy runs the floating tag of its quadlet; podman only pulls an image that is missing, so
+# take the newest build here (security fixes). MariaDB is left alone on purpose.
+utstats-podman pull -q docker.io/library/caddy:2 >/dev/null \
+    || log "WARNING: could not pull a newer Caddy image; keeping the one on the host"
 
 # 6. User units.
 # (config dirs were created in step 1)

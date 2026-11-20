@@ -1,7 +1,8 @@
 # UTStats — utstats.passionategaming.eu
 
 UTStats for the Passionate Gaming UT99 servers, ported from PHP 5.5 + ext/mysql to
-PHP 8.5 + PDO and containerized (MariaDB 12.3, PHP-FPM 8.5, Caddy).
+PHP 8.5 + PDO and containerized (MariaDB 12.3, PHP-FPM 8.6, Caddy). The image runs PHP 8.6;
+the devshell and the lint gates stay on 8.5 (the code's minimum) until nixpkgs has 8.6.
 
 ## Local setup
 
