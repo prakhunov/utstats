@@ -86,7 +86,12 @@ MARIADB_DATABASE=$(get UTSTATS_DB_NAME)
 MARIADB_USER=$(get UTSTATS_DB_USER)
 MARIADB_PASSWORD=$(get UTSTATS_DB_PASS)
 EOF
-write_env caddy.env <<<"UTSTATS_SITE=utstats.ut.banko.gg, utstats.passionategaming.eu"
+# UTSTATS_PLAIN_SITE: the plain-HTTP site of the Caddyfile (IpToCountry lookups from the
+# game servers, which cannot do TLS).
+write_env caddy.env <<EOF
+UTSTATS_SITE=utstats.ut.banko.gg, utstats.passionategaming.eu
+UTSTATS_PLAIN_SITE=http://utstats.ut.banko.gg
+EOF
 
 # 4. Runtime state: owned by www-data (uid 33) inside the containers' user namespace.
 install -d -m 755 -o utstats -g utstats "$data"

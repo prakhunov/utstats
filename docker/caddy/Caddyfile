@@ -28,3 +28,20 @@
 	php_fastcgi php:9000
 	file_server
 }
+
+# Plain HTTP for the one client that cannot do TLS or follow a redirect: the UT99 IpToCountry
+# mutator on the game servers (api/iptocountry.php). Production sets
+# UTSTATS_PLAIN_SITE=http://utstats.ut.banko.gg; every other path on that name still goes to
+# HTTPS, as Caddy's automatic redirect did before this site took over its port 80.
+{$UTSTATS_PLAIN_SITE::8081} {
+	header -Server
+
+	handle /api/iptocountry.php {
+		root * /var/www/html
+		php_fastcgi php:9000
+	}
+
+	handle {
+		redir https://{host}{uri} 308
+	}
+}

@@ -42,6 +42,8 @@ services:
       - .:/var/www/html:ro,z
     ports:
       - "127.0.0.1:8080:8080"
+      # Plain-HTTP site (api/iptocountry.php for the UT99 IpToCountry mutator)
+      - "127.0.0.1:8081:8081"
     depends_on:
       - php
 
